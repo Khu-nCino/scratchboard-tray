@@ -1,0 +1,10 @@
+{
+    "extends": [ "airbnb", "prettier" ],
+    "rules": {
+        "import/no-extraneous-dependencies": "off"
+    },
+    "env": {
+        "browser": true,
+        "node": true
+    }
+}
