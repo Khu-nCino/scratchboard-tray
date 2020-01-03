@@ -1,12 +1,19 @@
-import { app } from "electron";
+import { app, ipcMain } from "electron";
+import fixPath from "../common/fixpath";
 import WindowManager from "./WindowManager";
 import TrayManager from "./TrayManager";
+
+const isDevelopment = process.env.NODE_ENV !== "production";
 
 const windowManager = new WindowManager();
 const trayManager = new TrayManager(windowManager);
 
 function ready() {
+  fixPath();
   trayManager.activate();
+  if (isDevelopment) {
+    windowManager.showWindow(0);
+  }
 }
 
 function onWindowsAllClosed() {
@@ -15,7 +22,14 @@ function onWindowsAllClosed() {
   }
 }
 
+if (!isDevelopment) {
+  app.dock.hide();
+}
+
 app.disableHardwareAcceleration();
-app.dock.hide();
 app.on("ready", ready);
 app.on("window-all-closed", onWindowsAllClosed);
+
+ipcMain.on("exit", () => {
+  app.exit();
+});

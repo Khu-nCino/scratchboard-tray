@@ -34,15 +34,20 @@ export default class WindowManager {
         height: HEIGHT,
         x: windowX,
         y: windowY,
-        frame: false,
+        frame: isDevelopment,
         resizable: false,
         webPreferences: {
           nodeIntegration: true
         }
       });
       window.on("close", this.handleClose);
-      window.on("blur", this.handleClose);
       window.loadURL(indexUrl);
+
+      if (isDevelopment) {
+        window.webContents.openDevTools();
+      } else {
+        window.on("blur", this.handleClose);
+      }
 
       this.browserWindow = window;
     } else {
