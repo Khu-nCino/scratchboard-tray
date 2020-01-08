@@ -1,12 +1,13 @@
-const pathsToAdd = ['/usr/local/bin'];
+const pathsToAdd = ['/Users/gabrielkeith/.nvm/versions/node/v10.18.0/bin', '/usr/local/bin'];
 
 export default function fixPath() {
 	if (process.platform === 'darwin') {
-		const currentPath = process.env.PATH || '';
-		const pathSet = new Set(currentPath.split(':'));
+		const currentPaths = process.env.PATH?.split(':') ?? [];
+		const pathSet = new Set(pathsToAdd);
 
-		process.env.PATH = pathsToAdd
-			.filter((path) => !pathSet.has(path))
-			.reduce((acc, path) => `${path}:${acc}`, currentPath);
+		process.env.PATH = [
+			...pathsToAdd,
+			...currentPaths.filter(p => !pathSet.has(p))
+		].join(':');
 	}
 }

@@ -3,7 +3,7 @@ import * as path from "path";
 import { format as formatUrl } from "url";
 
 const TOP_MARGIN = 30;
-const WIDTH = 400;
+const WIDTH = 420;
 const HEIGHT = 600;
 
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -21,6 +21,7 @@ export default class WindowManager {
 
   constructor() {
     this.handleClose = this.handleClose.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
     this.showWindow = this.showWindow.bind(this);
   }
 
@@ -40,14 +41,14 @@ export default class WindowManager {
           nodeIntegration: true
         }
       });
-      window.on("close", this.handleClose);
       window.loadURL(indexUrl);
 
       if (isDevelopment) {
         window.webContents.openDevTools();
       } else {
-        window.on("blur", this.handleClose);
+        window.on("blur", this.handleBlur);
       }
+      window.on('close', this.handleClose);
 
       this.browserWindow = window;
     } else {
@@ -68,7 +69,11 @@ export default class WindowManager {
     return typeof this.browserWindow !== "undefined" && this.browserWindow.isVisible();
   }
 
-  handleClose(event: Event) {
+  handleClose() {
+    delete this.browserWindow;
+  }
+
+  handleBlur(event: Event) {
     if (typeof this.browserWindow !== "undefined") {
       this.browserWindow.hide();
     }

@@ -5,14 +5,18 @@
 html, body {
     margin: 0;
     height: 100%;
-    overflow: hidden;
 }
 
 #app {
     height: 100%;
 }
 
-.app-content.bp3-dark {
+.app-content {
     height: 100%;
+    overflow: hidden;
+    background-color: $pt-app-background-color;
+}
+
+.app-content.bp3-dark {
     background-color: $pt-dark-app-background-color;
 }

@@ -41,3 +41,7 @@ export function listScratchOrgs(): Promise<ScratchOrg[]> {
     (orgList: OrgListResult) => orgList.scratchOrgs
   );
 }
+
+export function openOrg(username: string): Promise<void> {
+  return executePromiseJson(`sfdx force:org:open --json -u ${username}`);
+}

@@ -1,6 +1,7 @@
 import React from "react";
 
 import { connect } from "react-redux";
+import { Spinner } from "@blueprintjs/core";
 
 import { State } from "../../store";
 import { ScratchOrg } from "../../api/sfdx";
@@ -14,21 +15,31 @@ interface StateProps {
 type Props = StateProps;
 
 const rootStyle: React.CSSProperties = {
-  position: "relative",
-  top: "10px",
-  left: "10px"
+  display: "flex",
+  flexDirection: "column",
+  height: "100%"
 };
 
-const itemStyle: React.CSSProperties = {
-  marginBottom: "10px"
-}
+const spinnerStyle: React.CSSProperties = {
+  margin: "50% auto"
+};
 
 class OrgList extends React.Component<Props, {}> {
   renderOrgs() {
     return (
-      this.props?.orgList?.map(org => <div style={itemStyle} key={org.username}><OrgItem org={org} /></div>) ?? (
-        <div>Loading</div>
-      )
+      this.props?.orgList?.map(org => (
+        <div key={org.username}>
+          <OrgItem org={org} />
+        </div>
+      )) ?? this.renderLoadingState()
+    );
+  }
+
+  renderLoadingState() {
+    return (
+      <div style={spinnerStyle}>
+        <Spinner />
+      </div>
     );
   }
 

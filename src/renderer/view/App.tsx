@@ -2,7 +2,15 @@ import { ipcRenderer } from 'electron';
 
 import React from "react";
 import OrgList from './orglist/OrgList';
+import Title from './Title';
 import { Button } from '@blueprintjs/core';
+import { borderMargin } from './style';
+
+const exitContainerStyle: React.CSSProperties = {
+  position: 'absolute',
+  bottom: borderMargin,
+  right: borderMargin
+}
 
 export default class App extends React.Component {
   constructor(props: {}) {
@@ -16,8 +24,11 @@ export default class App extends React.Component {
 
   render() {
     return <div className="app-content bp3-dark">
+        <Title />
         <OrgList />
-        <Button intent="danger" onClick={this.exit}>Exit</Button>
+        <div style={exitContainerStyle} >
+          <Button intent="danger" onClick={this.exit}>Exit</Button>
+        </div>
       </div>;
   }
 }
