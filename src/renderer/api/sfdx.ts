@@ -8,7 +8,7 @@ export interface SalesforceOrg {
   loginUrl: string;
   clientId: string;
   alias: string;
-  lastUsed: Date;
+  lastUsed: string;
   connectedStatus: string;
 }
 
@@ -25,7 +25,7 @@ export interface ScratchOrg extends SalesforceOrg {
   status: string;
   createdBy: string;
   createdDate: string;
-  expirationDate: Date;
+  expirationDate: string;
   edition: string;
   signupUsername: string;
   devHubOrgId: string;

@@ -1,3 +1,7 @@
 
 
-export const borderMargin = '20px';
+export const margin = {
+  small: '10px',
+  medium: '20px',
+  large: '50px'
+}

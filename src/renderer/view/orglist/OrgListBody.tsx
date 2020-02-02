@@ -17,7 +17,8 @@ type Props = StateProps;
 const rootStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  height: "100%"
+  height: "100%",
+  overflowY: "scroll"
 };
 
 const spinnerStyle: React.CSSProperties = {

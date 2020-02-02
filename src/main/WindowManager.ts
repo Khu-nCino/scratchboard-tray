@@ -48,7 +48,7 @@ export default class WindowManager {
       } else {
         window.on("blur", this.handleBlur);
       }
-      window.on('close', this.handleClose);
+      window.on("close", this.handleClose);
 
       this.browserWindow = window;
     } else {
@@ -66,7 +66,10 @@ export default class WindowManager {
   }
 
   isWindowVisible() {
-    return typeof this.browserWindow !== "undefined" && this.browserWindow.isVisible();
+    return (
+      typeof this.browserWindow !== "undefined" &&
+      this.browserWindow.isVisible()
+    );
   }
 
   handleClose() {

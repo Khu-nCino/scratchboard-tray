@@ -1,22 +1,102 @@
-@import '~@blueprintjs/core/lib/scss/variables';
-@import '~@blueprintjs/core/lib/css/blueprint.css';
-@import '~@blueprintjs/icons/lib/css/blueprint-icons.css';
+@use "sass:color";
+@import "~@blueprintjs/core/lib/scss/variables";
+@import "~@blueprintjs/core/lib/css/blueprint.css";
+@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 
-html, body {
-    margin: 0;
-    height: 100%;
+$small: 10px;
+$medium: 20px;
+$large: 50px;
+
+html,
+body {
+  margin: 0;
+  height: 100%;
 }
 
 #app {
-    height: 100%;
+  height: 100%;
 }
 
-.app-content {
-    height: 100%;
-    overflow: hidden;
-    background-color: $pt-app-background-color;
-}
+#app-content {
+  height: 100%;
+  overflow: hidden;
+  background-color: $pt-app-background-color;
 
-.app-content.bp3-dark {
+  &.bp3-dark {
     background-color: $pt-dark-app-background-color;
+  }
+}
+
+//Components
+.flex-container {
+  display: flex;
+
+  .flex-item {
+    margin: auto $medium;
+  }
+
+  .flex-item--right {
+    margin: auto $medium auto auto;
+  }
+}
+
+//Titlebar
+.titlebar-container {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #182026;
+  background-color: #30404D;
+
+  .titlebar-title {
+    margin: $medium;
+  }
+  .titlebar-button {
+    margin: auto $medium auto auto;
+  }
+}
+
+//OrgList
+.hover-highlight:hover {
+  background-color: darken($pt-app-background-color, 4%);
+
+  .bp3-dark & {
+    background-color: darken($pt-dark-app-background-color, 4%);
+  }
+}
+
+//Transitions
+$duration: 500ms;
+
+.route-transition {
+  &-enter {
+    transform: translateX(-100%);
+  }
+  &-enter-active {
+    transform: translateX(0);
+    transition: transform $duration;
+  }
+  &-exit {
+    transform: translateX(0);
+  }
+  &-exit-active {
+    transform: translateX(-100%);
+    transition: transform $duration;
+  }
+}
+
+.route-transition--reverse {
+  &-enter {
+    transform: translateX(100%);
+  }
+  &-enter-active {
+    transform: translateX(0);
+    transition: transform $duration;
+  }
+  &-exit {
+    transform: translateX(0);
+  }
+  &-exit-active {
+    transform: translateX(100%);
+    transition: transform $duration;
+  }
 }

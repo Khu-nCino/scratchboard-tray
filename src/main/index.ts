@@ -22,9 +22,9 @@ function onWindowsAllClosed() {
   }
 }
 
-// if (!isDevelopment) {
-//   app.dock.hide();
-// }
+if (!isDevelopment) {
+  app.dock.hide();
+}
 
 app.disableHardwareAcceleration();
 app.on("ready", ready);
