@@ -1,8 +1,7 @@
 import {
   createStore as createReduxStore,
   combineReducers,
-  applyMiddleware,
-  DeepPartial
+  applyMiddleware
 } from "redux";
 
 import promiseMiddleware from "redux-promise-middleware";
@@ -21,7 +20,7 @@ const reducers = {
   route: routeReducer
 }
 
-const initialState: DeepPartial<State> = {
+const initialState: Partial<State> = {
   route: {
     name: "orgList"
   }
