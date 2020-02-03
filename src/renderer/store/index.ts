@@ -7,24 +7,26 @@ import {
 import promiseMiddleware from "redux-promise-middleware";
 import { orgsReducer } from "./orgs";
 import { orgSettingsReducer } from "./orgSettings";
-import { routeReducer } from "./route"
+import { routeReducer } from "./route";
+import { settingsReducer } from "./settings";
 
 type Reducers = typeof reducers;
 export type State = {
-  [P in keyof Reducers]: ReturnType<Reducers[P]>
-}
+  [P in keyof Reducers]: ReturnType<Reducers[P]>;
+};
 
 const reducers = {
   orgs: orgsReducer,
   orgSettings: orgSettingsReducer,
-  route: routeReducer
-}
+  route: routeReducer,
+  settings: settingsReducer
+};
 
 const initialState: Partial<State> = {
   route: {
     name: "orgList"
   }
-}
+};
 
 export function createStore() {
   return createReduxStore(

@@ -1,13 +1,13 @@
+import { Action } from 'redux';
+
 // Actions
 type OrgSettingsAction = SetNicknameAction | SetProjectDirectoryAction;
 
-interface SetNicknameAction {
-  type: "SET_NICKNAME";
+interface SetNicknameAction extends Action<"SET_NICKNAME"> {
   payload: { username: string; nickname: string };
 }
 
-interface SetProjectDirectoryAction {
-  type: "SET_PROJECT_DIRECTORY";
+interface SetProjectDirectoryAction extends Action<"SET_PROJECT_DIRECTORY"> {
   payload: { username: string; projectDir: string };
 }
 

@@ -33,7 +33,7 @@ interface DispatchProps {
 
 type Props = OwnProps & DispatchProps;
 
-class OrgItem extends React.Component<Props> {
+class OrgItem extends React.PureComponent<Props> {
   constructor(props: Props) {
     super(props);
 

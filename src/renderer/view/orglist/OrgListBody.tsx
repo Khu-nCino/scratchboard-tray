@@ -25,28 +25,22 @@ const spinnerStyle: React.CSSProperties = {
   margin: "50% auto"
 };
 
-class OrgList extends React.Component<Props, {}> {
-  renderOrgs() {
-    return (
-      this.props?.orgList?.map(org => (
-        <div key={org.username}>
-          <OrgItem org={org} />
-        </div>
-      )) ?? this.renderLoadingState()
-    );
-  }
+function LoadingState() {
+  return (
+    <div style={spinnerStyle}>
+      <Spinner />
+    </div>
+  );
+}
 
-  renderLoadingState() {
-    return (
-      <div style={spinnerStyle}>
-        <Spinner />
+function OrgList(props: Props) {
+  return <div style={rootStyle}>{
+    props?.orgList?.map(org =>
+      <div key={org.username}>
+        <OrgItem org={org} />
       </div>
-    );
-  }
-
-  render() {
-    return <div style={rootStyle}>{this.renderOrgs()}</div>;
-  }
+    ) ?? <LoadingState />
+  }</div>;
 }
 
 function mapStateToProps(state: State): StateProps {

@@ -7,34 +7,32 @@ import { RouteName } from "../store/route";
 import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitle";
 import OtherTitle from "./OtherTitle";
+import SettingsBody from "./settings/SettingsBody";
 
 interface StateProps {
   routeName: RouteName;
 }
 
-class App extends React.Component<StateProps> {
-  renderContents() {
-    return (
-      <RouteTransitions activeRoute={this.props.routeName} routes={{
+function App(props: StateProps){
+  return (
+    <div id="app-content" className="bp3-dark">
+      <RouteTransitions activeRoute={props.routeName} routes={{
         orgList: (
           <div style={{position: 'absolute', width: '100%'}}>
             <OrgListTitle />
             <OrgListBody />
           </div>
         ),
-        settings: <OtherTitle title="Settings" />,
+        settings: (
+          <div>
+            <OtherTitle title="Settings" />
+            <SettingsBody />
+          </div>
+        ),
         dependencies: <OtherTitle title="Dependencies" />
       }} />
-    );
-  }
-
-  render() {
-    return (
-      <div id="app-content" className="bp3-dark">
-        {this.renderContents()}
-      </div>
-    );
-  }
+    </div>
+  );
 }
 
 function RouteTransitions(props: { activeRoute: string, routes: Record<string, JSX.Element> }): JSX.Element {

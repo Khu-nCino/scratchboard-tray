@@ -1,18 +1,14 @@
+import { Action } from 'redux';
+
 type RouteActions =
   | ViewOrgListAction
   | ViewSettingsAction
   | ViewDependenciesAction;
 
-interface ViewOrgListAction {
-  type: "orgList";
-}
+interface ViewOrgListAction extends Action<"orgList">{}
+interface ViewSettingsAction extends Action<"settings">{}
 
-interface ViewSettingsAction {
-  type: "settings";
-}
-
-interface ViewDependenciesAction {
-  type: "dependencies";
+interface ViewDependenciesAction extends Action<"dependencies"> {
   payload: {
     orgUsername: string;
   };

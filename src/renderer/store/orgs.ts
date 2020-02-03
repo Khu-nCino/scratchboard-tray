@@ -1,3 +1,4 @@
+import { Action } from 'redux';
 import { ScratchOrg, listScratchOrgs } from "../api/sfdx";
 
 // Actions
@@ -7,22 +8,17 @@ type ListOrgsAction =
   | ListOrgsFulfilled
   | ListOrgsRejected;
 
-interface ListOrgsRequest {
-  type: "LIST_ORGS";
+interface ListOrgsRequest extends Action<"LIST_ORGS">{
   payload: Promise<ScratchOrg[]>;
 }
 
-interface ListOrgsPending {
-  type: "LIST_ORGS_PENDING";
-}
+interface ListOrgsPending extends Action<"LIST_ORGS_PENDING"> {}
 
-interface ListOrgsFulfilled {
-  type: "LIST_ORGS_FULFILLED";
+interface ListOrgsFulfilled extends Action<"LIST_ORGS_FULFILLED">{
   payload: ScratchOrg[];
 }
 
-interface ListOrgsRejected {
-  type: "LIST_ORGS_REJECTED";
+interface ListOrgsRejected extends Action<"LIST_ORGS_REJECTED"> {
   payload: string;
   error: true;
 }

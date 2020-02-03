@@ -8,11 +8,11 @@ import fixPath from "../common/fixpath";
 import { createStore } from './store';
 
 import App from "./view/App";
-import { listOrgsRequest } from './store/orgs';
+// import { listOrgsRequest } from './store/orgs';
 
 fixPath();
 const store = createStore();
-store.dispatch(listOrgsRequest());
+// store.dispatch(listOrgsRequest());
 
 ReactDom.render(
     <Provider store={store}>
