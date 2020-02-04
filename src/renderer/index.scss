@@ -57,10 +57,10 @@ body {
 
 //OrgList
 .hover-highlight:hover {
-  background-color: darken($pt-app-background-color, 4%);
+  background-color: darken($pt-app-background-color, 2%);
 
   .bp3-dark & {
-    background-color: darken($pt-dark-app-background-color, 4%);
+    background-color: darken($pt-dark-app-background-color, 2%);
   }
 }
 

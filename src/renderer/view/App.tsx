@@ -3,15 +3,12 @@ import { CSSTransition } from "react-transition-group";
 import { connect } from "react-redux";
 
 import { State } from "../store";
-import { RouteName } from "../store/route";
 import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitle";
 import OtherTitle from "./OtherTitle";
 import SettingsBody from "./settings/SettingsBody";
 
-interface StateProps {
-  routeName: RouteName;
-}
+type StateProps = ReturnType<typeof mapStateToProps>
 
 function App(props: StateProps){
   return (
@@ -49,7 +46,7 @@ function RouteTransitions(props: { activeRoute: string, routes: Record<string, J
   ))}</>;
 }
 
-function mapStateToProps(state: State): StateProps {
+function mapStateToProps(state: State) {
   return {
     routeName: state.route.name
   };
