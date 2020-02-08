@@ -34,9 +34,7 @@ interface OwnProps {
   org: ScratchOrg;
 }
 
-interface DispatchProps {
-  viewDependencies(): any;
-}
+type DispatchProps = ReturnType<typeof mapDispatchToProps>
 
 type Props = OwnProps & DispatchProps;
 
@@ -90,7 +88,7 @@ function OrgItem(props: Props) {
   );
 }
 
-function mapDispatchToProps(dispatch: Dispatch, ownProps: OwnProps): DispatchProps {
+function mapDispatchToProps(dispatch: Dispatch, ownProps: OwnProps) {
   return {
     viewDependencies: () => dispatch(viewDependencies(ownProps.org.username))
   };

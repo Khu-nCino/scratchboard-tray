@@ -1,4 +1,5 @@
 import React from "react";
+import cx from "classnames";
 import { CSSTransition } from "react-transition-group";
 import { connect } from "react-redux";
 
@@ -12,7 +13,7 @@ type StateProps = ReturnType<typeof mapStateToProps>
 
 function App(props: StateProps){
   return (
-    <div id="app-content" className="bp3-dark">
+    <div id="app-content" className={cx({ "bp3-dark": props.theme === 'dark' })}>
       <RouteTransitions activeRoute={props.routeName} routes={{
         orgList: (
           <div style={{position: 'absolute', width: '100%'}}>
@@ -48,7 +49,8 @@ function RouteTransitions(props: { activeRoute: string, routes: Record<string, J
 
 function mapStateToProps(state: State) {
   return {
-    routeName: state.route.name
+    routeName: state.route.name,
+    theme: state.settings.theme
   };
 }
 

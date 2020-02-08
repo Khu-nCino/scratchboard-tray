@@ -6,13 +6,15 @@ interface SetThemeAction extends Action<"setTheme"> {
   };
 }
 
+interface ToggleThemeAction extends Action<"toggleTheme"> {}
+
 interface SetSfdxPath extends Action<"setSfdxPath"> {
   payload: {
     sfdxPath: string;
   }
 }
 
-type SettingsAction = SetThemeAction | SetSfdxPath;
+type SettingsAction = SetThemeAction | ToggleThemeAction | SetSfdxPath;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
@@ -21,6 +23,12 @@ export function setTheme(theme: UITheme): SetThemeAction {
       theme
     }
   };
+}
+
+export function toggleTheme(): ToggleThemeAction {
+  return {
+    type: "toggleTheme"
+  }
 }
 
 export function setSfdxPath(sfdxPath: string): SetSfdxPath {
@@ -32,7 +40,7 @@ export function setSfdxPath(sfdxPath: string): SetSfdxPath {
   }
 }
 
-type UITheme = "light" | "dark";
+export type UITheme = "light" | "dark";
 
 interface SettingsState {
   sfdxPath: string;
@@ -46,16 +54,21 @@ const defaultState: SettingsState = {
 
 export function settingsReducer(state: SettingsState = defaultState, action: SettingsAction): SettingsState {
   switch (action.type) {
-    case 'setSfdxPath':
-      return {
-        ...state,
-        sfdxPath: action.payload.sfdxPath
-      };
     case 'setTheme':
       return {
         ...state,
         theme: action.payload.theme
       }
+    case 'toggleTheme':
+      return {
+        ...state,
+        theme: state.theme === 'dark' ? 'light' : 'dark'
+      }
+    case 'setSfdxPath':
+      return {
+        ...state,
+        sfdxPath: action.payload.sfdxPath
+      };
     default: {
       return state;
     }

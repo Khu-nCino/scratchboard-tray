@@ -44,7 +44,7 @@ export interface RouteState {
 }
 
 export function routeReducer(
-  _state: RouteState | undefined,
+  state: RouteState = { name: "orgList" },
   action: RouteActions
 ): RouteState {
   switch (action.type) {
@@ -61,7 +61,7 @@ export function routeReducer(
       };
     }
     default: {
-      return { name: "orgList" };
+      return state;
     }
   }
 }

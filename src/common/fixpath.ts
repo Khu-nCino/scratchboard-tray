@@ -1,4 +1,4 @@
-const pathsToAdd = ['/Users/gabrielkeith/.nvm/versions/node/v10.18.0/bin', '/usr/local/bin'];
+const pathsToAdd = ['/Users/gabrielkeith/.nvm/versions/node/v10.18.1/bin', '/usr/local/bin'];
 
 export default function fixPath() {
 	if (process.platform === 'darwin') {
