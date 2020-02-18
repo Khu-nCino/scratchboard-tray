@@ -8,6 +8,9 @@ export function executePromiseJson(
 
   if (path) {
     options.cwd = path;
+    options.env = {
+      PATH: ""
+    }
   }
 
   return new Promise((resolve, reject) => {

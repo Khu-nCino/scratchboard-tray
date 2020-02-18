@@ -6,7 +6,7 @@ import {
 
 import promiseMiddleware from "redux-promise-middleware";
 import { orgsReducer } from "./orgs";
-import { orgSettingsReducer } from "./orgSettings";
+import { orgSettingsReducer } from "./org-settings";
 import { routeReducer } from "./route";
 import { settingsReducer } from "./settings";
 

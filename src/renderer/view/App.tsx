@@ -12,6 +12,7 @@ import SettingsBody from "./settings/SettingsBody";
 type StateProps = ReturnType<typeof mapStateToProps>
 
 function App(props: StateProps){
+  //This is definitely a hack
   return (
     <div id="app-content" className={cx({ "bp3-dark": props.theme === 'dark' })}>
       <RouteTransitions activeRoute={props.routeName} routes={{
@@ -22,7 +23,7 @@ function App(props: StateProps){
           </div>
         ),
         settings: (
-          <div>
+          <div style={{width: '100%', height: "100%"}}>
             <OtherTitle title="Settings" />
             <SettingsBody />
           </div>

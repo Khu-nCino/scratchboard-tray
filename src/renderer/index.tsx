@@ -4,13 +4,18 @@ import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from 'react-redux';
 
-import fixPath from "../common/fixpath";
+import { getCurrentPaths, setPaths } from "../common/path-util";
 import { createStore } from './store';
 
 import App from "./view/App";
 import { listOrgsRequest } from './store/orgs';
 
-fixPath();
+const basePaths = getCurrentPaths();
+setPaths([
+    "/usr/local/bin",
+    ...basePaths
+]);
+
 const store = createStore();
 store.dispatch(listOrgsRequest());
 
