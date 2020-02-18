@@ -3,6 +3,9 @@
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 
+@import "./style/transitions.scss";
+@import "./style/margin.scss";
+
 $small: 10px;
 $medium: 20px;
 $large: 50px;
@@ -69,42 +72,5 @@ body {
 
   .bp3-dark & {
     background-color: darken($pt-dark-app-background-color, 2%);
-  }
-}
-
-//Transitions
-$duration: 500ms;
-
-.route-transition {
-  &-enter {
-    transform: translateX(-100%);
-  }
-  &-enter-active {
-    transform: translateX(0);
-    transition: transform $duration;
-  }
-  &-exit {
-    transform: translateX(0);
-  }
-  &-exit-active {
-    transform: translateX(-100%);
-    transition: transform $duration;
-  }
-}
-
-.route-transition--reverse {
-  &-enter {
-    transform: translateX(100%);
-  }
-  &-enter-active {
-    transform: translateX(0);
-    transition: transform $duration;
-  }
-  &-exit {
-    transform: translateX(0);
-  }
-  &-exit-active {
-    transform: translateX(100%);
-    transition: transform $duration;
   }
 }

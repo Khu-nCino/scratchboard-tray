@@ -1,0 +1,35 @@
+$duration: 500ms;
+
+.route-transition {
+  &-enter {
+    transform: translateX(-100%);
+  }
+  &-enter-active {
+    transform: translateX(0);
+    transition: transform $duration;
+  }
+  &-exit {
+    transform: translateX(0);
+  }
+  &-exit-active {
+    transform: translateX(-100%);
+    transition: transform $duration;
+  }
+}
+
+.route-transition--reverse {
+  &-enter {
+    transform: translateX(100%);
+  }
+  &-enter-active {
+    transform: translateX(0);
+    transition: transform $duration;
+  }
+  &-exit {
+    transform: translateX(0);
+  }
+  &-exit-active {
+    transform: translateX(100%);
+    transition: transform $duration;
+  }
+}

@@ -20,8 +20,8 @@ function exit() {
 
 function SettingsBody(props: Props) {
   return <div>
-    <Switch labelElement={"Dark Mode"} checked={props.isDarkTheme} onChange={props.toggleTheme} inline large />
-    <FileInput value={props.sfdxPath} onChange={props.setSfdxPath} />
+    <Switch labelElement={"Dark Mode"} checked={props.isDarkTheme} onChange={props.toggleTheme} className="sbt-m_medium" inline large />
+    <FileInput value={props.sfdxPath} onChange={props.setSfdxPath} className="sbt-m-horizontal_medium" />
     <Button className="sbt-exit-button" intent="danger" onClick={exit}>Exit</Button>
   </div>;
 }

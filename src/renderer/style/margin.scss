@@ -1,0 +1,23 @@
+$sizes: ("small": 10px, "medium": 20px, "large": 50px);
+
+@each $name, $size in $sizes {
+  @each $direction in "top", "left", "bottom", "right" {
+    .sbt-m-#{$direction}_#{$name} {
+      margin-#{$direction}: $size;
+    }
+  }
+
+  .sbt-m_#{$name} {
+    margin: $size;
+  }
+
+  .sbt-m-vertical_#{$name} {
+    margin-top: $size;
+    margin-bottom: $size;
+  }
+
+  .sbt-m-horizontal_#{$name} {
+    margin-left: $size;
+    margin-right: $size;
+  }
+}

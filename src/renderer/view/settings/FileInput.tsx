@@ -5,6 +5,7 @@ import { InputGroup, Button, ControlGroup } from "@blueprintjs/core";
 interface Props {
   value: string;
   onChange: (value: string) => void;
+  className?: string;
 }
 
 export default function FileInput(props: Props) {
@@ -29,11 +30,12 @@ export default function FileInput(props: Props) {
   );
 
   return (
-    <ControlGroup>
+    <ControlGroup className={props.className}>
       <InputGroup
         value={props.value}
         onChange={onChangeCallback}
         placeholder="Sfdx File Path"
+        fill
       />
       <Button onClick={onShowDialogCallback}>
         Select Folder
