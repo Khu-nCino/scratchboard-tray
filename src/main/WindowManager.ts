@@ -38,7 +38,7 @@ export default class WindowManager {
         frame: isDevelopment,
         resizable: false,
         webPreferences: {
-          nodeIntegration: true
+          nodeIntegration: true,
         }
       });
       window.loadURL(indexUrl);

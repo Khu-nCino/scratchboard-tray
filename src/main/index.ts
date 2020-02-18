@@ -26,6 +26,7 @@ if (!isDevelopment) {
   app.dock.hide();
 }
 
+app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 app.on("ready", ready);
 app.on("window-all-closed", onWindowsAllClosed);
