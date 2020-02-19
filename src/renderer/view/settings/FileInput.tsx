@@ -32,7 +32,6 @@ export default function FileInput(props: Props) {
       <InputGroup
         value={props.value}
         onChange={onChangeCallback}
-        placeholder="Sfdx File Path"
         fill
       />
       <Button onClick={onShowDialogCallback}>Select Folder</Button>

@@ -55,4 +55,4 @@ function mapStateToProps(state: State): StateProps {
   return {};
 }
 
-export default connect<StateProps, {}, {}, State>(mapStateToProps)(OrgList);
+export default connect(mapStateToProps)(OrgList);

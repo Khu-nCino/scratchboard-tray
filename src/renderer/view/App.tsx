@@ -1,5 +1,4 @@
 import React from "react";
-import cx from "classnames";
 import { CSSTransition } from "react-transition-group";
 import { connect } from "react-redux";
 
@@ -16,7 +15,6 @@ function App(props: StateProps) {
   return (
     <div
       id="app-content"
-      className={cx({ "bp3-dark": props.theme === "dark" })}
     >
       <RouteTransitions
         activeRoute={props.routeName}

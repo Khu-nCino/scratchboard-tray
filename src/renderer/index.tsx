@@ -12,16 +12,30 @@ import { loadInitState, watchAndSave, watchStore } from "./persist";
 
 import App from "./view/App";
 
-const store = createStore(loadInitState(defaultState));
+const initialState = loadInitState(defaultState);
+const store = createStore(initialState);
 watchAndSave(store);
 
 const basePaths = getCurrentPaths();
-setPaths([store.getState().settings.sfdxPath, ...basePaths]);
+
+if (initialState.settings?.sfdxPath) {
+  setPaths([initialState.settings.sfdxPath, ...basePaths]);
+}
+
+if (initialState.settings?.theme) {
+  document.body.className = initialState.settings.theme === 'dark' ? 'bp3-dark' : ''
+}
 
 watchStore(
   store,
   state => state.settings.sfdxPath,
   value => setPaths([value, ...basePaths])
+);
+
+watchStore(
+  store,
+  state => state.settings.theme,
+  value => document.body.className = value === 'dark' ? 'bp3-dark' : ''
 );
 
 store.dispatch(listOrgsRequest());

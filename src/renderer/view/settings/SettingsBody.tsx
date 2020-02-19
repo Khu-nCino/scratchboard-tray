@@ -2,7 +2,7 @@ import { ipcRenderer } from "electron";
 import React from "react";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
-import { Switch, Button } from "@blueprintjs/core";
+import { Switch, Button, FormGroup } from "@blueprintjs/core";
 
 import FileInput from "./FileInput";
 import { State } from "../../store";
@@ -20,19 +20,26 @@ function exit() {
 function SettingsBody(props: Props) {
   return (
     <div>
-      <Switch
-        labelElement={"Dark Mode"}
-        checked={props.isDarkTheme}
-        onChange={props.toggleTheme}
-        className="sbt-m_medium"
-        inline
-        large
-      />
-      <FileInput
-        value={props.sfdxPath}
-        onChange={props.setSfdxPath}
+      <FormGroup
+        label="Appearance"
+        className="sbt-m-horizontal_medium sbt-m-top_medium"
+      >
+        <Switch
+          labelElement={"Dark Mode"}
+          checked={props.isDarkTheme}
+          onChange={props.toggleTheme}
+          inline
+        />
+      </FormGroup>
+      <FormGroup
+        label="SFDX Directory"
         className="sbt-m-horizontal_medium"
-      />
+      >
+        <FileInput
+          value={props.sfdxPath}
+          onChange={props.setSfdxPath}
+        />
+      </FormGroup>
       <Button className="sbt-exit-button" intent="danger" onClick={exit}>
         Exit
       </Button>

@@ -1,11 +1,13 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Button,
   ButtonGroup,
   Popover,
   Menu,
   MenuItem,
-  Position
+  Position,
+  Alert,
+  Intent
 } from "@blueprintjs/core";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
@@ -38,10 +40,6 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 
 type Props = OwnProps & DispatchProps;
 
-function getOrgDisplayName(props: Props) {
-  return props.org.alias || props.org.username;
-}
-
 function getDaysRemaining(props: Props) {
   const oneDay = 1000 * 60 * 60 * 24;
   const expirationDate = Date.parse(props.org.expirationDate);
@@ -49,22 +47,38 @@ function getDaysRemaining(props: Props) {
 }
 
 function OrgItem(props: Props) {
+  const [pendingDelete, setPendingDelete] = useState(false);
+
   const openOrg = useCallback(() => {
     openOrgApi(props.org.username);
   }, [props.org.username]);
+
+  const orgDisplayName = props.org.alias || props.org.username;
 
   const actionsMenu = (
     <Menu>
       <MenuItem text="Copy Link" />
       <MenuItem text="Dependencies" onClick={props.viewDependencies} />
-      <MenuItem text="Delete" intent="danger" />
+      <MenuItem text="Delete" intent="danger" onClick={() => setPendingDelete(true)} />
     </Menu>
   );
+
+  const deleteConformation = <Alert
+    cancelButtonText="Cancel"
+    confirmButtonText="Delete"
+    icon="delete"
+    intent={Intent.DANGER}
+    isOpen={pendingDelete}
+    onCancel={() => setPendingDelete(false)}
+    onConfirm={() => setPendingDelete(false)}
+  >
+    <p>Are you sure you would like to delete {orgDisplayName}?</p>
+  </Alert>;
 
   return (
     <div style={rootStyle} className="hover-highlight">
       <div style={rightElm}>
-        <h4 style={{ margin: "2px" }}>{getOrgDisplayName(props)}</h4>
+        <h4 style={{ margin: "2px" }}>{orgDisplayName}</h4>
         <div style={{ margin: "2px 2px 2px 10px" }}>
           {getDaysRemaining(props)} Days Left
         </div>
@@ -81,6 +95,7 @@ function OrgItem(props: Props) {
           <Button intent="primary" icon="chevron-down" />
         </Popover>
       </ButtonGroup>
+      {deleteConformation}
     </div>
   );
 }
