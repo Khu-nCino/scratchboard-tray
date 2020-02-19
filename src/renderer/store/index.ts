@@ -22,16 +22,16 @@ const reducers = {
   settings: settingsReducer
 };
 
-const initialState: Partial<State> = {
+export const defaultState: Partial<State> = {
   route: {
     name: "orgList"
   }
 };
 
-export function createStore() {
+export function createStore(initial: Partial<State> = defaultState) {
   return createReduxStore(
     combineReducers<State>(reducers),
-    initialState,
+    initial,
     applyMiddleware(promiseMiddleware)
   );
 }

@@ -5,18 +5,23 @@ import ReactDom from "react-dom";
 import { Provider } from 'react-redux';
 
 import { getCurrentPaths, setPaths } from "../common/path-util";
-import { createStore } from './store';
-
-import App from "./view/App";
+import { createStore, defaultState } from './store';
 import { listOrgsRequest } from './store/orgs';
 
-const basePaths = getCurrentPaths();
-setPaths([
-    "/usr/local/bin",
-    ...basePaths
-]);
+import { loadInitState, watchAndSave, watchStore } from './persist';
 
-const store = createStore();
+import App from "./view/App";
+
+const store = createStore(loadInitState(defaultState));
+watchAndSave(store);
+
+const basePaths = getCurrentPaths();
+setPaths([store.getState().settings.sfdxPath, ...basePaths]);
+
+watchStore(store, state => state.settings.sfdxPath, value => {
+    setPaths([value, ...basePaths]);
+});
+
 store.dispatch(listOrgsRequest());
 
 ReactDom.render(
