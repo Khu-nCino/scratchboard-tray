@@ -1,4 +1,8 @@
-$sizes: ("small": 10px, "medium": 20px, "large": 50px);
+$sizes: (
+  "small": 10px,
+  "medium": 20px,
+  "large": 50px
+);
 
 @each $name, $size in $sizes {
   @each $direction in "top", "left", "bottom", "right" {

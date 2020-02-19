@@ -7,8 +7,8 @@ import { listOrgsRequest } from "../../store/orgs";
 import { viewSettings } from "../../store/route";
 
 interface Props {
-  refreshOrgs(): any,
-  viewSettings(): any
+  refreshOrgs(): any;
+  viewSettings(): any;
 }
 
 function Title(props: Props) {
@@ -28,7 +28,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
     refreshOrgs: () => dispatch(listOrgsRequest()),
     viewSettings: () => dispatch(viewSettings())
-  }
-}
+  };
+};
 
-export default connect(undefined, mapDispatchToProps)(Title)
+export default connect(undefined, mapDispatchToProps)(Title);

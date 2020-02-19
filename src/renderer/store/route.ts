@@ -1,12 +1,12 @@
-import { Action } from 'redux';
+import { Action } from "redux";
 
 type RouteActions =
   | ViewOrgListAction
   | ViewSettingsAction
   | ViewDependenciesAction;
 
-interface ViewOrgListAction extends Action<"orgList">{}
-interface ViewSettingsAction extends Action<"settings">{}
+interface ViewOrgListAction extends Action<"orgList"> {}
+interface ViewSettingsAction extends Action<"settings"> {}
 
 interface ViewDependenciesAction extends Action<"dependencies"> {
   payload: {

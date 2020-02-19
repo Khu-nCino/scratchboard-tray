@@ -17,17 +17,15 @@ export default function FileInput(props: Props) {
   );
 
   const onShowDialogCallback = useCallback(async () => {
-      const results = await remote.dialog.showOpenDialog({
-        defaultPath: props.value,
-        properties: ["openDirectory"]
-      });
+    const results = await remote.dialog.showOpenDialog({
+      defaultPath: props.value,
+      properties: ["openDirectory"]
+    });
 
-      if (!results.canceled && results.filePaths.length > 0) {
-        props.onChange(results.filePaths[0]);
-      }
-    },
-    [props.onChange, props.value]
-  );
+    if (!results.canceled && results.filePaths.length > 0) {
+      props.onChange(results.filePaths[0]);
+    }
+  }, [props.onChange, props.value]);
 
   return (
     <ControlGroup className={props.className}>
@@ -37,9 +35,7 @@ export default function FileInput(props: Props) {
         placeholder="Sfdx File Path"
         fill
       />
-      <Button onClick={onShowDialogCallback}>
-        Select Folder
-      </Button>
+      <Button onClick={onShowDialogCallback}>Select Folder</Button>
     </ControlGroup>
   );
 }

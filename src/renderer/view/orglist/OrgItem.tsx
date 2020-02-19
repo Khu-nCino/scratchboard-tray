@@ -34,7 +34,7 @@ interface OwnProps {
   org: ScratchOrg;
 }
 
-type DispatchProps = ReturnType<typeof mapDispatchToProps>
+type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 
 type Props = OwnProps & DispatchProps;
 
@@ -56,10 +56,7 @@ function OrgItem(props: Props) {
   const actionsMenu = (
     <Menu>
       <MenuItem text="Copy Link" />
-      <MenuItem
-        text="Dependencies"
-        onClick={props.viewDependencies}
-      />
+      <MenuItem text="Dependencies" onClick={props.viewDependencies} />
       <MenuItem text="Delete" intent="danger" />
     </Menu>
   );

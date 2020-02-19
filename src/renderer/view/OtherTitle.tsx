@@ -10,7 +10,7 @@ interface OwnProps {
 }
 
 interface DispatchProps {
-  back(): any
+  back(): any;
 }
 
 type Props = OwnProps & DispatchProps;
@@ -21,7 +21,9 @@ function OtherTitle(props: Props) {
       <h2 className="titlebar-title">{props.title}</h2>
 
       <ButtonGroup className="titlebar-button">
-        <Button icon="caret-left" onClick={props.back}>Back</Button>
+        <Button icon="caret-left" onClick={props.back}>
+          Back
+        </Button>
       </ButtonGroup>
     </div>
   );
@@ -30,7 +32,10 @@ function OtherTitle(props: Props) {
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
     back: () => dispatch(viewOrgList())
-  }
-}
+  };
+};
 
-export default connect<{}, DispatchProps, OwnProps>(undefined, mapDispatchToProps)(OtherTitle)
+export default connect<{}, DispatchProps, OwnProps>(
+  undefined,
+  mapDispatchToProps
+)(OtherTitle);

@@ -34,13 +34,15 @@ function LoadingState() {
 }
 
 function OrgList(props: Props) {
-  return <div style={rootStyle}>{
-    props?.orgList?.map(org =>
-      <div key={org.username}>
-        <OrgItem org={org} />
-      </div>
-    ) ?? <LoadingState />
-  }</div>;
+  return (
+    <div style={rootStyle}>
+      {props?.orgList?.map(org => (
+        <div key={org.username}>
+          <OrgItem org={org} />
+        </div>
+      )) ?? <LoadingState />}
+    </div>
+  );
 }
 
 function mapStateToProps(state: State): StateProps {
