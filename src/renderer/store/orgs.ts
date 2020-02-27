@@ -1,5 +1,9 @@
-import { Action } from "redux";
-import { ScratchOrg, listScratchOrgs } from "../api/sfdx";
+import { Action, AnyAction } from "redux";
+import { ThunkAction } from "redux-thunk";
+import { ScratchOrg, listScratchOrgs, openOrg } from "../api/sfdx";
+import { State } from ".";
+
+type ThunkResult<R> = ThunkAction<R, State, undefined, AnyAction>;
 
 // Actions
 type ListOrgsAction =
@@ -21,6 +25,12 @@ interface ListOrgsFulfilled extends Action<"LIST_ORGS_FULFILLED"> {
 interface ListOrgsRejected extends Action<"LIST_ORGS_REJECTED"> {
   payload: string;
   error: true;
+}
+
+export function openOrgAction(username: string): ThunkResult<Promise<void>> {
+  return async dispatch => {
+    await openOrg(username);
+  };
 }
 
 export function listOrgsRequest(): ListOrgsRequest {

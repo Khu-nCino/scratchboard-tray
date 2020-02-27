@@ -22,7 +22,7 @@ function SettingsBody(props: Props) {
     <div>
       <FormGroup
         label="Appearance"
-        className="sbt-m-horizontal_medium sbt-m-top_medium"
+        className="sbt-mh_medium sbt-mt_medium"
       >
         <Switch
           labelElement={"Dark Mode"}
@@ -33,7 +33,7 @@ function SettingsBody(props: Props) {
       </FormGroup>
       <FormGroup
         label="SFDX Directory"
-        className="sbt-m-horizontal_medium"
+        className="sbt-mh_medium"
       >
         <FileInput
           value={props.sfdxPath}

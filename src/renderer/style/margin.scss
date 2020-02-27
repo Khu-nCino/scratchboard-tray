@@ -1,27 +1,35 @@
 $sizes: (
+  "none": 0,
+  "xx-small": 2px,
   "small": 10px,
   "medium": 20px,
   "large": 50px
 );
 
-@each $name, $size in $sizes {
-  @each $direction in "top", "left", "bottom", "right" {
-    .sbt-m-#{$direction}_#{$name} {
-      margin-#{$direction}: $size;
+$directions: (
+  "t": ("top"),
+  "r": ("right"),
+  "b": ("bottom"),
+  "l": ("left"),
+  "v": ("top", "bottom"),
+  "h": ("left", "right")
+);
+
+@each $sizeName, $sizeValue in $sizes {
+  .sbt-m_#{$sizeName} {
+    margin-top: $sizeValue;
+    margin-right: $sizeValue;
+    margin-bottom: $sizeValue;
+    margin-left: $sizeValue;
+  }
+}
+
+@each $directionName, $directionValues in $directions {
+  @each $sizeName, $sizeValue in $sizes {
+    .sbt-m#{$directionName}_#{$sizeName} {
+      @each $d in $directionValues {
+        margin-#{$d}: $sizeValue;
+      }
     }
-  }
-
-  .sbt-m_#{$name} {
-    margin: $size;
-  }
-
-  .sbt-m-vertical_#{$name} {
-    margin-top: $size;
-    margin-bottom: $size;
-  }
-
-  .sbt-m-horizontal_#{$name} {
-    margin-left: $size;
-    margin-right: $size;
   }
 }

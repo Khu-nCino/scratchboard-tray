@@ -4,6 +4,7 @@ import {
   applyMiddleware
 } from "redux";
 
+import thunk from "redux-thunk";
 import promiseMiddleware from "redux-promise-middleware";
 import { orgsReducer } from "./orgs";
 import { orgSettingsReducer } from "./org-settings";
@@ -32,6 +33,6 @@ export function createStore(initial: Partial<State> = defaultState) {
   return createReduxStore(
     combineReducers<State>(reducers),
     initial,
-    applyMiddleware(promiseMiddleware)
+    applyMiddleware(thunk, promiseMiddleware)
   );
 }

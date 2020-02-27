@@ -7,16 +7,21 @@ import {
   MenuItem,
   Position,
   Alert,
-  Intent
+  Intent,
 } from "@blueprintjs/core";
-import { Dispatch } from "redux";
+
+import { AnyAction } from "redux";
 import { connect } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+
 import { ScratchOrg } from "../../api/sfdx";
 
 import { viewDependencies } from "../../store/route";
 import { openOrg as openOrgApi } from "../../api/sfdx";
 
 import { margin } from "../style";
+import { openOrgAction } from "../../store/orgs";
+import { State } from "../../store";
 
 const rootStyle: React.CSSProperties = {
   display: "flex",
@@ -76,11 +81,11 @@ function OrgItem(props: Props) {
   </Alert>;
 
   return (
-    <div style={rootStyle} className="hover-highlight">
+    <div style={rootStyle} className="sbt-hover-highlight">
       <div style={rightElm}>
-        <h4 style={{ margin: "2px" }}>{orgDisplayName}</h4>
-        <div style={{ margin: "2px 2px 2px 10px" }}>
-          {getDaysRemaining(props)} Days Left
+        <h4 className="sbt-m_xx-small">{orgDisplayName}</h4>
+        <div className="sbt-m_small sbt-mt_none">
+          {getDaysRemaining(props)} Days Remaining
         </div>
       </div>
       <ButtonGroup style={leftElm}>
@@ -100,9 +105,10 @@ function OrgItem(props: Props) {
   );
 }
 
-function mapDispatchToProps(dispatch: Dispatch, ownProps: OwnProps) {
+function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>, ownProps: OwnProps) {
   return {
-    viewDependencies: () => dispatch(viewDependencies(ownProps.org.username))
+    viewDependencies: () => dispatch(viewDependencies(ownProps.org.username)),
+    openOrg: () => dispatch(openOrgAction(ownProps.org.username))
   };
 }
 
