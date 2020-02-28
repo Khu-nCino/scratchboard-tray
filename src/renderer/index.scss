@@ -31,14 +31,14 @@ body {
 }
 
 //Components
-.flex-container {
+.sbt-flex-container {
   display: flex;
 
-  .flex-item {
+  .sbt-flex-item {
     margin: auto $medium;
   }
 
-  .flex-item--right {
+  .sbt-flex-item--right {
     margin: auto $medium auto auto;
   }
 }

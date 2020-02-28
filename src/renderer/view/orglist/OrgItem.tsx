@@ -24,17 +24,8 @@ import { openOrgAction } from "../../store/orgs";
 import { State } from "../../store";
 
 const rootStyle: React.CSSProperties = {
-  display: "flex",
   width: "100%",
   height: margin.large
-};
-
-const rightElm: React.CSSProperties = {
-  margin: `auto ${margin.medium}`
-};
-
-const leftElm: React.CSSProperties = {
-  margin: `auto ${margin.medium} auto auto`
 };
 
 interface OwnProps {
@@ -81,14 +72,14 @@ function OrgItem(props: Props) {
   </Alert>;
 
   return (
-    <div style={rootStyle} className="sbt-hover-highlight">
-      <div style={rightElm}>
+    <div style={rootStyle} className="sbt-flex-container sbt-hover-highlight">
+      <div className="sbt-flex-item">
         <h4 className="sbt-m_xx-small">{orgDisplayName}</h4>
         <div className="sbt-m_small sbt-mt_none">
           {getDaysRemaining(props)} Days Remaining
         </div>
       </div>
-      <ButtonGroup style={leftElm}>
+      <ButtonGroup className="sbt-flex-item--right">
         <Button intent="primary" onClick={openOrg}>
           Open
         </Button>
