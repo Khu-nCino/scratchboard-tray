@@ -19,13 +19,12 @@ import { ScratchOrg } from "../../api/sfdx";
 import { viewDependencies } from "../../store/route";
 import { openOrg as openOrgApi } from "../../api/sfdx";
 
-import { margin } from "../style";
 import { openOrgAction } from "../../store/orgs";
 import { State } from "../../store";
 
 const rootStyle: React.CSSProperties = {
   width: "100%",
-  height: margin.large
+  height: "50px"
 };
 
 interface OwnProps {
