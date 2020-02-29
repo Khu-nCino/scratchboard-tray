@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Button,
   ButtonGroup,
@@ -17,7 +17,6 @@ import { ThunkDispatch } from "redux-thunk";
 import { ScratchOrg } from "../../api/sfdx";
 
 import { viewDependencies } from "../../store/route";
-import { openOrg as openOrgApi } from "../../api/sfdx";
 
 import { openOrgAction } from "../../store/orgs";
 import { State } from "../../store";
@@ -35,20 +34,44 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 
 type Props = OwnProps & DispatchProps;
 
-function getDaysRemaining(props: Props) {
-  const oneDay = 1000 * 60 * 60 * 24;
-  const expirationDate = Date.parse(props.org.expirationDate);
-  return Math.floor((expirationDate - Date.now()) / oneDay);
+const oneDay = 1000 * 60 * 60 * 24;
+
+function TimeRemaining(props: { className?: string, date: number }) {
+  const [timeLeft, setTimeLeft] = useState(props.date - Date.now());
+
+  useEffect(() => {
+    let timeoutId = window.setTimeout(checkTimeLeft, timeLeft % oneDay);
+
+    function checkTimeLeft() {
+      const newTimeLeft = props.date - Date.now();
+      setTimeLeft(newTimeLeft);
+      timeoutId = window.setTimeout(checkTimeLeft, newTimeLeft % oneDay);
+    }
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [props.date]);
+
+  const daysRemaining = Math.max(0, Math.floor(timeLeft / oneDay));
+  const daysLabel = daysRemaining !== 1 ? "Days" : "Day";
+
+  return (
+    <div className={props.className}>
+      {daysRemaining} {daysLabel} Remaining
+    </div>
+  );
 }
 
 function OrgItem(props: Props) {
   const [pendingDelete, setPendingDelete] = useState(false);
 
-  const openOrg = useCallback(() => {
-    openOrgApi(props.org.username);
-  }, [props.org.username]);
-
   const orgDisplayName = props.org.alias || props.org.username;
+
+  const orgExpirationDate = useMemo(
+    () => Date.parse(props.org.expirationDate),
+    [props.org.expirationDate]
+  );
 
   const actionsMenu = (
     <Menu>
@@ -74,12 +97,10 @@ function OrgItem(props: Props) {
     <div style={rootStyle} className="sbt-flex-container sbt-hover-highlight">
       <div className="sbt-flex-item">
         <h4 className="sbt-m_xx-small">{orgDisplayName}</h4>
-        <div className="sbt-m_small sbt-mt_none">
-          {getDaysRemaining(props)} Days Remaining
-        </div>
+        <TimeRemaining className="sbt-m_small sbt-mt_none" date={orgExpirationDate}/>
       </div>
       <ButtonGroup className="sbt-flex-item--right">
-        <Button intent="primary" onClick={openOrg}>
+        <Button intent="primary" onClick={props.openOrg}>
           Open
         </Button>
         <Popover
