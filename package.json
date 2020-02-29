@@ -1,7 +1,11 @@
 {
-  "name": "scrachboard_lite",
+  "name": "scrachboard-tray",
   "version": "0.0.1",
   "license": "MIT",
+  "author": {
+    "name": "Gabriel Keith"
+  },
+  "description": "A electron based scratch org manager for your tray",
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
@@ -42,5 +46,15 @@
     "whiteListedModules": [
       "react-redux"
     ]
+  },
+  "build": {
+    "mac": {
+      "target": [
+        "zip"
+      ],
+      "category": "public.app-category.productivity",
+      "type": "distribution",
+      "identity": "null"
+    }
   }
 }
