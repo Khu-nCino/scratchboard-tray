@@ -1,16 +1,27 @@
-import React from "react";
+import React  from "react";
 import { CSSTransition } from "react-transition-group";
+import { Dispatch } from "redux";
 import { connect } from "react-redux";
+import { Toast, Toaster, Position, Intent, IconName } from "@blueprintjs/core";
 
 import { State } from "../store";
 import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitle";
 import OtherTitle from "./OtherTitle";
 import SettingsBody from "./settings/SettingsBody";
+import { dismissToast } from "../store/jobs";
 
-type StateProps = ReturnType<typeof mapStateToProps>;
+const intentIcons: Record<Intent, IconName | undefined> = {
+  "success": "tick",
+  "danger": "error",
+  "warning": "warning-sign",
+  "none": undefined,
+  "primary": undefined
+}
 
-function App(props: StateProps) {
+type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
+
+function App(props: Props) {
   //This is definitely a hack
   return (
     <div
@@ -34,6 +45,16 @@ function App(props: StateProps) {
           dependencies: <OtherTitle title="Dependencies" />
         }}
       />
+      <Toaster position={Position.BOTTOM}>
+        {props.toasts.map(toast =>
+          <Toast
+            message={toast.message}
+            intent={toast.intent}
+            icon={intentIcons[toast.intent]}
+            onDismiss={() => props.dismissToast(toast.id)}
+          />
+        )}
+      </Toaster>
     </div>
   );
 }
@@ -62,8 +83,15 @@ function RouteTransitions(props: {
 function mapStateToProps(state: State) {
   return {
     routeName: state.route.name,
-    theme: state.settings.theme
+    theme: state.settings.theme,
+    toasts: state.jobs.toasts
   };
 }
 
-export default connect(mapStateToProps)(App);
+function mapDispatchToProps(dispatch: Dispatch) {
+  return {
+    dismissToast: (toastId: number) => dispatch(dismissToast(toastId))
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

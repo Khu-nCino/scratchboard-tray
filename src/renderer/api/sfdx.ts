@@ -46,6 +46,11 @@ export function openOrg(username: string): Promise<void> {
   return executePromiseJson(`sfdx force:org:open --json -u ${username}`);
 }
 
+export function deleteOrg(username: string): Promise<void> {
+  return executePromiseJson(`sfdx force:org:delete --json -p -u ${username}`);
+}
+
+
 // export function validateSfdxPath(): Promise<boolean> {
 
 // }

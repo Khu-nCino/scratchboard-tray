@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder",
+    "dist": "yarn compile && electron-builder -c.mac.identity=null",
     "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "devDependencies": {
@@ -50,11 +50,9 @@
   "build": {
     "mac": {
       "target": [
-        "zip"
+        "7z"
       ],
-      "category": "public.app-category.productivity",
-      "type": "distribution",
-      "identity": "null"
+      "category": "public.app-category.productivity"
     }
   }
 }

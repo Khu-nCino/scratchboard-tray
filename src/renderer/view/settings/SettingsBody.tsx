@@ -25,10 +25,9 @@ function SettingsBody(props: Props) {
         className="sbt-mh_medium sbt-mt_medium"
       >
         <Switch
-          labelElement={"Dark Mode"}
+          labelElement="Dark Mode"
           checked={props.isDarkTheme}
           onChange={props.toggleTheme}
-          inline
         />
       </FormGroup>
       <FormGroup
