@@ -7,12 +7,12 @@ import { Provider } from "react-redux";
 import { getCurrentPaths, setPaths } from "../common/path-util";
 import { createStore, defaultState } from "./store";
 
-import { loadInitState, watchAndSave, watchStore } from "./persist";
+import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 
 import App from "./view/App";
 import { checkSfdxPathValidity } from "./store/settings";
 
-const initialState = loadInitState(defaultState);
+const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
 watchAndSave(store);
 

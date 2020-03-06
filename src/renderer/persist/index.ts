@@ -6,12 +6,13 @@ type AppState = CombinedState<State>;
 
 const electronStore = new ElectronStore();
 
-export function loadInitState(state: Partial<State>): Partial<State> {
+export function loadPersistedState(state: Partial<State>): Partial<State> {
   return {
     ...state,
     settings: {
-      sfdxPath: electronStore.get("sfdxPath", state.settings?.sfdxPath),
-      theme: electronStore.get("theme", state?.settings?.theme)
+      ...state.settings,
+      sfdxPath: electronStore.get("sfdxPath"),
+      theme: electronStore.get("theme")
     }
   };
 }
@@ -30,9 +31,9 @@ export function watchAndSave(store: Store<AppState>) {
   );
 }
 
-export function watchStore<T, V>(
-  store: Store<T>,
-  accessor: (state: T) => V,
+export function watchStore<S, V>(
+  store: Store<S>,
+  accessor: (state: S) => V,
   callback: (value: V) => void
 ) {
   let currentValue = accessor(store.getState());
