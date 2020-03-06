@@ -52,6 +52,14 @@ export function setSfdxPath(sfdxPath: string): ThunkReturn<Promise<boolean>> {
       }
     });
 
+    return dispatch(checkSfdxPathValidity());
+  }
+}
+
+export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
+  return async (dispatch, getState) => {
+    const sfdxPath = getState().settings.sfdxPath;
+
     const pathIsValid = await validateSfdxPath(sfdxPath);
     dispatch({
       type: "SET_SFDX_PATH_VALIDITY",

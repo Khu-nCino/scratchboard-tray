@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect } from "react";
 
-import { connect, DispatchProp } from "react-redux";
+import { connect } from "react-redux";
 import { Spinner, NonIdealState, Icon } from "@blueprintjs/core";
 
 import { State } from "../../store";
@@ -45,7 +45,7 @@ function LoadingState() {
 
 function OrgList(props: Props) {
   useEffect(() => {
-    if (props.orgListStatus === 'invalid_sfdx_path' && props.isSfdxPathValid) {
+    if ((props.orgListStatus === 'invalid_sfdx_path' || props.orgListStatus === 'initial') && props.isSfdxPathValid) {
       props.requestOrgList();
     }
   }, [props.isSfdxPathValid]);
@@ -65,6 +65,7 @@ function OrgList(props: Props) {
           </div>
         );
       }
+    case "initial": // This is a little scary. Let's hope it dose not load for every.
     case "pending":
       return <LoadingState />;
     case "failed":

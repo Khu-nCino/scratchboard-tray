@@ -6,11 +6,11 @@ import { Provider } from "react-redux";
 
 import { getCurrentPaths, setPaths } from "../common/path-util";
 import { createStore, defaultState } from "./store";
-import { listOrgsRequest } from "./store/orgs";
 
 import { loadInitState, watchAndSave, watchStore } from "./persist";
 
 import App from "./view/App";
+import { checkSfdxPathValidity } from "./store/settings";
 
 const initialState = loadInitState(defaultState);
 const store = createStore(initialState);
@@ -38,7 +38,7 @@ watchStore(
   value => document.body.className = value === 'dark' ? 'bp3-dark' : ''
 );
 
-store.dispatch(listOrgsRequest());
+store.dispatch(checkSfdxPathValidity());
 
 ReactDom.render(
   <Provider store={store}>
