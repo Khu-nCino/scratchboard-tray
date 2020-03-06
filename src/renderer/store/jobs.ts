@@ -25,6 +25,10 @@ export function createToast(message: string, intent: Intent): CreateToastAction 
   }
 }
 
+export function createErrorToast(message: string, detail: string): CreateToastAction {
+  return createToast(message, "danger");
+}
+
 export function dismissToast(toastId: number): DismissToastAction {
   return {
     type: "DISMISS_TOAST",

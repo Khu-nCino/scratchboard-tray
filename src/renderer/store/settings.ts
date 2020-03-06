@@ -1,24 +1,36 @@
 import { Action } from "redux";
+import { ThunkAction } from "redux-thunk";
+import { State } from ".";
+import { validateSfdxPath } from "../api/sfdx";
 
-interface SetThemeAction extends Action<"setTheme"> {
+type ThunkReturn<R> = ThunkAction<R, State, undefined, SettingsAction>;
+
+interface SetThemeAction extends Action<"SET_THEME"> {
   payload: {
     theme: UITheme;
   };
 }
 
-interface ToggleThemeAction extends Action<"toggleTheme"> {}
+interface ToggleThemeAction extends Action<"TOGGLE_THEME"> {}
 
-interface SetSfdxPath extends Action<"setSfdxPath"> {
+interface SetSfdxPath extends Action<"SET_SFDX_PATH"> {
   payload: {
     sfdxPath: string;
   };
 }
 
-type SettingsAction = SetThemeAction | ToggleThemeAction | SetSfdxPath;
+interface SetSfdxPathValidity extends Action<"SET_SFDX_PATH_VALIDITY"> {
+  payload: {
+    sfdxPath: string;
+    pathIsValid: boolean;
+  }
+}
+
+type SettingsAction = SetThemeAction | ToggleThemeAction | SetSfdxPath | SetSfdxPathValidity;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
-    type: "setTheme",
+    type: "SET_THEME",
     payload: {
       theme
     }
@@ -27,23 +39,37 @@ export function setTheme(theme: UITheme): SetThemeAction {
 
 export function toggleTheme(): ToggleThemeAction {
   return {
-    type: "toggleTheme"
+    type: "TOGGLE_THEME"
   };
 }
 
-export function setSfdxPath(sfdxPath: string): SetSfdxPath {
-  return {
-    type: "setSfdxPath",
-    payload: {
-      sfdxPath
-    }
-  };
+export function setSfdxPath(sfdxPath: string): ThunkReturn<Promise<boolean>> {
+  return async (dispatch) => {
+    dispatch({
+      type: "SET_SFDX_PATH",
+      payload: {
+        sfdxPath
+      }
+    });
+
+    const pathIsValid = await validateSfdxPath(sfdxPath);
+    dispatch({
+      type: "SET_SFDX_PATH_VALIDITY",
+      payload: {
+        sfdxPath,
+        pathIsValid
+      }
+    });
+
+    return pathIsValid;
+  }
 }
 
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
   sfdxPath: string;
+  isSfdxPathValid?: boolean;
   theme: UITheme;
 }
 
@@ -57,21 +83,29 @@ export function settingsReducer(
   action: SettingsAction
 ): SettingsState {
   switch (action.type) {
-    case "setTheme":
+    case "SET_THEME":
       return {
         ...state,
         theme: action.payload.theme
       };
-    case "toggleTheme":
+    case "TOGGLE_THEME":
       return {
         ...state,
         theme: state.theme === "dark" ? "light" : "dark"
       };
-    case "setSfdxPath":
+    case "SET_SFDX_PATH":
       return {
         ...state,
         sfdxPath: action.payload.sfdxPath
       };
+    case "SET_SFDX_PATH_VALIDITY":
+      if (state.sfdxPath === action.payload.sfdxPath) {
+        return {
+          ...state,
+          isSfdxPathValid: action.payload.pathIsValid
+        }
+      }
+      return state;
     default: {
       return state;
     }

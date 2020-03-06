@@ -1,10 +1,12 @@
 import React from "react";
-import { Dispatch } from "redux";
+import { AnyAction } from "redux";
 import { connect } from "react-redux";
 import { ButtonGroup, Button } from "@blueprintjs/core";
 
 import { listOrgsRequest } from "../../store/orgs";
 import { viewSettings } from "../../store/route";
+import { ThunkDispatch } from "redux-thunk";
+import { State } from "../../store";
 
 interface Props {
   refreshOrgs(): any;
@@ -24,7 +26,7 @@ function Title(props: Props) {
   );
 }
 
-const mapDispatchToProps = (dispatch: Dispatch) => {
+const mapDispatchToProps = (dispatch: ThunkDispatch<State, undefined, AnyAction>) => {
   return {
     refreshOrgs: () => dispatch(listOrgsRequest()),
     viewSettings: () => dispatch(viewSettings())

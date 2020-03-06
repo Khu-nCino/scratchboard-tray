@@ -12,14 +12,20 @@ export function executePromiseJson(
 
   return new Promise((resolve, reject) => {
     exec(command, options, (error, stdout) => {
-      if (!error) {
-        try {
-          resolve(JSON.parse(stdout).result);
-        } catch (exception) {
-          reject(exception);
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      try {
+        const output = JSON.parse(stdout);
+        if (output.status === 0) {
+          resolve(output.result);
+        } else {
+          reject(output.message);
         }
-      } else {
-        reject(error.message);
+      } catch (exception) {
+        reject(exception);
       }
     });
   });

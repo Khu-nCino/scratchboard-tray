@@ -17,7 +17,7 @@ import { ThunkDispatch } from "redux-thunk";
 import TimeRemaining from './TimeRemaining';
 
 import { ScratchOrg } from "../../api/sfdx";
-import { openOrgAction, deleteOrgAction } from "../../store/orgs";
+import { openOrgAction, deleteOrgAction, copyFrontDoor } from "../../store/orgs";
 import { State } from "../../store";
 
 const rootStyle: React.CSSProperties = {
@@ -46,7 +46,7 @@ function OrgItem(props: Props) {
 
   const actionsMenu = (
     <Menu>
-      <MenuItem text="Copy Link" />
+      <MenuItem text="Copy Frontdoor" onClick={props.copyFrontdoor} />
       <MenuItem text="Delete" intent="danger" onClick={() => setPendingDelete(true)} />
     </Menu>
   );
@@ -70,7 +70,7 @@ function OrgItem(props: Props) {
     <div style={rootStyle} className="sbt-flex-container sbt-hover-highlight">
       <div className="sbt-flex-item">
         <h4 className="sbt-m_xx-small">{orgDisplayName}</h4>
-        <TimeRemaining className="sbt-m_xx-small sbt-ml_small" date={orgExpirationDate}/>
+        <TimeRemaining className="sbt-m_xx-small sbt-ml_small" date={orgExpirationDate} />
       </div>
       <ButtonGroup className="sbt-flex-item--right">
         <Button intent="primary" onClick={props.openOrg}>
@@ -89,10 +89,11 @@ function OrgItem(props: Props) {
   );
 }
 
-function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>, ownProps: OwnProps) {
+function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>, { org: { username } }: OwnProps) {
   return {
-    openOrg: () => dispatch(openOrgAction(ownProps.org.username)),
-    deleteOrg: () => dispatch(deleteOrgAction(ownProps.org.username))
+    openOrg: () => dispatch(openOrgAction(username)),
+    copyFrontdoor: () => dispatch(copyFrontDoor(username)),
+    deleteOrg: () => dispatch(deleteOrgAction(username))
   };
 }
 

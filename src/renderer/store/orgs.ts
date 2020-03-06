@@ -1,33 +1,39 @@
+import { clipboard } from "electron";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
-import { ScratchOrg, listScratchOrgs, openOrg, deleteOrg } from "../api/sfdx";
-import { JobsAction, createToast } from "./jobs";
+
+import {
+  ScratchOrg,
+  listScratchOrgs,
+  openOrg,
+  deleteOrg,
+  frontDoorUrlApi
+} from "../api/sfdx";
+import { JobsAction, createToast, createErrorToast } from "./jobs";
 import { State } from ".";
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | JobsAction>;
 
 // Actions
 type OrgAction =
-  | ListOrgsRequest
   | ListOrgsPending
   | ListOrgsFulfilled
   | ListOrgsRejected
+  | ListOrgsSfdxPathInvalid
   | RemoveOrgListing;
-
-interface ListOrgsRequest extends Action<"LIST_ORGS"> {
-  payload: Promise<ScratchOrg[]>;
-}
 
 interface ListOrgsPending extends Action<"LIST_ORGS_PENDING"> {}
 
 interface ListOrgsFulfilled extends Action<"LIST_ORGS_FULFILLED"> {
-  payload: ScratchOrg[];
+  payload: {
+    scratchOrgs: ScratchOrg[];
+  };
 }
 
-interface ListOrgsRejected extends Action<"LIST_ORGS_REJECTED"> {
-  payload: string;
-  error: true;
-}
+interface ListOrgsRejected extends Action<"LIST_ORGS_REJECTED"> {}
+
+interface ListOrgsSfdxPathInvalid
+  extends Action<"LIST_ORGS_SFDX_PATH_INVALID"> {}
 
 interface RemoveOrgListing extends Action<"REMOVE_ORG_LISTING"> {
   payload: {
@@ -35,77 +41,104 @@ interface RemoveOrgListing extends Action<"REMOVE_ORG_LISTING"> {
   };
 }
 
+export function listOrgsRequest(): ThunkResult<Promise<void>> {
+  return async (dispatch, getState) => {
+    if (!getState().settings.isSfdxPathValid) {
+      dispatch({ type: "LIST_ORGS_SFDX_PATH_INVALID" });
+      return;
+    }
+
+    dispatch({ type: "LIST_ORGS_PENDING" });
+
+    try {
+      const scratchOrgs = await listScratchOrgs();
+      dispatch({
+        type: "LIST_ORGS_FULFILLED",
+        payload: { scratchOrgs }
+      });
+    } catch (error) {
+      console.log(error);
+      dispatch(
+        createErrorToast(
+          "There was an error listing your scratch orgs 😞",
+          error
+        )
+      );
+      dispatch({ type: "LIST_ORGS_REJECTED" });
+    }
+  };
+}
+
 export function openOrgAction(username: string): ThunkResult<Promise<void>> {
-  return async (dispatch) => {
+  return async dispatch => {
     try {
       await openOrg(username);
-    } catch {
-      dispatch(createToast(
-        `Failed to open org ${username}`,
-        "danger"
-      ));
+    } catch (error) {
+      console.error(error);
+      dispatch(
+        createErrorToast(`There was an error opening your org 😞`, error)
+      );
     }
-  }
+  };
+}
+
+export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
+  return async dispatch => {
+    try {
+      const url = await frontDoorUrlApi(username);
+      clipboard.writeText(url, "clipboard");
+      dispatch(
+        createToast(
+          "The frontdoor url has been copied to your clipboard!",
+          "success"
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      dispatch(
+        createErrorToast(`There was an error opening your org 😞`, error)
+      );
+    }
+  };
 }
 
 export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
-  return async (dispatch) => {
+  return async dispatch => {
     try {
       await deleteOrg(username);
       dispatch({
         type: "REMOVE_ORG_LISTING",
-        payload: {
-          username
-        }
+        payload: { username }
       });
 
-      dispatch(createToast(
-        `${username} was successfully deleted`,
-        "success"
-      ));
+      dispatch(createToast(`Successfully deleted org.`, "success"));
     } catch (error) {
-      dispatch(createToast(
-        `Failed to delete ${username}`,
-        "danger"
-      ));
+      console.error(error);
+      dispatch(
+        createErrorToast(`There was an error deleting your org 😞`, error)
+      );
     }
   };
 }
 
-export function listOrgsRequest(): ListOrgsRequest {
-  return {
-    type: "LIST_ORGS",
-    payload: listScratchOrgs()
-  };
-}
-
 // State
-export type OrgsState =
-  | OrgsInitialState
-  | OrgsFulfilledState
-  | OrgsPendingState
-  | OrgsRejectedState;
+type OrgListStatus =
+  | "initial"
+  | "pending"
+  | "loaded"
+  | "failed"
+  | "invalid_sfdx_path";
 
-interface OrgsInitialState {
-  type: "INITIAL";
-}
-
-interface OrgsFulfilledState {
-  type: "FULFILLED";
+export interface OrgsState {
+  orgListStatus: OrgListStatus;
   orgList: ScratchOrg[];
 }
 
-interface OrgsPendingState {
-  type: "PENDING";
-}
-
-interface OrgsRejectedState {
-  type: "REJECTED";
-  reason: string;
-}
-
-function createDefaultOrgsState(): OrgsInitialState {
-  return { type: "INITIAL" };
+function createDefaultOrgsState(): OrgsState {
+  return {
+    orgListStatus: "initial",
+    orgList: []
+  };
 }
 
 // Reducers
@@ -116,34 +149,41 @@ export function orgsReducer(
   switch (action.type) {
     case "LIST_ORGS_PENDING":
       return {
-        type: "PENDING"
+        ...state,
+        orgListStatus: "pending"
       };
     case "LIST_ORGS_FULFILLED":
       return {
-        type: "FULFILLED",
-        orgList: action.payload
+        ...state,
+        orgListStatus: "loaded",
+        orgList: action.payload.scratchOrgs
       };
     case "LIST_ORGS_REJECTED":
       return {
-        type: "REJECTED",
-        reason: action.payload
+        ...state,
+        orgListStatus: "failed"
+      };
+    case "LIST_ORGS_SFDX_PATH_INVALID":
+      return {
+        ...state,
+        orgListStatus: "invalid_sfdx_path"
       };
     case "REMOVE_ORG_LISTING": {
-      if (state.type === "FULFILLED") {
-        const orgList = [...state.orgList];
-        const indexToRemove = orgList.findIndex(
-          ({ username }) => username === action.payload.username
-        );
+      const orgList = [...state.orgList];
+      const indexToRemove = orgList.findIndex(
+        ({ username }) => username === action.payload.username
+      );
 
-        orgList.splice(indexToRemove, 1);
-
-        return {
-          ...state,
-          orgList
-        }
-      } else {
+      if (indexToRemove < 0) {
         return state;
       }
+
+      orgList.splice(indexToRemove, 1);
+
+      return {
+        ...state,
+        orgList
+      };
     }
     default:
       return state;

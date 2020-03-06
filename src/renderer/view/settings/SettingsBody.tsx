@@ -1,6 +1,7 @@
 import { ipcRenderer } from "electron";
 import React from "react";
-import { Dispatch } from "redux";
+import { AnyAction } from "redux";
+import { ThunkDispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import { Switch, Button, FormGroup } from "@blueprintjs/core";
 
@@ -53,7 +54,7 @@ function mapStateToProps(state: State) {
   };
 }
 
-function mapDispatchToProps(dispatch: Dispatch) {
+function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>) {
   return {
     toggleTheme: () => dispatch(toggleTheme()),
     setSfdxPath: (path: string) => dispatch(setSfdxPath(path))
