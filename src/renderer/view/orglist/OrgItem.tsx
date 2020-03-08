@@ -48,7 +48,7 @@ function ActionMenu(props: {
 }) {
   return (
     <Menu>
-      <MenuItem text="Copy Frontdoor" onClick={props.onCopyFrontdoor} />
+      <MenuItem text="Copy Front Door" onClick={props.onCopyFrontdoor} />
       <MenuItem text="Set Alias" onClick={props.onSetAlias} />
       <MenuItem
         text="Delete"
@@ -80,6 +80,7 @@ function AliasDialog(props: {
           onChange={(event: React.FormEvent<HTMLElement>) =>
             props.onChange((event.target as HTMLInputElement).value)
           }
+          autoFocus
         />
       </div>
       <div className={Classes.DIALOG_FOOTER}>
@@ -88,7 +89,7 @@ function AliasDialog(props: {
           <Button intent={Intent.PRIMARY} onClick={() => {
             props.onConfirm();
             props.onClose();
-          }}>Commit</Button>
+          }}>Confirm</Button>
         </div>
       </div>
     </Dialog>

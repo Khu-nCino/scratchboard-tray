@@ -1,10 +1,11 @@
 import { remote } from "electron";
 import React, { useCallback } from "react";
-import { InputGroup, Button, ControlGroup } from "@blueprintjs/core";
+import { InputGroup, Button, ControlGroup, Intent } from "@blueprintjs/core";
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
+  isValid: boolean;
   className?: string;
 }
 
@@ -32,6 +33,7 @@ export default function FileInput(props: Props) {
       <InputGroup
         value={props.value}
         onChange={onChangeCallback}
+        intent={!props.value || props.isValid ? Intent.NONE : Intent.DANGER}
         fill
       />
       <Button onClick={onShowDialogCallback}>Select Folder</Button>

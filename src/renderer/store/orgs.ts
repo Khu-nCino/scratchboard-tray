@@ -67,12 +67,6 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
       });
     } catch (error) {
       console.log(error);
-      dispatch(
-        createErrorToast(
-          "There was an error listing your scratch orgs 😞",
-          error
-        )
-      );
       dispatch({ type: "LIST_ORGS_REJECTED" });
     }
   };
@@ -98,14 +92,14 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
       clipboard.writeText(url, "clipboard");
       dispatch(
         createToast(
-          "The frontdoor url has been copied to your clipboard!",
+          "The front door url has been copied to your clipboard!",
           "success"
         )
       );
     } catch (error) {
       console.error(error);
       dispatch(
-        createErrorToast(`There was an error opening your org 😞`, error)
+        createErrorToast(`There was an error copying your front door 😞`, error)
       );
     }
   };

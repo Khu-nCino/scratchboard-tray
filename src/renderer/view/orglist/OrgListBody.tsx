@@ -54,7 +54,7 @@ function OrgList(props: Props) {
     case "loaded":
       if (props.orgList.length === 0) {
         return <Centered>
-            <NonIdealState title="No Scrach Orgs Found" description="Try refreshing when you have some." icon="form" />
+            <NonIdealState title="No Scratch Orgs Found" description="Please refresh when you have some." icon="form" />
           </Centered>;
       } else {
         return (

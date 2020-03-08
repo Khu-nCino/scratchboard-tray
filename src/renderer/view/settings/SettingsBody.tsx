@@ -38,6 +38,7 @@ function SettingsBody(props: Props) {
         <FileInput
           value={props.sfdxPath}
           onChange={props.setSfdxPath}
+          isValid={props.isSfdxPathValid ?? false}
         />
       </FormGroup>
       <Button className="sbt-exit-button" intent="danger" onClick={exit}>
@@ -50,7 +51,8 @@ function SettingsBody(props: Props) {
 function mapStateToProps(state: State) {
   return {
     isDarkTheme: state.settings.theme === "dark",
-    sfdxPath: state.settings.sfdxPath
+    sfdxPath: state.settings.sfdxPath,
+    isSfdxPathValid: state.settings.isSfdxPathValid
   };
 }
 
