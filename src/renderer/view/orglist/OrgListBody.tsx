@@ -45,7 +45,7 @@ function LoadingState() {
 
 function OrgList(props: Props) {
   useEffect(() => {
-    if ((props.orgListStatus === 'invalid_sfdx_path' || props.orgListStatus === 'initial') && props.isSfdxPathValid) {
+    if (props.orgListStatus === 'invalid_sfdx_path' || props.orgListStatus === 'initial') {
       props.requestOrgList();
     }
   }, [props.isSfdxPathValid]);

@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder -c.mac.identity=null"
+    "dist": "yarn compile && electron-builder"
   },
   "devDependencies": {
     "@types/node": "^12",
