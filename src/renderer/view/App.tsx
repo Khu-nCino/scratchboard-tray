@@ -48,6 +48,7 @@ function App(props: Props) {
       <Toaster position={Position.BOTTOM}>
         {props.toasts.map(toast =>
           <Toast
+            key={toast.id}
             message={toast.message}
             intent={toast.intent}
             icon={intentIcons[toast.intent]}

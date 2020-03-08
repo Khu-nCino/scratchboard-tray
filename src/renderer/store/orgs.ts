@@ -7,7 +7,8 @@ import {
   listScratchOrgs,
   openOrg,
   deleteOrg,
-  frontDoorUrlApi
+  frontDoorUrlApi,
+  setAlias
 } from "../api/sfdx";
 import { JobsAction, createToast, createErrorToast } from "./jobs";
 import { State } from ".";
@@ -20,7 +21,8 @@ type OrgAction =
   | ListOrgsFulfilled
   | ListOrgsRejected
   | ListOrgsSfdxPathInvalid
-  | RemoveOrgListing;
+  | RemoveOrgListing
+  | AliasSetAction;
 
 interface ListOrgsPending extends Action<"LIST_ORGS_PENDING"> {}
 
@@ -38,6 +40,13 @@ interface ListOrgsSfdxPathInvalid
 interface RemoveOrgListing extends Action<"REMOVE_ORG_LISTING"> {
   payload: {
     username: string;
+  };
+}
+
+interface AliasSetAction extends Action<"ALIAS_SET_ACTION"> {
+  payload: {
+    username: string;
+    alias: string;
   };
 }
 
@@ -121,6 +130,30 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
   };
 }
 
+export function setAliasAction(
+  username: string,
+  alias: string
+): ThunkResult<Promise<void>> {
+  return async dispatch => {
+    try {
+      await setAlias(username, alias);
+
+      dispatch({
+        type: "ALIAS_SET_ACTION",
+        payload: {
+          username,
+          alias
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      dispatch(
+        createErrorToast(`There was an error setting your alias 😞`, error)
+      );
+    }
+  };
+}
+
 // State
 type OrgListStatus =
   | "initial"
@@ -179,6 +212,32 @@ export function orgsReducer(
       }
 
       orgList.splice(indexToRemove, 1);
+
+      return {
+        ...state,
+        orgList
+      };
+    }
+    case "ALIAS_SET_ACTION": {
+      const { alias, username } = action.payload;
+      const orgList = [...state.orgList];
+
+      for (let i = 0; i < orgList.length; i++) {
+        const original = orgList[i];
+        if (original.username === username) {
+          // in with the new
+          orgList[i] = {
+            ...original,
+            alias
+          };
+        } else if (original.alias === alias) {
+          // out with the old
+          orgList[i] = {
+            ...original,
+            alias: ""
+          };
+        }
+      }
 
       return {
         ...state,

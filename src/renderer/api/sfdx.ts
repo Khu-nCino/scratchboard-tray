@@ -57,8 +57,7 @@ export function deleteOrg(username: string): Promise<void> {
 }
 
 export function setAlias(username: string, alias: string): Promise<void> {
-  // TODO alias validation
-  return executePromiseJson(`sfdx force:alias:set ${alias}=${username} --json`)
+  return executePromiseJson(`sfdx force:alias:set "${alias}"=${username} --json`)
 }
 
 export function validateSfdxPath(sfdxDir: string): Promise<boolean> {
@@ -70,7 +69,3 @@ export function validateSfdxPath(sfdxDir: string): Promise<boolean> {
     });
   });
 }
-
-// export function validateSfdxPath(): Promise<boolean> {
-
-// }
