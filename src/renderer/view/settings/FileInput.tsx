@@ -20,7 +20,7 @@ export default function FileInput(props: Props) {
   const onShowDialogCallback = useCallback(async () => {
     const results = await remote.dialog.showOpenDialog({
       defaultPath: props.value,
-      properties: ["openDirectory"]
+      properties: ["openFile"]
     });
 
     if (!results.canceled && results.filePaths.length > 0) {
@@ -36,7 +36,7 @@ export default function FileInput(props: Props) {
         intent={!props.value || props.isValid ? Intent.NONE : Intent.DANGER}
         fill
       />
-      <Button onClick={onShowDialogCallback}>Select Folder</Button>
+      <Button onClick={onShowDialogCallback}>Browse Files</Button>
     </ControlGroup>
   );
 }

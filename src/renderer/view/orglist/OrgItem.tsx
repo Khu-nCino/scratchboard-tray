@@ -10,7 +10,8 @@ import {
   Intent,
   Dialog,
   InputGroup,
-  Classes
+  Classes,
+  Keys
 } from "@blueprintjs/core";
 
 import { AnyAction } from "redux";
@@ -80,6 +81,12 @@ function AliasDialog(props: {
           onChange={(event: React.FormEvent<HTMLElement>) =>
             props.onChange((event.target as HTMLInputElement).value)
           }
+          onKeyDown={(event) => {
+            if (event.keyCode === Keys.ENTER) {
+              props.onConfirm();
+              props.onClose();
+            }
+          }}
           autoFocus
         />
       </div>
@@ -108,6 +115,8 @@ function DeleteConformation(props: {
       cancelButtonText="Cancel"
       confirmButtonText="Delete"
       icon="delete"
+      canEscapeKeyCancel
+      canOutsideClickCancel
       intent={Intent.DANGER}
       isOpen={props.isOpen}
       onCancel={props.onClose}
@@ -125,6 +134,7 @@ function OrgItem(props: Props) {
   const [pendingDelete, setPendingDelete] = useState(false);
   const [pendingAlias, setPendingAlias] = useState(false);
   const [aliasValue, setAliasValue] = useState(props.org.alias ?? '');
+  const [isLoading, setLoading] = useState(false);
 
   const orgDisplayName = props.org.alias || props.org.username;
 
@@ -134,7 +144,14 @@ function OrgItem(props: Props) {
   );
 
   const actionsMenu = <ActionMenu
-    onCopyFrontdoor={props.copyFrontdoor}
+    onCopyFrontdoor={async () => {
+      setLoading(true);
+      try {
+        await props.copyFrontdoor();
+      } finally {
+        setLoading(false);
+      }
+    }}
     onSetAlias={() => {
       setAliasValue(props.org.alias ?? '');
       setPendingAlias(true);
@@ -158,6 +175,7 @@ function OrgItem(props: Props) {
     />
   </>;
 
+
   return (
     <div style={rootStyle} className="sbt-flex-container sbt-hover-highlight">
       <div className="sbt-flex-item">
@@ -168,7 +186,14 @@ function OrgItem(props: Props) {
         />
       </div>
       <ButtonGroup className="sbt-flex-item--right">
-        <Button intent="primary" onClick={props.openOrg}>
+        <Button intent="primary" onClick={async () => {
+          setLoading(true);
+          try {
+            await props.openOrg();
+          } finally {
+            setLoading(false);
+          }
+        }} loading={isLoading}>
           Open
         </Button>
         <Popover
@@ -176,7 +201,7 @@ function OrgItem(props: Props) {
           position={Position.BOTTOM}
           boundary="viewport"
         >
-          <Button intent="primary" icon="chevron-down" />
+          <Button intent="primary" icon="chevron-down" disabled={isLoading} />
         </Popover>
       </ButtonGroup>
       {dialogs}

@@ -214,24 +214,22 @@ export function orgsReducer(
     }
     case "ALIAS_SET_ACTION": {
       const { alias, username } = action.payload;
-      const orgList = [...state.orgList];
 
-      for (let i = 0; i < orgList.length; i++) {
-        const original = orgList[i];
+      const orgList = state.orgList.map(original => {
         if (original.username === username) {
-          // in with the new
-          orgList[i] = {
+          return {
             ...original,
             alias
           };
-        } else if (original.alias === alias) {
-          // out with the old
-          orgList[i] = {
+        }
+        if (original.alias === alias) {
+          return {
             ...original,
-            alias: ""
+            alias: ''
           };
         }
-      }
+        return original;
+      });
 
       return {
         ...state,

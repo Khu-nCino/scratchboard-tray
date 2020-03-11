@@ -32,7 +32,7 @@ function SettingsBody(props: Props) {
         />
       </FormGroup>
       <FormGroup
-        label="SFDX Directory"
+        label="SFDX Binary"
         className="sbt-mh_medium"
       >
         <FileInput

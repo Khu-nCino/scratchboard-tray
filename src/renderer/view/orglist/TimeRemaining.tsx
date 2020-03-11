@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
 const oneDay = 1000 * 60 * 60 * 24;
+const timerOffset = 1000;
+
+function nextTimeout(callback: () => void, timeLeft: number): number | undefined {
+  const delay = timeLeft % oneDay + timerOffset;
+  if (delay > 0) {
+    return window.setTimeout(callback, delay);
+  } else {
+    return undefined;
+  }
+}
 
 export default function TimeRemaining(props: { className?: string, date: number }) {
   const [timeLeft, setTimeLeft] = useState(props.date - Date.now());
 
   useEffect(() => {
-    let timeoutId = window.setTimeout(checkTimeLeft, timeLeft % oneDay);
+    let timeoutId = nextTimeout(checkTimeLeft, timeLeft);
 
     function checkTimeLeft() {
-      const newTimeLeft = props.date - Date.now();
-      setTimeLeft(newTimeLeft);
-      timeoutId = window.setTimeout(checkTimeLeft, newTimeLeft % oneDay);
+      const nextTimeLeft = props.date - Date.now();
+      setTimeLeft(nextTimeLeft);
+      timeoutId = nextTimeout(checkTimeLeft, nextTimeLeft);
     }
 
     return () => {
