@@ -1,5 +1,5 @@
 {
-  "name": "scrachboard-tray",
+  "name": "scratchboard-tray",
   "version": "0.1.0",
   "license": "MIT",
   "author": {
@@ -19,6 +19,7 @@
     "@types/react-transition-group": "^4.2.3",
     "electron": "^8.0.1",
     "electron-builder": "^22.3.3",
+    "electron-notarize": "^0.2.1",
     "electron-webpack": "^2.7.4",
     "electron-webpack-ts": "^3.2.0",
     "node-sass": "^4.13.0",
@@ -48,8 +49,9 @@
     ]
   },
   "build": {
+    "afterSign": "./scripts/notarize.js",
     "mac": {
-      "hardenedRuntime" : true,
+      "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
