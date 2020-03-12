@@ -53,9 +53,9 @@ body {
 
   .bp3-dark & {
     // border-bottom: 1px solid #182026;
-    // background-color: #30404D;
+    background-color: #30404D;
     border-bottom: 1px solid darken($pt-dark-app-background-color, 10%);
-    background-color: lighten($pt-dark-app-background-color, 2%);
+    //background-color: lighten($pt-dark-app-background-color, 2%);
   }
 
   .titlebar-title {
@@ -68,9 +68,9 @@ body {
 
 //OrgList
 .sbt-hover-highlight:hover {
-  background-color: darken($pt-app-background-color, 3%);
+  background-color: darken($pt-app-background-color, 4%);
 
   .bp3-dark & {
-    background-color: darken($pt-dark-app-background-color, 2%);
+    background-color: darken($pt-dark-app-background-color, 3%);
   }
 }
