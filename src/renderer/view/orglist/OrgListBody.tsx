@@ -22,14 +22,15 @@ const rootStyle: React.CSSProperties = {
 };
 
 function Centered(props: { children: ReactNode }) {
-  return <div className="sbt-centered" >
-    {props.children}
-  </div>
+  return <div className="sbt-centered">{props.children}</div>;
 }
 
 function OrgList(props: Props) {
   useEffect(() => {
-    if ((props.orgListStatus === 'invalid_sfdx_path' || props.orgListStatus === 'initial') && props.isSfdxPathValid !== undefined) {
+    if (
+      (props.orgListStatus === "initial" && props.isSfdxPathValid !== undefined) ||
+      (props.orgListStatus === "invalid_sfdx_path" && props.isSfdxPathValid)
+    ) {
       props.requestOrgList();
     }
   }, [props.isSfdxPathValid]);
@@ -37,9 +38,15 @@ function OrgList(props: Props) {
   switch (props.orgListStatus) {
     case "loaded":
       if (props.orgList.length === 0) {
-        return <Centered>
-            <NonIdealState title="No Scratch Orgs Found" description="Please refresh when you have some." icon="form" />
-          </Centered>;
+        return (
+          <Centered>
+            <NonIdealState
+              title="No Scratch Orgs Found"
+              description="Please refresh when you have some."
+              icon="form"
+            />
+          </Centered>
+        );
       } else {
         return (
           <div style={rootStyle}>
@@ -49,17 +56,45 @@ function OrgList(props: Props) {
           </div>
         );
       }
-    case "initial": // This is a little scary. Let's hope it dose not load for every.
+    case "initial":
+      return <></>;
     case "pending":
-      return <Centered><Spinner /></Centered>;
+      return (
+        <Centered>
+          <Spinner />
+        </Centered>
+      );
     case "failed":
-      return <Centered>
-        <NonIdealState title="Don't Panic!😱" description={<>An error occurred.<br/>Notify a developer to help improve this software.</>}/>
-      </Centered>;
+      return (
+        <Centered>
+          <NonIdealState
+            title="Don't Panic!😱"
+            description={
+              <>
+                An error occurred.
+                <br />
+                Notify a developer to help improve this software.
+              </>
+            }
+          />
+        </Centered>
+      );
     case "invalid_sfdx_path":
-      return <Centered>
-        <NonIdealState title="Just a Little Config" description={<>No SFDX binary found.<br/>Try setting the path in the <Icon icon="cog" /> screen and coming back.</>} />
-      </Centered>;
+      return (
+        <Centered>
+          <NonIdealState
+            title="Just a Little Config"
+            description={
+              <>
+                No SFDX binary found.
+                <br />
+                Try setting the path in the <Icon icon="cog" /> screen and
+                coming back.
+              </>
+            }
+          />
+        </Centered>
+      );
     default:
       return <div>You shouldn't be seeing this message</div>;
   }
@@ -73,10 +108,12 @@ function mapStateToProps(state: State) {
   };
 }
 
-function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>) {
+function mapDispatchToProps(
+  dispatch: ThunkDispatch<State, undefined, AnyAction>
+) {
   return {
     requestOrgList: () => dispatch(listOrgsRequest())
-  }
+  };
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(OrgList);
