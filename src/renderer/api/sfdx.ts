@@ -1,4 +1,3 @@
-import path from "path";
 import fs from "fs";
 import { executePromiseJson } from "./util";
 
@@ -60,11 +59,9 @@ export function setAlias(username: string, alias: string): Promise<void> {
   return executePromiseJson(`sfdx force:alias:set "${alias}"=${username} --json`)
 }
 
-export function validateSfdxPath(sfdxDir: string): Promise<boolean> {
+export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   return new Promise((resolve) => {
-    const sfdxFilePath = path.join(sfdxDir, 'sfdx'); //TODO this is os specific
-
-    fs.stat(sfdxFilePath, (error, state) => {
+    fs.stat(sfdxBinPath, (error, state) => {
       resolve(!Boolean(error) && state.isFile());
     });
   });

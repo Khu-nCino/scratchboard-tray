@@ -1,5 +1,6 @@
 import "./index.scss";
 
+import path from "path";
 import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from "react-redux";
@@ -19,7 +20,10 @@ watchAndSave(store);
 const basePaths = getCurrentPaths();
 
 if (initialState.settings?.sfdxPath) {
-  setPaths([initialState.settings.sfdxPath, ...basePaths]);
+  setPaths([
+    path.dirname(initialState.settings.sfdxPath),
+    ...basePaths
+  ]);
 }
 
 if (initialState.settings?.theme) {
@@ -29,7 +33,10 @@ if (initialState.settings?.theme) {
 watchStore(
   store,
   state => state.settings.sfdxPath,
-  value => setPaths([value, ...basePaths])
+  value => setPaths([
+    path.dirname(value),
+    ...basePaths
+  ])
 );
 
 watchStore(

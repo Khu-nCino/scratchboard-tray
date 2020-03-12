@@ -21,8 +21,9 @@ const rootStyle: React.CSSProperties = {
   overflowY: "scroll"
 };
 
+//TODO better centering solution.
 const spinnerStyle: React.CSSProperties = {
-  margin: "50% auto"
+  margin: "47.5% auto"
 };
 
 const nonIdealStateStyle: React.CSSProperties = {

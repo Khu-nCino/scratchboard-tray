@@ -1,17 +1,28 @@
 import { Store, CombinedState } from "redux";
+import path from 'path';
 import ElectronStore from "electron-store";
 import { State } from "../store";
 
 type AppState = CombinedState<State>;
 
-const electronStore = new ElectronStore();
+const electronStore = new ElectronStore({
+  migrations: {
+    '0.1.0': store => {
+      const sfdxPath = store.get("sfdxPath");
+      if (sfdxPath !== undefined) {
+        store.set("sfdxBinPath", path.join(sfdxPath, 'sfdx'));
+        store.delete("sfdxPath");
+      }
+    }
+  }
+});
 
 export function loadPersistedState(state: Partial<State>): Partial<State> {
   return {
     ...state,
     settings: {
       ...state.settings,
-      sfdxPath: electronStore.get("sfdxPath"),
+      sfdxPath: electronStore.get("sfdxBinPath"),
       theme: electronStore.get("theme")
     }
   };
@@ -21,7 +32,7 @@ export function watchAndSave(store: Store<AppState>) {
   watchStore(
     store,
     (state: AppState) => state.settings.sfdxPath,
-    (value: string) => electronStore.set("sfdxPath", value)
+    (value: string) => electronStore.set("sfdxBinPath", value)
   );
 
   watchStore(
