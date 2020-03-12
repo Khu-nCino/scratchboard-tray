@@ -43,13 +43,14 @@
     "source-map-support": "^0.5.16"
   },
   "electronWebpack": {
-    "title": "ScratchBoardTray",
+    "title": "Scratchboard Tray",
     "whiteListedModules": [
       "react-redux"
     ]
   },
   "build": {
     "afterSign": "./scripts/notarize.js",
+    "productName": "Scratchboard Tray",
     "mac": {
       "hardenedRuntime": true,
       "gatekeeperAssess": false,

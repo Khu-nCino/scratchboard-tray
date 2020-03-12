@@ -13,7 +13,7 @@ export default class TrayManager {
     img.isMacTemplateImage = true;
 
     this.tray = new Tray(img);
-    this.tray.setToolTip("ScratchBoard Dock");
+    this.tray.setToolTip("Scratchboard Tray");
 
     this.tray.on("click", this.handleClick);
     this.tray.on("double-click", this.handleClick);

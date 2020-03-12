@@ -6,6 +6,7 @@ import { State } from "../store";
 type AppState = CombinedState<State>;
 
 const electronStore = new ElectronStore({
+  projectName: "scratchboard-tray",
   projectVersion: "0.1.0",
   migrations: {
     '0.1.0': store => {
