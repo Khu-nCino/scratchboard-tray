@@ -21,32 +21,15 @@ const rootStyle: React.CSSProperties = {
   overflowY: "scroll"
 };
 
-//TODO better centering solution.
-const spinnerStyle: React.CSSProperties = {
-  margin: "47.5% auto"
-};
-
-const nonIdealStateStyle: React.CSSProperties = {
-  margin: "42.5% auto"
-}
-
 function Centered(props: { children: ReactNode }) {
-  return <div style={nonIdealStateStyle}>
+  return <div className="sbt-centered" >
     {props.children}
   </div>
 }
 
-function LoadingState() {
-  return (
-    <div style={spinnerStyle}>
-      <Spinner />
-    </div>
-  );
-}
-
 function OrgList(props: Props) {
   useEffect(() => {
-    if (props.orgListStatus === 'invalid_sfdx_path' || props.orgListStatus === 'initial') {
+    if ((props.orgListStatus === 'invalid_sfdx_path' || props.orgListStatus === 'initial') && props.isSfdxPathValid !== undefined) {
       props.requestOrgList();
     }
   }, [props.isSfdxPathValid]);
@@ -68,7 +51,7 @@ function OrgList(props: Props) {
       }
     case "initial": // This is a little scary. Let's hope it dose not load for every.
     case "pending":
-      return <LoadingState />;
+      return <Centered><Spinner /></Centered>;
     case "failed":
       return <Centered>
         <NonIdealState title="Don't Panic!😱" description={<>An error occurred.<br/>Notify a developer to help improve this software.</>}/>

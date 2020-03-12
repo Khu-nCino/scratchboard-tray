@@ -6,6 +6,7 @@ import { State } from "../store";
 type AppState = CombinedState<State>;
 
 const electronStore = new ElectronStore({
+  projectVersion: "0.1.0",
   migrations: {
     '0.1.0': store => {
       const sfdxPath = store.get("sfdxPath");
@@ -15,7 +16,7 @@ const electronStore = new ElectronStore({
       }
     }
   }
-});
+} as ElectronStore.Options<any>);
 
 export function loadPersistedState(state: Partial<State>): Partial<State> {
   return {

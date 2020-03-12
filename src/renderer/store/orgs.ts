@@ -92,7 +92,7 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
       clipboard.writeText(url, "clipboard");
       dispatch(
         createToast(
-          "The url has been copied to your clipboard!",
+          "The front door is copied to your clipboard.",
           "success"
         )
       );

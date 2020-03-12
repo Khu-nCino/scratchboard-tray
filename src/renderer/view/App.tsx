@@ -31,13 +31,13 @@ function App(props: Props) {
         activeRoute={props.routeName}
         routes={{
           orgList: (
-            <div style={{ position: "absolute", width: "100%" }}>
+            <div style={{ height: "100%" }}>
               <OrgListTitle />
               <OrgListBody />
             </div>
           ),
           settings: (
-            <div style={{ width: "100%", height: "100%" }}>
+            <div style={{ height: "100%" }}>
               <OtherTitle title="Settings" />
               <SettingsBody />
             </div>
