@@ -7,16 +7,7 @@ type AppState = CombinedState<State>;
 
 const electronStore = new ElectronStore({
   projectName: "scratchboard-tray",
-  projectVersion: "0.1.0",
-  migrations: {
-    '0.1.0': store => {
-      const sfdxPath = store.get("sfdxPath");
-      if (sfdxPath !== undefined) {
-        store.set("sfdxBinPath", path.join(sfdxPath, 'sfdx'));
-        store.delete("sfdxPath");
-      }
-    }
-  }
+  projectVersion: "0.1.1",
 } as ElectronStore.Options<any>);
 
 export function loadPersistedState(state: Partial<State>): Partial<State> {

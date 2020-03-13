@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import { executePromiseJson } from "./util";
 
 export interface SalesforceOrg {
@@ -61,8 +62,12 @@ export function setAlias(username: string, alias: string): Promise<void> {
 
 export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   return new Promise((resolve) => {
-    fs.stat(sfdxBinPath, (error, state) => {
-      resolve(!Boolean(error) && state.isFile());
-    });
+    if (!path.basename(sfdxBinPath).startsWith('sfdx')) {
+      resolve(false);
+    } else {
+      fs.stat(sfdxBinPath, (error, state) => {
+        resolve(!Boolean(error) && state.isFile());
+      });
+    }
   });
 }

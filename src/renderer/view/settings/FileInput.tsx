@@ -1,3 +1,4 @@
+import path from "path";
 import { remote } from "electron";
 import React, { useCallback } from "react";
 import { InputGroup, Button, ControlGroup, Intent } from "@blueprintjs/core";
@@ -19,7 +20,7 @@ export default function FileInput(props: Props) {
 
   const onShowDialogCallback = useCallback(async () => {
     const results = await remote.dialog.showOpenDialog({
-      defaultPath: props.value,
+      defaultPath: path.dirname(props.value),
       properties: ["openFile"]
     });
 
