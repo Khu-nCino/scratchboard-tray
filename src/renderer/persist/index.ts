@@ -1,5 +1,4 @@
 import { Store, CombinedState } from "redux";
-import path from 'path';
 import ElectronStore from "electron-store";
 import { State } from "../store";
 
