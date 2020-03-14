@@ -1,6 +1,7 @@
 import { BrowserWindow, Event } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
+import { IpcEvent } from "../common/IpcEvent";
 
 const TOP_MARGIN = 30;
 const WIDTH = 420;
@@ -55,6 +56,8 @@ export default class WindowManager {
       this.browserWindow.setPosition(windowX, windowY);
       this.browserWindow.show();
     }
+
+    this.browserWindow.webContents.send(IpcEvent.WINDOW_OPENED);
 
     return this.browserWindow;
   }
