@@ -21,7 +21,7 @@ export default function FileInput(props: Props) {
   const onShowDialogCallback = useCallback(async () => {
     const results = await remote.dialog.showOpenDialog({
       defaultPath: path.dirname(props.value),
-      properties: ["openFile"]
+      properties: ["openFile", "noResolveAliases"] // TODO OS Specific
     });
 
     if (!results.canceled && results.filePaths.length > 0) {
