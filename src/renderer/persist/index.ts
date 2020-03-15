@@ -6,7 +6,7 @@ type AppState = CombinedState<State>;
 
 const electronStore = new ElectronStore({
   projectName: "scratchboard-tray",
-  projectVersion: "0.1.1",
+  projectVersion: "0.1.2",
 } as ElectronStore.Options<any>);
 
 export function loadPersistedState(state: Partial<State>): Partial<State> {
