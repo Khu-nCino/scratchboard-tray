@@ -2,7 +2,7 @@
   Scratchboard
 </h1>
 
-<h4 align="center">A scratch org manager for your tray, build using <a href="http://electron.atom.io" target="_blank">Electron</a>.</h4>
+<h4 align="center">A scratch org manager for your tray, build using <a href="http://electron.atom.io" target="_blank">Electron</a> and <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</>.</h4>
 
 <p align="center">
   <a href="#prerelease-disclaimer">Prerelease Disclaimer</a> •
