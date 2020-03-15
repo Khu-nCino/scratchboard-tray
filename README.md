@@ -18,23 +18,24 @@
 
 ## Prerelease Disclaimer
 
-This Project is in prerelease and bugs should be expected.
+This Project is in prerelease and bugs should be expected.  
 However if you'd like to give it a try and provide feedback you're more than welcome!
 
 ## Motivation
 
-* It's usually quicker to open an org with a gui than it is to type in a sfdx command in the terminal.
-* Orgs can expire unexpectedly and this app is meant to remind you when that will happen.
+* Often it's quicker to open an org through a tray based app than it is to type the command into your terminal.
+* It's easy to forget that an orgs expiration is approaching, this app is meant to remind you how much time is left on an org.
 
 ## Features
 
 * Tray Based
-  - Lives in your computer tray for quick access from anywhere.
-* Open Orgs
-* See days until expiration
-* Set Aliases
-* Copy Org Urls
-* Delete Orgs
+  - Lives in your computer tray for quick access.
+* SFDX Actions
+  - Open Orgs
+  - Set Aliases
+  - Copy Frontdoor
+  - Delete Orgs
+* See days until org expiration.
 * Dark/Light mode
 * OS Support
   - Macos
@@ -42,19 +43,15 @@ However if you'd like to give it a try and provide feedback you're more than wel
 
 ## Download
 
-You can [download](https://github.com/gabriel-keith/scratchboard-tray/releases/tag/0.1.1) the latest version of Scratchboard.
+You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/tag/0.1.1).
 
 ## Setup
 
 #### Dependencies
 
-[NodeJs](https://nodejs.org/en/) and [SFDX](https://developer.salesforce.com/tools/sfdxcli) are required for scratchboard to work.
+[NodeJs](https://nodejs.org/en/) and [SFDX](https://developer.salesforce.com/tools/sfdxcli) are required for scratchboard to work.  
+Using [nvm](https://github.com/nvm-sh/nvm) to manage your node version is supported.
 
 #### SFDX Binary Path
-You may need to configure your SFDX binary path for Scratchboard to work.
-
-If your on a unix system you can copy the output of the following command into your scratchboard settings screen:
-
-```bash
-$ which sfdx
-```
+You may need to configure your SFDX binary path for Scratchboard to work.  
+If your on a unix based system you can use the `which sfdx` command to easily the path to your sfdx binary. 
