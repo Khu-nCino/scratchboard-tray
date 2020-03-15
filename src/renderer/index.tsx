@@ -19,30 +19,21 @@ watchAndSave(store);
 
 const basePaths = getCurrentPaths();
 
-if (initialState.settings?.sfdxPath) {
-  setPaths([
-    path.dirname(initialState.settings.sfdxPath),
-    ...basePaths
-  ]);
-}
-
-if (initialState.settings?.theme) {
-  document.body.className = initialState.settings.theme === 'dark' ? 'bp3-dark' : ''
-}
-
 watchStore(
   store,
   state => state.settings.sfdxPath,
   value => setPaths([
     path.dirname(value),
     ...basePaths
-  ])
+  ]),
+  true
 );
 
 watchStore(
   store,
   state => state.settings.theme,
-  value => document.body.className = value === 'dark' ? 'bp3-dark' : ''
+  value => document.body.className = value === 'dark' ? 'bp3-dark' : '',
+  true
 );
 
 store.dispatch(checkSfdxPathValidity());

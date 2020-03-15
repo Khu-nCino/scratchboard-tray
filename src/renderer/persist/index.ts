@@ -37,7 +37,8 @@ export function watchAndSave(store: Store<AppState>) {
 export function watchStore<S, V>(
   store: Store<S>,
   accessor: (state: S) => V,
-  callback: (value: V) => void
+  callback: (value: V) => void,
+  callOnStart: boolean = false
 ) {
   let currentValue = accessor(store.getState());
   store.subscribe(() => {
@@ -47,4 +48,8 @@ export function watchStore<S, V>(
       callback(newValue);
     }
   });
+
+  if (callOnStart && currentValue !== undefined) {
+    callback(currentValue);
+  }
 }
