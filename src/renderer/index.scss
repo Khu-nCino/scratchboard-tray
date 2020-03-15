@@ -60,8 +60,8 @@ body {
 
   .bp3-dark & {
     // border-bottom: 1px solid #182026;
-    background-color: #30404D;
     border-bottom: 1px solid darken($pt-dark-app-background-color, 10%);
+    background-color: #30404D;
     //background-color: lighten($pt-dark-app-background-color, 2%);
   }
 
