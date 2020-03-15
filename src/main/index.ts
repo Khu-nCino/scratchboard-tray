@@ -9,8 +9,10 @@ const trayManager = new TrayManager(windowManager);
 
 function ready() {
   trayManager.activate();
-  if (isDevelopment) {
-    windowManager.showWindow(0);
+
+  const { wasOpenedAsHidden } = app.getLoginItemSettings();
+  if (!wasOpenedAsHidden) {
+    windowManager.showWindow();
   }
 }
 
@@ -27,6 +29,7 @@ if (!isDevelopment) {
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 app.on("ready", ready);
+app.on("activate", windowManager.showWindow);
 app.on("window-all-closed", onWindowsAllClosed);
 
 ipcMain.on("exit", () => {

@@ -1,7 +1,8 @@
-import { BrowserWindow, Event } from "electron";
+import { BrowserWindow } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
 import { IpcEvent } from "../common/IpcEvent";
+import TrayManager from "./TrayManager";
 
 const TOP_MARGIN = 30;
 const WIDTH = 420;
@@ -19,15 +20,16 @@ const indexUrl = isDevelopment
 
 export default class WindowManager {
   browserWindow?: BrowserWindow;
+  tray?: TrayManager;
 
   constructor() {
     this.handleClose = this.handleClose.bind(this);
-    this.handleBlur = this.handleBlur.bind(this);
+    this.hideWindow = this.hideWindow.bind(this);
     this.showWindow = this.showWindow.bind(this);
   }
 
-  showWindow(x: number) {
-    const windowX = x - WIDTH / 2;
+  showWindow() {
+    const windowX = (this.tray?.getX() ?? 0) - WIDTH / 2;
     const windowY = TOP_MARGIN;
 
     if (typeof this.browserWindow === "undefined") {
@@ -47,7 +49,7 @@ export default class WindowManager {
       if (isDevelopment) {
         window.webContents.openDevTools();
       } else {
-        window.on("blur", this.handleBlur);
+        window.on("blur", this.hideWindow);
       }
       window.on("close", this.handleClose);
 
@@ -60,6 +62,10 @@ export default class WindowManager {
     this.browserWindow.webContents.send(IpcEvent.WINDOW_OPENED);
 
     return this.browserWindow;
+  }
+
+  setTray(tray: TrayManager) {
+    this.tray = tray;
   }
 
   hideWindow() {
@@ -77,12 +83,5 @@ export default class WindowManager {
 
   handleClose() {
     delete this.browserWindow;
-  }
-
-  handleBlur(event: Event) {
-    if (typeof this.browserWindow !== "undefined") {
-      this.browserWindow.hide();
-    }
-    event.preventDefault();
   }
 }

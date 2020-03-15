@@ -1,4 +1,4 @@
-import { Tray, nativeImage, KeyboardEvent, Rectangle } from "electron";
+import { Tray, nativeImage } from "electron";
 import WindowManager from "./WindowManager";
 
 export default class TrayManager {
@@ -6,6 +6,7 @@ export default class TrayManager {
 
   constructor(private windowManager: WindowManager) {
     this.handleClick = this.handleClick.bind(this);
+    windowManager.setTray(this);
   }
 
   activate() {
@@ -14,16 +15,25 @@ export default class TrayManager {
 
     this.tray = new Tray(img);
     this.tray.setToolTip("Scratchboard Tray");
+    this.tray.setIgnoreDoubleClickEvents(true);
 
     this.tray.on("click", this.handleClick);
-    this.tray.on("double-click", this.handleClick);
   }
 
-  handleClick(event: KeyboardEvent, bounds: Rectangle) {
+  getX(): number {
+    const bounds = this.tray?.getBounds();
+    if (bounds === undefined) {
+      return 0;
+    } else {
+      return bounds.x + bounds.width / 2;
+    }
+  }
+
+  handleClick() {
     if (this.windowManager.isWindowVisible()) {
       this.windowManager.hideWindow();
     } else {
-      this.windowManager.showWindow(bounds.x + bounds.width / 2);
+      this.windowManager.showWindow();
     }
   }
 }
