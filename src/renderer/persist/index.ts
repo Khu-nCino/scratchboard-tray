@@ -54,3 +54,7 @@ export function watchStore<S, V>(
     callback(currentValue);
   }
 }
+
+export function openSettingsFile() {
+  electronStore.openInEditor();
+}

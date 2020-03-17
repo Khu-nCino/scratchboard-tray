@@ -64,12 +64,12 @@ const binaryName = process.platform === 'win32' ? 'sfdx.exe' : 'sfdx';
 
 export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   return new Promise((resolve) => {
-    if (!path.basename(sfdxBinPath).startsWith(binaryName)) {
-      resolve(false);
-    } else {
+    if (sfdxBinPath && path.basename(sfdxBinPath).startsWith(binaryName)) {
       fs.stat(sfdxBinPath, (error, state) => {
         resolve(!Boolean(error) && state.isFile());
       });
+    } else {
+      resolve(false);
     }
   });
 }

@@ -9,6 +9,7 @@ import FileInput from "./FileInput";
 import { State } from "../../store";
 import { toggleTheme, setSfdxPath, toggleOpenAtLogin } from "../../store/settings";
 import "./SettingsBody.scss";
+import { openSettingsFile } from "../../persist";
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
@@ -46,6 +47,12 @@ function SettingsBody(props: Props) {
           isValid={props.isSfdxPathValid ?? false}
         />
       </FormGroup>
+      <Button
+        className="sbt-mh_medium"
+        onClick={openSettingsFile}
+      >
+        Open Config File
+      </Button>
       <Button className="sbt-exit-button" intent="danger" onClick={exit}>
         Exit
       </Button>

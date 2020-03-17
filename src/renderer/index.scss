@@ -85,7 +85,7 @@ body {
 .sbt-org-list {
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .sbt-org-list--item {
