@@ -7,7 +7,6 @@ import {
 
 import thunk, { ThunkMiddleware } from "redux-thunk";
 import { orgsReducer } from "./orgs";
-import { orgSettingsReducer } from "./org-settings";
 import { routeReducer } from "./route";
 import { settingsReducer } from "./settings";
 import { jobsReducer } from "./jobs";
@@ -19,7 +18,6 @@ export type State = {
 
 const reducers = {
   orgs: orgsReducer,
-  orgSettings: orgSettingsReducer,
   route: routeReducer,
   settings: settingsReducer,
   jobs: jobsReducer,

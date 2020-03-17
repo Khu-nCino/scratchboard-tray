@@ -14,13 +14,6 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 type Props = StateProps & DispatchProps;
 
-const rootStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  height: "100%",
-  overflowY: "scroll"
-};
-
 function Centered(props: { children: ReactNode }) {
   return <div className="sbt-centered">{props.children}</div>;
 }
@@ -49,7 +42,7 @@ function OrgList(props: Props) {
         );
       } else {
         return (
-          <div style={rootStyle}>
+          <div className="sbt-org-list sbt-expanded">
             {props.orgList.map(org => (
               <OrgItem key={org.username} org={org} />
             ))}

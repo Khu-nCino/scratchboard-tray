@@ -2,7 +2,7 @@ import { BrowserWindow } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
 import { IpcEvent } from "../common/IpcEvent";
-import TrayManager from "./TrayManager";
+import { Anchor } from "./Anchor";
 
 const TOP_MARGIN = 30;
 const WIDTH = 420;
@@ -20,16 +20,20 @@ const indexUrl = isDevelopment
 
 export default class WindowManager {
   browserWindow?: BrowserWindow;
-  tray?: TrayManager;
+  anchor?: Anchor;
 
   constructor() {
     this.handleClose = this.handleClose.bind(this);
     this.hideWindow = this.hideWindow.bind(this);
-    this.showWindow = this.showWindow.bind(this);
+    this.show = this.show.bind(this);
   }
 
-  showWindow() {
-    const windowX = (this.tray?.getX() ?? 0) - WIDTH / 2;
+  setAnchor(anchor: Anchor) {
+    this.anchor = anchor;
+  }
+
+  show() {
+    const windowX = (this.anchor?.getX() ?? 0) - WIDTH / 2;
     const windowY = TOP_MARGIN;
 
     if (typeof this.browserWindow === "undefined") {
@@ -64,8 +68,8 @@ export default class WindowManager {
     return this.browserWindow;
   }
 
-  setTray(tray: TrayManager) {
-    this.tray = tray;
+  handleClose() {
+    delete this.browserWindow;
   }
 
   hideWindow() {
@@ -81,7 +85,11 @@ export default class WindowManager {
     );
   }
 
-  handleClose() {
-    delete this.browserWindow;
+  toggleVisibility() {
+    if (this.isWindowVisible()) {
+      this.hideWindow();
+    } else {
+      this.show();
+    }
   }
 }

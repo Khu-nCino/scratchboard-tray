@@ -1,11 +1,11 @@
 import React from "react";
 import { AnyAction } from "redux";
 import { connect } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
 import { ButtonGroup, Button } from "@blueprintjs/core";
 
 import { listOrgsRequest } from "../../store/orgs";
 import { viewSettings } from "../../store/route";
-import { ThunkDispatch } from "redux-thunk";
 import { State } from "../../store";
 
 interface Props {
@@ -15,10 +15,10 @@ interface Props {
 
 function Title(props: Props) {
   return (
-    <div className="titlebar-container">
-      <h2 className="titlebar-title">Scratchboard</h2>
+    <div className="sbt-titlebar-container">
+      <h2 className="sbt-titlebar-title">Scratchboard</h2>
 
-      <ButtonGroup className="titlebar-button">
+      <ButtonGroup className="sbt-titlebar-button">
         <Button icon="refresh" onClick={props.refreshOrgs} />
         <Button icon="cog" onClick={props.viewSettings} />
       </ButtonGroup>

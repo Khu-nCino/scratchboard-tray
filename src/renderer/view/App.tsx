@@ -7,7 +7,7 @@ import { Toast, Toaster, Position, Intent, IconName } from "@blueprintjs/core";
 import { State } from "../store";
 import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitle";
-import OtherTitle from "./OtherTitle";
+import SimpleTitle from "./SimpleTitle";
 import SettingsBody from "./settings/SettingsBody";
 import { dismissToast } from "../store/jobs";
 
@@ -31,18 +31,18 @@ function App(props: Props) {
         activeRoute={props.routeName}
         routes={{
           orgList: (
-            <div style={{ height: "100%" }}>
+            <div className="sbt-expanded">
               <OrgListTitle />
               <OrgListBody />
             </div>
           ),
           settings: (
-            <div style={{ height: "100%" }}>
-              <OtherTitle title="Settings" />
+            <div className="sbt-expanded">
+              <SimpleTitle title="Settings" />
               <SettingsBody />
             </div>
           ),
-          dependencies: <OtherTitle title="Dependencies" />
+          dependencies: <SimpleTitle title="Dependencies" />
         }}
       />
       <Toaster position={Position.BOTTOM}>

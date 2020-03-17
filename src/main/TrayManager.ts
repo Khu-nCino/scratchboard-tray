@@ -1,15 +1,15 @@
 import { Tray, nativeImage } from "electron";
-import WindowManager from "./WindowManager";
+import { Anchor } from "./Anchor";
 
-export default class TrayManager {
+export default class TrayManager implements Anchor {
   tray?: Tray;
+  private clickCallback?: () => void;
 
-  constructor(private windowManager: WindowManager) {
+  constructor() {
     this.handleClick = this.handleClick.bind(this);
-    windowManager.setTray(this);
   }
 
-  activate() {
+  show() {
     const img = nativeImage.createFromDataURL(require("./cloudTemplate.png"));
     img.isMacTemplateImage = true;
 
@@ -29,11 +29,17 @@ export default class TrayManager {
     }
   }
 
+  getY() {
+    return 0;
+  }
+
+  onClick(clickCallback: () => void) {
+    this.clickCallback = clickCallback;
+  }
+
   handleClick() {
-    if (this.windowManager.isWindowVisible()) {
-      this.windowManager.hideWindow();
-    } else {
-      this.windowManager.showWindow();
+    if (this.clickCallback !== undefined) {
+      this.clickCallback();
     }
   }
 }

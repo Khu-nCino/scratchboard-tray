@@ -1,10 +1,4 @@
-$sizes: (
-  "none": 0,
-  "xx-small": 2px,
-  "small": 10px,
-  "medium": 20px,
-  "large": 50px
-);
+@import './size';
 
 $directions: (
   "t": ("top"),

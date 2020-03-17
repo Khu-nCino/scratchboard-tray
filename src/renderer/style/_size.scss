@@ -1,0 +1,12 @@
+
+$small: 10px;
+$medium: 20px;
+$large: 50px;
+
+$sizes: (
+  "none": 0,
+  "xx-small": 2px,
+  "small": $small,
+  "medium": $medium,
+  "large": $large
+);

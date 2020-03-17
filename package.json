@@ -22,7 +22,7 @@
     "electron-notarize": "^0.2.1",
     "electron-webpack": "^2.7.4",
     "electron-webpack-ts": "^3.2.0",
-    "node-sass": "^4.13.0",
+    "node-sass": "^4.13.1",
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.0",
     "typescript": "^3.7.4",

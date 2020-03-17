@@ -15,12 +15,12 @@ interface DispatchProps {
 
 type Props = OwnProps & DispatchProps;
 
-function OtherTitle(props: Props) {
+function SimpleTitle(props: Props) {
   return (
-    <div className="titlebar-container">
-      <h2 className="titlebar-title">{props.title}</h2>
+    <div className="sbt-titlebar-container">
+      <h2 className="sbt-titlebar-title">{props.title}</h2>
 
-      <ButtonGroup className="titlebar-button">
+      <ButtonGroup className="sbt-titlebar-button">
         <Button icon="caret-left" onClick={props.back}>
           Back
         </Button>
@@ -38,4 +38,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
 export default connect<{}, DispatchProps, OwnProps>(
   undefined,
   mapDispatchToProps
-)(OtherTitle);
+)(SimpleTitle);

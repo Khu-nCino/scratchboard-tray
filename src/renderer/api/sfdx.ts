@@ -60,9 +60,11 @@ export function setAlias(username: string, alias: string): Promise<void> {
   return executePromiseJson(`sfdx force:alias:set "${alias}"=${username} --json`)
 }
 
+const binaryName = process.platform === 'win32' ? 'sfdx.exe' : 'sfdx';
+
 export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   return new Promise((resolve) => {
-    if (!path.basename(sfdxBinPath).startsWith('sfdx')) {
+    if (!path.basename(sfdxBinPath).startsWith(binaryName)) {
       resolve(false);
     } else {
       fs.stat(sfdxBinPath, (error, state) => {

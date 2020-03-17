@@ -5,14 +5,17 @@ import TrayManager from "./TrayManager";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 const windowManager = new WindowManager();
-const trayManager = new TrayManager(windowManager);
+const trayManager = new TrayManager();
+
+windowManager.setAnchor(trayManager);
+trayManager.onClick(() => windowManager.toggleVisibility());
 
 function ready() {
-  trayManager.activate();
+  trayManager.show();
 
   const { wasOpenedAsHidden } = app.getLoginItemSettings();
   if (!wasOpenedAsHidden) {
-    windowManager.showWindow();
+    windowManager.show();
   }
 }
 
@@ -29,7 +32,7 @@ if (!isDevelopment) {
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 app.on("ready", ready);
-app.on("activate", windowManager.showWindow);
+app.on("activate", windowManager.show);
 app.on("window-all-closed", onWindowsAllClosed);
 
 ipcMain.on("exit", () => {
