@@ -1,5 +1,7 @@
+import { ipcRenderer } from "electron";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
+import { IpcEvent } from '../../common/IpcEvent'
 import { State } from ".";
 import { validateSfdxPath } from "../api/sfdx";
 
@@ -26,7 +28,13 @@ interface SetSfdxPathValidity extends Action<"SET_SFDX_PATH_VALIDITY"> {
   }
 }
 
-type SettingsAction = SetThemeAction | ToggleThemeAction | SetSfdxPath | SetSfdxPathValidity;
+interface SetLaunchAtLogin extends Action<"SET_OPEN_AT_LOGIN"> {
+  payload: {
+    value: boolean;
+  }
+}
+
+type SettingsAction = SetThemeAction | ToggleThemeAction | SetSfdxPath | SetSfdxPathValidity | SetLaunchAtLogin;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
@@ -73,18 +81,49 @@ export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
   }
 }
 
+export function checkOpenAtLogin(): ThunkReturn<void> {
+  return (dispatch) => {
+    ipcRenderer.send(IpcEvent.LAUNCH_SETTINGS_REQUEST);
+    
+    ipcRenderer.once(IpcEvent.LAUNCH_SETTINGS_REPLY, (event, value) => {
+      dispatch({
+        type: "SET_OPEN_AT_LOGIN",
+        payload: {
+          value
+        }
+      })
+    });
+  }
+}
+
+export function toggleOpenAtLogin(): ThunkReturn<void> {
+  return (dispatch, getState) => {
+    const value = !getState().settings.openAtLogin;
+    ipcRenderer.send(IpcEvent.LAUNCH_SETTINGS_SET, value);
+    dispatch({
+      type: "SET_OPEN_AT_LOGIN",
+      payload: {
+        value
+      }
+    })
+  }
+}
+
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
   sfdxPath: string;
   isSfdxPathValid?: boolean;
   theme: UITheme;
+  openAtLogin: boolean;
 }
 
 const defaultState: SettingsState = {
   sfdxPath: "",
-  theme: "dark"
+  theme: "dark",
+  openAtLogin: false
 };
+
 
 export function settingsReducer(
   state: SettingsState = defaultState,
@@ -114,6 +153,11 @@ export function settingsReducer(
         }
       }
       return state;
+    case "SET_OPEN_AT_LOGIN":
+      return {
+        ...state,
+        openAtLogin: action.payload.value
+      }
     default: {
       return state;
     }

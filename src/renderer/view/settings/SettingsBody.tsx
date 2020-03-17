@@ -7,7 +7,7 @@ import { Switch, Button, FormGroup } from "@blueprintjs/core";
 
 import FileInput from "./FileInput";
 import { State } from "../../store";
-import { toggleTheme, setSfdxPath } from "../../store/settings";
+import { toggleTheme, setSfdxPath, toggleOpenAtLogin } from "../../store/settings";
 import "./SettingsBody.scss";
 
 type StateProps = ReturnType<typeof mapStateToProps>;
@@ -22,13 +22,18 @@ function SettingsBody(props: Props) {
   return (
     <div>
       <FormGroup
-        label="Appearance"
+        label="Appearance & Behavior"
         className="sbt-mh_medium sbt-mt_medium"
       >
         <Switch
           labelElement="Dark Mode"
           checked={props.isDarkTheme}
           onChange={props.toggleTheme}
+        />
+        <Switch
+          labelElement="Open at Login"
+          checked={props.openAtLogin}
+          onChange={props.toggleOpenAtLogin}
         />
       </FormGroup>
       <FormGroup
@@ -52,14 +57,16 @@ function mapStateToProps(state: State) {
   return {
     isDarkTheme: state.settings.theme === "dark",
     sfdxPath: state.settings.sfdxPath,
-    isSfdxPathValid: state.settings.isSfdxPathValid
+    isSfdxPathValid: state.settings.isSfdxPathValid,
+    openAtLogin: state.settings.openAtLogin
   };
 }
 
 function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>) {
   return {
     toggleTheme: () => dispatch(toggleTheme()),
-    setSfdxPath: (path: string) => dispatch(setSfdxPath(path))
+    setSfdxPath: (path: string) => dispatch(setSfdxPath(path)),
+    toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin())
   };
 }
 

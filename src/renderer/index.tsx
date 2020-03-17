@@ -11,7 +11,7 @@ import { createStore, defaultState } from "./store";
 import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 
 import App from "./view/App";
-import { checkSfdxPathValidity } from "./store/settings";
+import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -36,6 +36,7 @@ watchStore(
   true
 );
 
+store.dispatch(checkOpenAtLogin());
 store.dispatch(checkSfdxPathValidity());
 
 ReactDom.render(
