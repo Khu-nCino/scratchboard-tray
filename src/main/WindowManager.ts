@@ -60,7 +60,9 @@ export default class WindowManager {
       this.browserWindow = window;
     } else {
       this.browserWindow.setPosition(windowX, windowY);
+      this.browserWindow.setVisibleOnAllWorkspaces(true);
       this.browserWindow.show();
+      this.browserWindow.setVisibleOnAllWorkspaces(false);
     }
 
     this.browserWindow.webContents.send(IpcEvent.WINDOW_OPENED);

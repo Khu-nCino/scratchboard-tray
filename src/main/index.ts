@@ -1,7 +1,8 @@
-import { app, ipcMain } from "electron";
+import { app, screen, ipcMain } from "electron";
 import WindowManager from "./WindowManager";
 import TrayManager from "./TrayManager";
 import { loginItemSettingsHooks } from "./hooks";
+// import { UpdateManager } from "./UpdaterManager";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -12,9 +13,9 @@ windowManager.setAnchor(trayManager);
 trayManager.onClick(() => windowManager.toggleVisibility());
 
 function ready() {
-  trayManager.show();
-
   loginItemSettingsHooks(app)
+
+  trayManager.show();
 
   const { wasOpenedAsHidden } = app.getLoginItemSettings();
   if (!wasOpenedAsHidden) {
