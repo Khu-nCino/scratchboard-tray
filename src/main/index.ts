@@ -1,9 +1,10 @@
-import { app, ipcMain, nativeImage } from "electron";
+import { app, ipcMain, nativeImage, Rectangle } from "electron";
 import { format as formatUrl } from "url";
 import path from "path";
 import { menubar } from "menubar";
-import { loginItemSettingsHooks } from "./hooks";
+import { loginItemSettingsHooks } from "./login-hooks";
 import { IpcEvent } from "../common/IpcEvent";
+import { UpdateManager } from "./UpdateManager";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -37,9 +38,25 @@ mb.on('ready', () => {
   }
 });
 
+mb.on('after-create-window', () => {
+  if (process.platform === 'darwin') {
+    const oldCalculate = mb.positioner.calculate.bind(mb.positioner);
+    mb.positioner.calculate = function (position: string, trayBounds: Rectangle) {
+      if (position === 'trayCenter') {
+        const { x, y } = oldCalculate(position, trayBounds);
+        return { x, y: y + 7 };
+      }
+      return oldCalculate(position, trayBounds);
+    }
+  }
+});
+
 mb.on('show', () => {
   mb.window?.webContents.send(IpcEvent.WINDOW_OPENED);
 });
+
+const updateManager = new UpdateManager();
+updateManager.listenIpc();
 
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();

@@ -10,6 +10,7 @@ import { orgsReducer } from "./orgs";
 import { routeReducer } from "./route";
 import { settingsReducer } from "./settings";
 import { jobsReducer } from "./jobs";
+import { updateReducer } from "./updates";
 
 type Reducers = typeof reducers;
 export type State = {
@@ -21,6 +22,7 @@ const reducers = {
   route: routeReducer,
   settings: settingsReducer,
   jobs: jobsReducer,
+  updates: updateReducer
 };
 
 export const defaultState: Partial<State> = {

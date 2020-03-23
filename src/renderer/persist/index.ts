@@ -1,3 +1,4 @@
+import { remote } from 'electron';
 import { Store, CombinedState } from "redux";
 import ElectronStore from "electron-store";
 import { State } from "../store";
@@ -6,6 +7,7 @@ type AppState = CombinedState<State>;
 
 const electronStore = new ElectronStore({
   projectName: "scratchboard-tray",
+  projectVersion: remote.app.getVersion(),
 } as ElectronStore.Options<any>);
 
 export function loadPersistedState(state: Partial<State>): Partial<State> {
