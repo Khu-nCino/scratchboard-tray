@@ -80,14 +80,14 @@ function OrgItem(props: Props) {
 
   return (
     <div className="sbt-org-list--item sbt-flex-container sbt-hover-highlight">
-      <div className="sbt-flex-item">
+      <div className="sbt-ml_medium">
         <h4 className="sbt-m_xx-small">{orgDisplayName}</h4>
         <TimeRemaining
           className="sbt-m_xx-small sbt-ml_small"
           date={orgExpirationDate}
         />
       </div>
-      <ButtonGroup className="sbt-flex-item--right">
+      <ButtonGroup className="sbt-flex-item--right sbt-mr_medium">
         <Button intent="primary" onClick={async () => {
           setLoading(true);
           try {

@@ -1,10 +1,11 @@
 import { ipcRenderer } from "electron";
 import React from "react";
 import { connect } from "react-redux";
-import { Button } from "@blueprintjs/core";
-import { UpdateStatus } from "../../store/updates"
+import { Button, ProgressBar } from "@blueprintjs/core";
+import { UpdateStatus } from "../../store/updates";
 import { State } from "../../store";
 import { IpcEvent } from "../../../common/IpcEvent";
+import appVersion from "../../app-version";
 
 interface OwnProps {
   className?: string;
@@ -22,23 +23,53 @@ function quitAndInstall() {
   ipcRenderer.send(IpcEvent.QUIT_AND_INSTALL_UPDATE_REQUEST);
 }
 
-function UpdateButton(props: { status: UpdateStatus }) {
+function UpdateButton(props: { status: UpdateStatus; updateVersion?: string }) {
   switch (props.status) {
     case "initial":
-      return <Button onClick={checkUpdates} >Check for Updates</Button>;
+      return (
+        <Button className="sbt-flex-item--right" onClick={checkUpdates}>
+          Check for Updates
+        </Button>
+      );
     case "checking":
-      return <Button disabled>Checking...</Button>;
+      return (
+        <Button className="sbt-flex-item--right" disabled>
+          Check for Updates
+        </Button>
+      );
     case "downloading":
-      return <Button disabled>Downloading...</Button>;
+      return (
+        <Button className="sbt-flex-item--right" disabled>
+          Downloading...
+        </Button>
+      );
     case "downloaded":
-      return <Button onClick={quitAndInstall}>Quit and Install</Button>
+      return (
+        <Button className="sbt-flex-item--right" onClick={quitAndInstall}>
+          Upgrade to Version {props.updateVersion}
+        </Button>
+      );
   }
 }
 
 function UpdateManager(props: Props) {
   return (
     <div className={props.className}>
-      <UpdateButton status={props.updateStatus} />
+      <div className="sbt-flex-container">
+        <span>Version {appVersion}</span>
+        <UpdateButton
+          status={props.updateStatus}
+          updateVersion={props.updateVersion}
+        />
+      </div>
+      {props.downloadPercent !== undefined && (
+        <ProgressBar
+          className="sbt-mt_small"
+          intent={props.updateStatus === "downloaded" ? "success" : "primary"}
+          value={props.downloadPercent}
+          stripes={false}
+        />
+      )}
     </div>
   );
 }
@@ -46,7 +77,8 @@ function UpdateManager(props: Props) {
 function mapStateToProps(state: State) {
   return {
     updateStatus: state.updates.status,
-    updateVersion: state.updates.updateVersion
+    updateVersion: state.updates.updateVersion,
+    downloadPercent: state.updates.downloadPercent
   };
 }
 

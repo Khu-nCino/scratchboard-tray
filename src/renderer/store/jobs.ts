@@ -25,8 +25,9 @@ export function createToast(message: string, intent: Intent): CreateToastAction 
   }
 }
 
-export function createErrorToast(message: string, detail: string): CreateToastAction {
-  return createToast(message, "danger");
+export function createErrorToast(message: string, detail?: string): CreateToastAction {
+  const fullMessage = detail ? `${message}: ${detail}` : message;
+  return createToast(fullMessage, "danger");
 }
 
 export function dismissToast(toastId: number): DismissToastAction {

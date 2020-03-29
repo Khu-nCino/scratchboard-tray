@@ -1,37 +1,46 @@
-import { ipcMain, BrowserWindow } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import { getLogger } from './logger';
-import { IpcEvent } from '../common/IpcEvent';
+import { ipcMain, BrowserWindow } from "electron";
+import { autoUpdater } from "electron-updater";
+import { getLogger } from "../common/logger";
+import { IpcEvent } from "../common/IpcEvent";
 
 export class UpdateManager {
   constructor() {
+    autoUpdater.autoDownload = false;
     autoUpdater.logger = getLogger();
-    autoUpdater.setFeedURL('http://0.0.0.0:8000/');
   }
 
   listenIpc() {
     ipcMain.on(IpcEvent.CHECK_FOR_UPDATES_REQUEST, () => {
-      autoUpdater.checkForUpdatesAndNotify();
+      autoUpdater.checkForUpdates();
     });
 
     ipcMain.on(IpcEvent.QUIT_AND_INSTALL_UPDATE_REQUEST, () => {
       autoUpdater.quitAndInstall();
-    })
+    });
 
-    autoUpdater.on('checking-for-update', () => {
+    autoUpdater.on("error", reason => {
+      sendIpc(IpcEvent.UPDATE_ERROR, reason);
+    });
+
+    autoUpdater.on("checking-for-update", () => {
       sendIpc(IpcEvent.CHECKING_FOR_UPDATE);
     });
 
-    autoUpdater.on('update-available', () => {
-      sendIpc(IpcEvent.UPDATE_AVAILABLE);
+    autoUpdater.on("update-available", info => {
+      sendIpc(IpcEvent.UPDATE_AVAILABLE, info.version);
+      autoUpdater.downloadUpdate();
     });
 
-    autoUpdater.on('update-not-available', () => {
+    autoUpdater.on("update-not-available", () => {
       sendIpc(IpcEvent.UPDATE_NOT_AVAILABLE);
     });
 
-    autoUpdater.on('update-downloaded', () => {
-      sendIpc(IpcEvent.UPDATE_DOWNLOADED);
+    autoUpdater.signals.progress(info => {
+      sendIpc(IpcEvent.UPDATE_DOWNLOADING, info.percent / 100);
+    });
+
+    autoUpdater.signals.updateDownloaded(info => {
+      sendIpc(IpcEvent.UPDATE_DOWNLOADED, info.version);
     });
   }
 }

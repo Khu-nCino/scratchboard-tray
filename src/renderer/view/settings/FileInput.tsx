@@ -34,7 +34,8 @@ export default function FileInput(props: Props) {
       <InputGroup
         value={props.value}
         onChange={onChangeCallback}
-        intent={!props.value || props.isValid ? Intent.NONE : Intent.DANGER}
+        intent={props.isValid ? Intent.NONE : Intent.DANGER}
+        placeholder="Please specify a SFDX binary path."
         fill
       />
       <Button onClick={onShowDialogCallback}>Browse Files</Button>

@@ -30,13 +30,10 @@ body {
 //Components
 .sbt-flex-container {
   display: flex;
-
-  .sbt-flex-item {
-    margin: auto $medium;
-  }
+  align-items: center;
 
   .sbt-flex-item--right {
-    margin: auto $medium auto auto;
+    margin-left: auto;
   }
 }
 

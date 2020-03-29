@@ -7,7 +7,11 @@ import { Switch, Button, FormGroup } from "@blueprintjs/core";
 
 import FileInput from "./FileInput";
 import { State } from "../../store";
-import { toggleTheme, setSfdxPath, toggleOpenAtLogin } from "../../store/settings";
+import {
+  toggleTheme,
+  setSfdxPath,
+  toggleOpenAtLogin
+} from "../../store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
 
@@ -22,6 +26,7 @@ function exit() {
 function SettingsBody(props: Props) {
   return (
     <div>
+      <UpdateManager className="sbt-m_medium" />
       <FormGroup
         label="Appearance & Behavior"
         className="sbt-mh_medium sbt-mt_medium"
@@ -32,22 +37,18 @@ function SettingsBody(props: Props) {
           onChange={props.toggleTheme}
         />
         <Switch
-          labelElement="Open at Login"
+          labelElement="Run at Login"
           checked={props.openAtLogin}
           onChange={props.toggleOpenAtLogin}
         />
       </FormGroup>
-      <FormGroup
-        label="SFDX Binary"
-        className="sbt-mh_medium"
-      >
+      <FormGroup label="SFDX Binary" className="sbt-mh_medium">
         <FileInput
           value={props.sfdxPath}
           onChange={props.setSfdxPath}
           isValid={props.isSfdxPathValid ?? false}
         />
       </FormGroup>
-      <UpdateManager className="sbt-m_medium" />
       <Button className="sbt-exit-button" intent="danger" onClick={exit}>
         Exit
       </Button>
@@ -64,7 +65,9 @@ function mapStateToProps(state: State) {
   };
 }
 
-function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>) {
+function mapDispatchToProps(
+  dispatch: ThunkDispatch<State, undefined, AnyAction>
+) {
   return {
     toggleTheme: () => dispatch(toggleTheme()),
     setSfdxPath: (path: string) => dispatch(setSfdxPath(path)),

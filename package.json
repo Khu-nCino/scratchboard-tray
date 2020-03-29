@@ -1,6 +1,6 @@
 {
   "name": "scratchboard-tray",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "license": "MIT",
   "author": {
     "name": "Gabriel Keith"
@@ -52,8 +52,9 @@
     ]
   },
   "build": {
-    "afterSign": "./scripts/notarize.js",
     "productName": "Scratchboard Tray",
+    "artifactName": "${name}-${version}-${os}.${ext}",
+    "afterSign": "./scripts/notarize.js",
     "mac": {
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
