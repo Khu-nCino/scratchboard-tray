@@ -3,18 +3,21 @@ import { ipcRenderer } from "electron";
 import { IpcEvent } from "../../common/IpcEvent";
 import { createErrorToast, createToast } from "./jobs";
 
-type UpdateAction = UpdateDownloadedAction | UpdateDownloadingAction | StatusChangeAction;
+type UpdateAction =
+  | UpdateDownloadedAction
+  | UpdateDownloadingAction
+  | StatusChangeAction;
 
 interface UpdateDownloadedAction extends Action<"UPDATE_DOWNLOADED"> {
   payload: {
     updateVersion: string;
-  }
+  };
 }
 
 interface UpdateDownloadingAction extends Action<"UPDATE_DOWNLOADING"> {
   payload: {
     percent: number;
-  }
+  };
 }
 
 interface StatusChangeAction extends Action<"UPDATE_STATUS_CHANGE"> {
@@ -27,8 +30,8 @@ function updateDownloadedAction(updateVersion: string): UpdateDownloadedAction {
   return {
     type: "UPDATE_DOWNLOADED",
     payload: {
-      updateVersion
-    }
+      updateVersion,
+    },
   };
 }
 
@@ -36,17 +39,17 @@ function updateDownloadingAction(percent: number): UpdateDownloadingAction {
   return {
     type: "UPDATE_DOWNLOADING",
     payload: {
-      percent
-    }
-  }
+      percent,
+    },
+  };
 }
 
 function statusChangeAction(status: UpdateStatus): StatusChangeAction {
   return {
     type: "UPDATE_STATUS_CHANGE",
     payload: {
-      status
-    }
+      status,
+    },
   };
 }
 
@@ -102,18 +105,18 @@ export function updateReducer(
     case "UPDATE_DOWNLOADING":
       return {
         ...state,
-        downloadPercent: action.payload.percent
+        downloadPercent: action.payload.percent,
       };
     case "UPDATE_DOWNLOADED":
       return {
         ...state,
         status: "downloaded",
-        updateVersion: action.payload.updateVersion
+        updateVersion: action.payload.updateVersion,
       };
     case "UPDATE_STATUS_CHANGE":
       return {
         ...state,
-        status: action.payload.status
+        status: action.payload.status,
       };
     default:
       return state;

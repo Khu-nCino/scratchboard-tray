@@ -7,6 +7,6 @@ export function getCurrentPaths(): string[] {
 export function setPaths(paths: string[]) {
   process.env.PATH = Array.from(new Set(paths))
     .sort()
-    .filter(p => Boolean(p))
+    .filter((p) => Boolean(p))
     .join(deliminator);
 }

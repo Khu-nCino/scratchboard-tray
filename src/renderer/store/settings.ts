@@ -1,7 +1,7 @@
 import { ipcRenderer } from "electron";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
-import { IpcEvent } from '../../common/IpcEvent'
+import { IpcEvent } from "../../common/IpcEvent";
 import { State } from ".";
 import { validateSfdxPath } from "../api/sfdx";
 
@@ -25,29 +25,34 @@ interface SetSfdxPathValidity extends Action<"SET_SFDX_PATH_VALIDITY"> {
   payload: {
     sfdxPath: string;
     pathIsValid: boolean;
-  }
+  };
 }
 
 interface SetLaunchAtLogin extends Action<"SET_OPEN_AT_LOGIN"> {
   payload: {
     value: boolean;
-  }
+  };
 }
 
-type SettingsAction = SetThemeAction | ToggleThemeAction | SetSfdxPath | SetSfdxPathValidity | SetLaunchAtLogin;
+type SettingsAction =
+  | SetThemeAction
+  | ToggleThemeAction
+  | SetSfdxPath
+  | SetSfdxPathValidity
+  | SetLaunchAtLogin;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
     type: "SET_THEME",
     payload: {
-      theme
-    }
+      theme,
+    },
   };
 }
 
 export function toggleTheme(): ToggleThemeAction {
   return {
-    type: "TOGGLE_THEME"
+    type: "TOGGLE_THEME",
   };
 }
 
@@ -56,12 +61,12 @@ export function setSfdxPath(sfdxPath: string): ThunkReturn<Promise<boolean>> {
     dispatch({
       type: "SET_SFDX_PATH",
       payload: {
-        sfdxPath
-      }
+        sfdxPath,
+      },
     });
 
     return dispatch(checkSfdxPathValidity());
-  }
+  };
 }
 
 export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
@@ -73,27 +78,27 @@ export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
       type: "SET_SFDX_PATH_VALIDITY",
       payload: {
         sfdxPath,
-        pathIsValid
-      }
+        pathIsValid,
+      },
     });
 
     return pathIsValid;
-  }
+  };
 }
 
 export function checkOpenAtLogin(): ThunkReturn<void> {
   return (dispatch) => {
     ipcRenderer.send(IpcEvent.LAUNCH_SETTINGS_REQUEST);
-    
+
     ipcRenderer.once(IpcEvent.LAUNCH_SETTINGS_REPLY, (event, value) => {
       dispatch({
         type: "SET_OPEN_AT_LOGIN",
         payload: {
-          value
-        }
-      })
+          value,
+        },
+      });
     });
-  }
+  };
 }
 
 export function toggleOpenAtLogin(): ThunkReturn<void> {
@@ -103,10 +108,10 @@ export function toggleOpenAtLogin(): ThunkReturn<void> {
     dispatch({
       type: "SET_OPEN_AT_LOGIN",
       payload: {
-        value
-      }
-    })
-  }
+        value,
+      },
+    });
+  };
 }
 
 export type UITheme = "light" | "dark";
@@ -121,9 +126,8 @@ interface SettingsState {
 const defaultState: SettingsState = {
   sfdxPath: "",
   theme: "dark",
-  openAtLogin: false
+  openAtLogin: false,
 };
-
 
 export function settingsReducer(
   state: SettingsState = defaultState,
@@ -133,31 +137,31 @@ export function settingsReducer(
     case "SET_THEME":
       return {
         ...state,
-        theme: action.payload.theme
+        theme: action.payload.theme,
       };
     case "TOGGLE_THEME":
       return {
         ...state,
-        theme: state.theme === "dark" ? "light" : "dark"
+        theme: state.theme === "dark" ? "light" : "dark",
       };
     case "SET_SFDX_PATH":
       return {
         ...state,
-        sfdxPath: action.payload.sfdxPath
+        sfdxPath: action.payload.sfdxPath,
       };
     case "SET_SFDX_PATH_VALIDITY":
       if (state.sfdxPath === action.payload.sfdxPath) {
         return {
           ...state,
-          isSfdxPathValid: action.payload.pathIsValid
-        }
+          isSfdxPathValid: action.payload.pathIsValid,
+        };
       }
       return state;
     case "SET_OPEN_AT_LOGIN":
       return {
         ...state,
-        openAtLogin: action.payload.value
-      }
+        openAtLogin: action.payload.value,
+      };
     default: {
       return state;
     }

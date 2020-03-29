@@ -22,18 +22,15 @@ const basePaths = getCurrentPaths();
 
 watchStore(
   store,
-  state => state.settings.sfdxPath,
-  value => setPaths([
-    path.dirname(value),
-    ...basePaths
-  ]),
+  (state) => state.settings.sfdxPath,
+  (value) => setPaths([path.dirname(value), ...basePaths]),
   true
 );
 
 watchStore(
   store,
-  state => state.settings.theme,
-  value => document.body.className = value === 'dark' ? 'bp3-dark' : '',
+  (state) => state.settings.theme,
+  (value) => (document.body.className = value === "dark" ? "bp3-dark" : ""),
   true
 );
 

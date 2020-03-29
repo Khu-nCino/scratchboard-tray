@@ -1,12 +1,19 @@
-import React from 'react';
-import { Dialog, Classes, InputGroup, Button, Intent, Keys } from '@blueprintjs/core';
+import React from "react";
+import {
+  Dialog,
+  Classes,
+  InputGroup,
+  Button,
+  Intent,
+  Keys,
+} from "@blueprintjs/core";
 
 export default function AliasDialog(props: {
-  value: string,
-  onChange: (value: string) => void,
-  isOpen: boolean,
-  onClose: () => void,
-  onConfirm: () => void
+  value: string;
+  onChange: (value: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
 }) {
   return (
     <Dialog
@@ -17,7 +24,7 @@ export default function AliasDialog(props: {
     >
       <div className={Classes.DIALOG_BODY}>
         <InputGroup
-          value={props.value || ''}
+          value={props.value || ""}
           placeholder="Alias"
           onChange={(event: React.FormEvent<HTMLElement>) =>
             props.onChange((event.target as HTMLInputElement).value)
@@ -33,11 +40,18 @@ export default function AliasDialog(props: {
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          <Button intent={Intent.NONE} onClick={props.onClose}>Cancel</Button>
-          <Button intent={Intent.PRIMARY} onClick={() => {
-            props.onConfirm();
-            props.onClose();
-          }}>Confirm</Button>
+          <Button intent={Intent.NONE} onClick={props.onClose}>
+            Cancel
+          </Button>
+          <Button
+            intent={Intent.PRIMARY}
+            onClick={() => {
+              props.onConfirm();
+              props.onClose();
+            }}
+          >
+            Confirm
+          </Button>
         </div>
       </div>
     </Dialog>

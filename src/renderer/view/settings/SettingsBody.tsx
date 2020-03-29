@@ -10,7 +10,7 @@ import { State } from "../../store";
 import {
   toggleTheme,
   setSfdxPath,
-  toggleOpenAtLogin
+  toggleOpenAtLogin,
 } from "../../store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
@@ -61,7 +61,7 @@ function mapStateToProps(state: State) {
     isDarkTheme: state.settings.theme === "dark",
     sfdxPath: state.settings.sfdxPath,
     isSfdxPathValid: state.settings.isSfdxPathValid,
-    openAtLogin: state.settings.openAtLogin
+    openAtLogin: state.settings.openAtLogin,
   };
 }
 
@@ -71,7 +71,7 @@ function mapDispatchToProps(
   return {
     toggleTheme: () => dispatch(toggleTheme()),
     setSfdxPath: (path: string) => dispatch(setSfdxPath(path)),
-    toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin())
+    toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin()),
   };
 }
 

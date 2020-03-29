@@ -8,7 +8,7 @@ import {
   openOrg,
   deleteOrg,
   frontDoorUrlApi,
-  setAlias
+  setAlias,
 } from "../api/sfdx";
 import { JobsAction, createToast, createErrorToast } from "./jobs";
 import { State } from ".";
@@ -63,7 +63,7 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
       const scratchOrgs = await listScratchOrgs();
       dispatch({
         type: "LIST_ORGS_FULFILLED",
-        payload: { scratchOrgs }
+        payload: { scratchOrgs },
       });
     } catch (error) {
       console.log(error);
@@ -73,7 +73,7 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
 }
 
 export function openOrgAction(username: string): ThunkResult<Promise<void>> {
-  return async dispatch => {
+  return async (dispatch) => {
     try {
       await openOrg(username);
     } catch (error) {
@@ -86,15 +86,12 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
 }
 
 export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
-  return async dispatch => {
+  return async (dispatch) => {
     try {
       const url = await frontDoorUrlApi(username);
       clipboard.writeText(url, "clipboard");
       dispatch(
-        createToast(
-          "The front door is copied to your clipboard.",
-          "success"
-        )
+        createToast("The front door is copied to your clipboard.", "success")
       );
     } catch (error) {
       console.error(error);
@@ -106,12 +103,12 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
 }
 
 export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
-  return async dispatch => {
+  return async (dispatch) => {
     try {
       await deleteOrg(username);
       dispatch({
         type: "REMOVE_ORG_LISTING",
-        payload: { username }
+        payload: { username },
       });
 
       dispatch(createToast(`Successfully deleted org.`, "success"));
@@ -128,7 +125,7 @@ export function setAliasAction(
   username: string,
   alias: string
 ): ThunkResult<Promise<void>> {
-  return async dispatch => {
+  return async (dispatch) => {
     try {
       await setAlias(username, alias);
 
@@ -136,8 +133,8 @@ export function setAliasAction(
         type: "ALIAS_SET_ACTION",
         payload: {
           username,
-          alias
-        }
+          alias,
+        },
       });
     } catch (error) {
       console.error(error);
@@ -164,7 +161,7 @@ export interface OrgsState {
 function createDefaultOrgsState(): OrgsState {
   return {
     orgListStatus: "initial",
-    orgList: []
+    orgList: [],
   };
 }
 
@@ -177,23 +174,23 @@ export function orgsReducer(
     case "LIST_ORGS_PENDING":
       return {
         ...state,
-        orgListStatus: "pending"
+        orgListStatus: "pending",
       };
     case "LIST_ORGS_FULFILLED":
       return {
         ...state,
         orgListStatus: "loaded",
-        orgList: action.payload.scratchOrgs
+        orgList: action.payload.scratchOrgs,
       };
     case "LIST_ORGS_REJECTED":
       return {
         ...state,
-        orgListStatus: "failed"
+        orgListStatus: "failed",
       };
     case "LIST_ORGS_SFDX_PATH_INVALID":
       return {
         ...state,
-        orgListStatus: "invalid_sfdx_path"
+        orgListStatus: "invalid_sfdx_path",
       };
     case "REMOVE_ORG_LISTING": {
       const orgList = [...state.orgList];
@@ -209,23 +206,23 @@ export function orgsReducer(
 
       return {
         ...state,
-        orgList
+        orgList,
       };
     }
     case "ALIAS_SET_ACTION": {
       const { alias, username } = action.payload;
 
-      const orgList = state.orgList.map(original => {
+      const orgList = state.orgList.map((original) => {
         if (original.username === username) {
           return {
             ...original,
-            alias
+            alias,
           };
         }
         if (original.alias === alias) {
           return {
             ...original,
-            alias: ''
+            alias: "",
           };
         }
         return original;
@@ -233,7 +230,7 @@ export function orgsReducer(
 
       return {
         ...state,
-        orgList
+        orgList,
       };
     }
     default:

@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { ipcRenderer } from 'electron';
-import { IpcEvent } from '../../../common/IpcEvent';
+import React, { useState, useEffect } from "react";
+import { ipcRenderer } from "electron";
+import { IpcEvent } from "../../../common/IpcEvent";
 
 const oneDay = 1000 * 60 * 60 * 24;
 
-export default function TimeRemaining(props: { className?: string, date: number }) {
+export default function TimeRemaining(props: {
+  className?: string;
+  date: number;
+}) {
   const [timeLeft, setTimeLeft] = useState(props.date - Date.now());
 
   function checkTimeLeft() {

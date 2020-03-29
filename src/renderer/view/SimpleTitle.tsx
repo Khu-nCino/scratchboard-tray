@@ -31,7 +31,7 @@ function SimpleTitle(props: Props) {
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    back: () => dispatch(viewOrgList())
+    back: () => dispatch(viewOrgList()),
   };
 };
 

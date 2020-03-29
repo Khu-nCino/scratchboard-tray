@@ -1,4 +1,4 @@
-import React  from "react";
+import React from "react";
 import { CSSTransition } from "react-transition-group";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
@@ -12,21 +12,19 @@ import SettingsBody from "./settings/SettingsBody";
 import { dismissToast } from "../store/jobs";
 
 const intentIcons: Record<Intent, IconName | undefined> = {
-  "success": "tick",
-  "danger": "error",
-  "warning": "warning-sign",
-  "none": undefined,
-  "primary": undefined
-}
+  success: "tick",
+  danger: "error",
+  warning: "warning-sign",
+  none: undefined,
+  primary: undefined,
+};
 
-type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
+type Props = ReturnType<typeof mapStateToProps> &
+  ReturnType<typeof mapDispatchToProps>;
 
 function App(props: Props) {
-  //This is definitely a hack
   return (
-    <div
-      id="app-content"
-    >
+    <div id="app-content">
       <RouteTransitions
         activeRoute={props.routeName}
         routes={{
@@ -42,11 +40,11 @@ function App(props: Props) {
               <SettingsBody />
             </div>
           ),
-          dependencies: <SimpleTitle title="Dependencies" />
+          dependencies: <SimpleTitle title="Dependencies" />,
         }}
       />
       <Toaster position={Position.BOTTOM}>
-        {props.toasts.map(toast =>
+        {props.toasts.map((toast) => (
           <Toast
             key={toast.id}
             message={toast.message}
@@ -54,7 +52,7 @@ function App(props: Props) {
             icon={intentIcons[toast.intent]}
             onDismiss={() => props.dismissToast(toast.id)}
           />
-        )}
+        ))}
       </Toaster>
     </div>
   );
@@ -85,13 +83,13 @@ function mapStateToProps(state: State) {
   return {
     routeName: state.route.name,
     theme: state.settings.theme,
-    toasts: state.jobs.toasts
+    toasts: state.jobs.toasts,
   };
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    dismissToast: (toastId: number) => dispatch(dismissToast(toastId))
+    dismissToast: (toastId: number) => dispatch(dismissToast(toastId)),
   };
 }
 

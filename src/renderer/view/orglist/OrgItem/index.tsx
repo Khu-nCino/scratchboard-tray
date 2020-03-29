@@ -1,10 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-  Button,
-  ButtonGroup,
-  Popover,
-  Position,
-} from "@blueprintjs/core";
+import { Button, ButtonGroup, Popover, Position } from "@blueprintjs/core";
 
 import { AnyAction } from "redux";
 import { connect } from "react-redux";
@@ -17,7 +12,7 @@ import {
   openOrgAction,
   deleteOrgAction,
   copyFrontDoor,
-  setAliasAction
+  setAliasAction,
 } from "../../../store/orgs";
 import { State } from "../../../store";
 import ActionMenu from "./ActionMenu";
@@ -35,7 +30,7 @@ type Props = OwnProps & DispatchProps;
 function OrgItem(props: Props) {
   const [pendingDelete, setPendingDelete] = useState(false);
   const [pendingAlias, setPendingAlias] = useState(false);
-  const [aliasValue, setAliasValue] = useState(props.org.alias ?? '');
+  const [aliasValue, setAliasValue] = useState(props.org.alias ?? "");
   const [isLoading, setLoading] = useState(false);
 
   const orgDisplayName = props.org.alias || props.org.username;
@@ -45,38 +40,41 @@ function OrgItem(props: Props) {
     [props.org.expirationDate]
   );
 
-  const actionsMenu = <ActionMenu
-    onCopyFrontdoor={async () => {
-      setLoading(true);
-      try {
-        await props.copyFrontdoor();
-      } finally {
-        setLoading(false);
-      }
-    }}
-    onSetAlias={() => {
-      setAliasValue(props.org.alias ?? '');
-      setPendingAlias(true);
-    }}
-    onDelete={() => setPendingDelete(true)}
-  />
-
-  const dialogs = <>
-    <AliasDialog
-      value={aliasValue}
-      onChange={setAliasValue}
-      isOpen={pendingAlias}
-      onClose={() => setPendingAlias(false)}
-      onConfirm={() => props.setAlias(aliasValue)}
+  const actionsMenu = (
+    <ActionMenu
+      onCopyFrontdoor={async () => {
+        setLoading(true);
+        try {
+          await props.copyFrontdoor();
+        } finally {
+          setLoading(false);
+        }
+      }}
+      onSetAlias={() => {
+        setAliasValue(props.org.alias ?? "");
+        setPendingAlias(true);
+      }}
+      onDelete={() => setPendingDelete(true)}
     />
-    <DeleteConformation
-      displayName={orgDisplayName}
-      isOpen={pendingDelete}
-      onClose={() => setPendingDelete(false)}
-      onConfirm={props.deleteOrg}
-    />
-  </>;
+  );
 
+  const dialogs = (
+    <>
+      <AliasDialog
+        value={aliasValue}
+        onChange={setAliasValue}
+        isOpen={pendingAlias}
+        onClose={() => setPendingAlias(false)}
+        onConfirm={() => props.setAlias(aliasValue)}
+      />
+      <DeleteConformation
+        displayName={orgDisplayName}
+        isOpen={pendingDelete}
+        onClose={() => setPendingDelete(false)}
+        onConfirm={props.deleteOrg}
+      />
+    </>
+  );
 
   return (
     <div className="sbt-org-list--item sbt-flex-container sbt-hover-highlight">
@@ -88,14 +86,18 @@ function OrgItem(props: Props) {
         />
       </div>
       <ButtonGroup className="sbt-flex-item--right sbt-mr_medium">
-        <Button intent="primary" onClick={async () => {
-          setLoading(true);
-          try {
-            await props.openOrg();
-          } finally {
-            setLoading(false);
-          }
-        }} loading={isLoading}>
+        <Button
+          intent="primary"
+          onClick={async () => {
+            setLoading(true);
+            try {
+              await props.openOrg();
+            } finally {
+              setLoading(false);
+            }
+          }}
+          loading={isLoading}
+        >
           Open
         </Button>
         <Popover
@@ -119,7 +121,7 @@ function mapDispatchToProps(
     openOrg: () => dispatch(openOrgAction(username)),
     copyFrontdoor: () => dispatch(copyFrontDoor(username)),
     deleteOrg: () => dispatch(deleteOrgAction(username)),
-    setAlias: (alias: string) => dispatch(setAliasAction(username, alias))
+    setAlias: (alias: string) => dispatch(setAliasAction(username, alias)),
   };
 }
 

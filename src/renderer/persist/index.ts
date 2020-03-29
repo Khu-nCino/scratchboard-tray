@@ -17,8 +17,8 @@ export function loadPersistedState(state: Partial<State>): Partial<State> {
       ...state.settings,
       sfdxPath: electronStore.get("sfdxBinPath", state.settings?.sfdxPath),
       theme: electronStore.get("theme", state.settings?.theme),
-      openAtLogin: false
-    }
+      openAtLogin: false,
+    },
   };
 }
 

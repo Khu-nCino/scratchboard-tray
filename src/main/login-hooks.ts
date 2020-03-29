@@ -1,5 +1,5 @@
-import { App, ipcMain } from 'electron';
-import { IpcEvent } from '../common/IpcEvent';
+import { App, ipcMain } from "electron";
+import { IpcEvent } from "../common/IpcEvent";
 
 export function loginItemSettingsHooks(app: App) {
   ipcMain.on(IpcEvent.LAUNCH_SETTINGS_REQUEST, (event) => {
@@ -10,7 +10,7 @@ export function loginItemSettingsHooks(app: App) {
   ipcMain.on(IpcEvent.LAUNCH_SETTINGS_SET, (event, value) => {
     app.setLoginItemSettings({
       openAtLogin: value,
-      openAsHidden: true
+      openAsHidden: true,
     });
   });
 }

@@ -1,12 +1,26 @@
-@import './size';
+@import "./size";
 
 $directions: (
-  "t": ("top"),
-  "r": ("right"),
-  "b": ("bottom"),
-  "l": ("left"),
-  "v": ("top", "bottom"),
-  "h": ("left", "right")
+  "t": (
+    "top",
+  ),
+  "r": (
+    "right",
+  ),
+  "b": (
+    "bottom",
+  ),
+  "l": (
+    "left",
+  ),
+  "v": (
+    "top",
+    "bottom",
+  ),
+  "h": (
+    "left",
+    "right",
+  ),
 );
 
 @each $sizeName, $sizeValue in $sizes {

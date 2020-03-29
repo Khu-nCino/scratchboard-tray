@@ -49,7 +49,9 @@ export function openOrg(username: string): Promise<void> {
 }
 
 export function frontDoorUrlApi(username: string): Promise<string> {
-  return executePromiseJson(`sfdx force:org:open --json -r -u ${username}`).then((result) => result.url);
+  return executePromiseJson(
+    `sfdx force:org:open --json -r -u ${username}`
+  ).then((result) => result.url);
 }
 
 export function deleteOrg(username: string): Promise<void> {
@@ -57,10 +59,12 @@ export function deleteOrg(username: string): Promise<void> {
 }
 
 export function setAlias(username: string, alias: string): Promise<void> {
-  return executePromiseJson(`sfdx force:alias:set "${alias}"=${username} --json`)
+  return executePromiseJson(
+    `sfdx force:alias:set "${alias}"=${username} --json`
+  );
 }
 
-const binaryName = process.platform === 'win32' ? 'sfdx.exe' : 'sfdx';
+const binaryName = process.platform === "win32" ? "sfdx.exe" : "sfdx";
 
 export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   return new Promise((resolve) => {

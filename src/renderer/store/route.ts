@@ -16,13 +16,13 @@ interface ViewDependenciesAction extends Action<"dependencies"> {
 
 export function viewOrgList(): ViewOrgListAction {
   return {
-    type: "orgList"
+    type: "orgList",
   };
 }
 
 export function viewSettings(): ViewSettingsAction {
   return {
-    type: "settings"
+    type: "settings",
   };
 }
 
@@ -30,8 +30,8 @@ export function viewDependencies(orgUsername: string): ViewDependenciesAction {
   return {
     type: "dependencies",
     payload: {
-      orgUsername
-    }
+      orgUsername,
+    },
   };
 }
 
@@ -57,7 +57,7 @@ export function routeReducer(
     case "dependencies": {
       return {
         name: "dependencies",
-        orgUsername: action.payload.orgUsername
+        orgUsername: action.payload.orgUsername,
       };
     }
     default: {

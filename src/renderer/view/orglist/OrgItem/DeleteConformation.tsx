@@ -1,11 +1,11 @@
-import React from 'react';
-import { Alert, Intent } from '@blueprintjs/core';
+import React from "react";
+import { Alert, Intent } from "@blueprintjs/core";
 
 export default function DeleteConformation(props: {
-  displayName: string,
-  isOpen: boolean,
-  onClose: () => void,
-  onConfirm: () => void
+  displayName: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
 }) {
   return (
     <Alert

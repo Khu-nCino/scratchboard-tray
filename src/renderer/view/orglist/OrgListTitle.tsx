@@ -26,10 +26,12 @@ function Title(props: Props) {
   );
 }
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<State, undefined, AnyAction>) => {
+const mapDispatchToProps = (
+  dispatch: ThunkDispatch<State, undefined, AnyAction>
+) => {
   return {
     refreshOrgs: () => dispatch(listOrgsRequest()),
-    viewSettings: () => dispatch(viewSettings())
+    viewSettings: () => dispatch(viewSettings()),
   };
 };
 

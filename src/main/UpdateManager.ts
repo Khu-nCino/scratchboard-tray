@@ -18,7 +18,7 @@ export class UpdateManager {
       autoUpdater.quitAndInstall();
     });
 
-    autoUpdater.on("error", reason => {
+    autoUpdater.on("error", (reason) => {
       sendIpc(IpcEvent.UPDATE_ERROR, reason);
     });
 
@@ -26,7 +26,7 @@ export class UpdateManager {
       sendIpc(IpcEvent.CHECKING_FOR_UPDATE);
     });
 
-    autoUpdater.on("update-available", info => {
+    autoUpdater.on("update-available", (info) => {
       sendIpc(IpcEvent.UPDATE_AVAILABLE, info.version);
       autoUpdater.downloadUpdate();
     });
@@ -35,18 +35,18 @@ export class UpdateManager {
       sendIpc(IpcEvent.UPDATE_NOT_AVAILABLE);
     });
 
-    autoUpdater.signals.progress(info => {
+    autoUpdater.signals.progress((info) => {
       sendIpc(IpcEvent.UPDATE_DOWNLOADING, info.percent / 100);
     });
 
-    autoUpdater.signals.updateDownloaded(info => {
+    autoUpdater.signals.updateDownloaded((info) => {
       sendIpc(IpcEvent.UPDATE_DOWNLOADED, info.version);
     });
   }
 }
 
 function sendIpc(channel: string, ...args: any[]) {
-  BrowserWindow.getAllWindows().forEach(window => {
+  BrowserWindow.getAllWindows().forEach((window) => {
     window.webContents.send(channel, args);
   });
 }

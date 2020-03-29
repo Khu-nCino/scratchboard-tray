@@ -78,7 +78,7 @@ function mapStateToProps(state: State) {
   return {
     updateStatus: state.updates.status,
     updateVersion: state.updates.updateVersion,
-    downloadPercent: state.updates.downloadPercent
+    downloadPercent: state.updates.downloadPercent,
   };
 }
 

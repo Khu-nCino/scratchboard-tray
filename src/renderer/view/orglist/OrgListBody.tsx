@@ -21,7 +21,8 @@ function Centered(props: { children: ReactNode }) {
 function OrgList(props: Props) {
   useEffect(() => {
     if (
-      (props.orgListStatus === "initial" && props.isSfdxPathValid !== undefined) ||
+      (props.orgListStatus === "initial" &&
+        props.isSfdxPathValid !== undefined) ||
       (props.orgListStatus === "invalid_sfdx_path" && props.isSfdxPathValid)
     ) {
       props.requestOrgList();
@@ -43,7 +44,7 @@ function OrgList(props: Props) {
       } else {
         return (
           <div className="sbt-org-list sbt-expanded">
-            {props.orgList.map(org => (
+            {props.orgList.map((org) => (
               <OrgItem key={org.username} org={org} />
             ))}
           </div>
@@ -97,7 +98,7 @@ function mapStateToProps(state: State) {
   return {
     orgList: state.orgs.orgList,
     orgListStatus: state.orgs.orgListStatus,
-    isSfdxPathValid: state.settings.isSfdxPathValid
+    isSfdxPathValid: state.settings.isSfdxPathValid,
   };
 }
 
@@ -105,7 +106,7 @@ function mapDispatchToProps(
   dispatch: ThunkDispatch<State, undefined, AnyAction>
 ) {
   return {
-    requestOrgList: () => dispatch(listOrgsRequest())
+    requestOrgList: () => dispatch(listOrgsRequest()),
   };
 }
 

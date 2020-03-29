@@ -1,7 +1,7 @@
 // saving this query for later
 
 function getQuery(packageNames: string[]) {
-  const formattedNames = packageNames.map(name => `'${name}'`).join(",");
+  const formattedNames = packageNames.map((name) => `'${name}'`).join(",");
 
   return `
     SELECT

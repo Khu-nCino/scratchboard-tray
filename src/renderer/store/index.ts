@@ -2,7 +2,7 @@ import {
   createStore as createReduxStore,
   combineReducers,
   applyMiddleware,
-  AnyAction
+  AnyAction,
 } from "redux";
 
 import thunk, { ThunkMiddleware } from "redux-thunk";
@@ -22,13 +22,13 @@ const reducers = {
   route: routeReducer,
   settings: settingsReducer,
   jobs: jobsReducer,
-  updates: updateReducer
+  updates: updateReducer,
 };
 
 export const defaultState: Partial<State> = {
   route: {
-    name: "orgList"
-  }
+    name: "orgList",
+  },
 };
 
 export function createStore(initial: Partial<State> = defaultState) {

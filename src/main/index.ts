@@ -13,7 +13,7 @@ const indexUrl = isDevelopment
   : formatUrl({
       pathname: path.join(__dirname, "index.html"),
       protocol: "file",
-      slashes: true
+      slashes: true,
     });
 
 const img = nativeImage.createFromDataURL(require("./cloudTemplate.png"));
@@ -27,31 +27,34 @@ const mb = menubar({
     width: 420,
     height: 600,
     webPreferences: {
-      nodeIntegration: true
-    }
-  }
+      nodeIntegration: true,
+    },
+  },
 });
 
-mb.on('ready', () => {
-  if (process.platform === 'darwin') {
+mb.on("ready", () => {
+  if (process.platform === "darwin") {
     mb.tray.setIgnoreDoubleClickEvents(true);
   }
 });
 
-mb.on('after-create-window', () => {
-  if (process.platform === 'darwin') {
+mb.on("after-create-window", () => {
+  if (process.platform === "darwin") {
     const oldCalculate = mb.positioner.calculate.bind(mb.positioner);
-    mb.positioner.calculate = function (position: string, trayBounds: Rectangle) {
-      if (position === 'trayCenter') {
+    mb.positioner.calculate = function (
+      position: string,
+      trayBounds: Rectangle
+    ) {
+      if (position === "trayCenter") {
         const { x, y } = oldCalculate(position, trayBounds);
         return { x, y: y + 7 };
       }
       return oldCalculate(position, trayBounds);
-    }
+    };
   }
 });
 
-mb.on('show', () => {
+mb.on("show", () => {
   mb.window?.webContents.send(IpcEvent.WINDOW_OPENED);
 });
 
@@ -61,7 +64,7 @@ updateManager.listenIpc();
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 
-app.on('ready', () => {
+app.on("ready", () => {
   loginItemSettingsHooks(app);
 
   const { wasOpenedAsHidden } = app.getLoginItemSettings();
@@ -70,11 +73,11 @@ app.on('ready', () => {
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   mb.showWindow();
 });
 
-app.on('window-all-closed', () => {
+app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
