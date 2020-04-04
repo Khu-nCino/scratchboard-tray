@@ -37,13 +37,14 @@ However if you'd like to give it a try and provide feedback you're more than wel
   - Delete Orgs
 * See days until org expiration.
 * Dark/Light mode
+* Automatically Download and Install Updates
 * OS Support
   - Macos
   - Windows and Linux planned
 
 ## Download
 
-You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/tag/0.1.1).
+You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/tag/v2.0.0).
 
 ## Setup
 
