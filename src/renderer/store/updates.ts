@@ -54,9 +54,9 @@ function statusChangeAction(status: UpdateStatus): StatusChangeAction {
 }
 
 export function listenIpc(store: Store) {
-  ipcRenderer.on(IpcEvent.UPDATE_ERROR, (_event, _error) => {
+  ipcRenderer.on(IpcEvent.UPDATE_ERROR, (_event, error) => {
     store.dispatch(statusChangeAction("initial"));
-    store.dispatch(createErrorToast("Error Updating"));
+    store.dispatch(createErrorToast("Error Updating", error));
   });
 
   ipcRenderer.on(IpcEvent.CHECKING_FOR_UPDATE, () => {

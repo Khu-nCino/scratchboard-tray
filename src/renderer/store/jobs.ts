@@ -16,7 +16,8 @@ interface DismissToastAction extends Action<"DISMISS_TOAST"> {
 let nextToastId = 0;
 export function createToast(
   message: string,
-  intent: Intent
+  intent: Intent,
+  detail?: string,
 ): CreateToastAction {
   return {
     type: "CREATE_TOAST",
@@ -24,6 +25,7 @@ export function createToast(
       id: nextToastId++,
       message,
       intent,
+      detail,
     },
   };
 }
@@ -32,8 +34,7 @@ export function createErrorToast(
   message: string,
   detail?: string
 ): CreateToastAction {
-  const fullMessage = detail ? `${message}: ${detail}` : message;
-  return createToast(fullMessage, "danger");
+  return createToast(message, "danger", detail);
 }
 
 export function dismissToast(toastId: number): DismissToastAction {
@@ -47,9 +48,10 @@ export function dismissToast(toastId: number): DismissToastAction {
 
 //State
 
-interface Toast {
+export interface Toast {
   id: number;
   message: string;
+  detail?: string;
   intent: Intent;
 }
 

@@ -1,4 +1,7 @@
 import { exec, ExecOptions } from "child_process";
+import { getLogger } from "common/logger";
+
+const logger = getLogger();
 
 export function executePromiseJson(
   command: string,
@@ -13,7 +16,8 @@ export function executePromiseJson(
   return new Promise((resolve, reject) => {
     exec(command, options, (error, stdout) => {
       if (error) {
-        reject(error);
+        logger.error(error.message);
+        reject(error.message);
         return;
       }
 
@@ -22,9 +26,11 @@ export function executePromiseJson(
         if (output.status === 0) {
           resolve(output.result);
         } else {
+          logger.error(output.message);
           reject(output.message);
         }
       } catch (exception) {
+        logger.error(exception);
         reject(exception);
       }
     });

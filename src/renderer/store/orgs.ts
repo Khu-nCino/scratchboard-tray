@@ -66,7 +66,6 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
         payload: { scratchOrgs },
       });
     } catch (error) {
-      console.log(error);
       dispatch({ type: "LIST_ORGS_REJECTED" });
     }
   };
@@ -77,7 +76,6 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
     try {
       await openOrg(username);
     } catch (error) {
-      console.error(error);
       dispatch(
         createErrorToast(`There was an error opening your org 😞`, error)
       );
@@ -94,7 +92,6 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
         createToast("The front door is copied to your clipboard.", "success")
       );
     } catch (error) {
-      console.error(error);
       dispatch(
         createErrorToast(`There was an error copying your front door 😞`, error)
       );
@@ -113,7 +110,6 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
 
       dispatch(createToast(`Successfully deleted org.`, "success"));
     } catch (error) {
-      console.error(error);
       dispatch(
         createErrorToast(`There was an error deleting your org 😞`, error)
       );
@@ -137,7 +133,6 @@ export function setAliasAction(
         },
       });
     } catch (error) {
-      console.error(error);
       dispatch(
         createErrorToast(`There was an error setting your alias 😞`, error)
       );

@@ -62,7 +62,8 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "category": "public.app-category.productivity",
       "target": [
-        "zip"
+        "zip",
+        "dmg"
       ]
     }
   }

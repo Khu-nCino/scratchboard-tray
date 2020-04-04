@@ -5,7 +5,6 @@ import { IpcEvent } from "../common/IpcEvent";
 
 export class UpdateManager {
   constructor() {
-    autoUpdater.autoDownload = false;
     autoUpdater.logger = getLogger();
   }
 
@@ -19,7 +18,7 @@ export class UpdateManager {
     });
 
     autoUpdater.on("error", (reason) => {
-      sendIpc(IpcEvent.UPDATE_ERROR, reason);
+      sendIpc(IpcEvent.UPDATE_ERROR, reason.message);
     });
 
     autoUpdater.on("checking-for-update", () => {
@@ -28,7 +27,6 @@ export class UpdateManager {
 
     autoUpdater.on("update-available", (info) => {
       sendIpc(IpcEvent.UPDATE_AVAILABLE, info.version);
-      autoUpdater.downloadUpdate();
     });
 
     autoUpdater.on("update-not-available", () => {

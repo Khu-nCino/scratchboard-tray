@@ -1,26 +1,15 @@
 import React from "react";
 import { CSSTransition } from "react-transition-group";
-import { Dispatch } from "redux";
 import { connect } from "react-redux";
-import { Toast, Toaster, Position, Intent, IconName } from "@blueprintjs/core";
 
 import { State } from "../store";
 import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitle";
 import SimpleTitle from "./SimpleTitle";
 import SettingsBody from "./settings/SettingsBody";
-import { dismissToast } from "../store/jobs";
+import ToastManager from "./ToastManager";
 
-const intentIcons: Record<Intent, IconName | undefined> = {
-  success: "tick",
-  danger: "error",
-  warning: "warning-sign",
-  none: undefined,
-  primary: undefined,
-};
-
-type Props = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+type Props = ReturnType<typeof mapStateToProps>;
 
 function App(props: Props) {
   return (
@@ -43,17 +32,7 @@ function App(props: Props) {
           dependencies: <SimpleTitle title="Dependencies" />,
         }}
       />
-      <Toaster position={Position.BOTTOM}>
-        {props.toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            intent={toast.intent}
-            icon={intentIcons[toast.intent]}
-            onDismiss={() => props.dismissToast(toast.id)}
-          />
-        ))}
-      </Toaster>
+      <ToastManager />
     </div>
   );
 }
@@ -83,14 +62,7 @@ function mapStateToProps(state: State) {
   return {
     routeName: state.route.name,
     theme: state.settings.theme,
-    toasts: state.jobs.toasts,
   };
 }
 
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    dismissToast: (toastId: number) => dispatch(dismissToast(toastId)),
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps)(App);

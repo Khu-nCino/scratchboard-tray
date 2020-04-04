@@ -2,9 +2,9 @@ import { ipcRenderer } from "electron";
 import React from "react";
 import { connect } from "react-redux";
 import { Button, ProgressBar } from "@blueprintjs/core";
+import { IpcEvent } from "common/IpcEvent";
 import { UpdateStatus } from "../../store/updates";
 import { State } from "../../store";
-import { IpcEvent } from "../../../common/IpcEvent";
 import appVersion from "../../app-version";
 
 interface OwnProps {
