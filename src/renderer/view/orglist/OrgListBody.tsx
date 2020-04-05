@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { connect } from "react-redux";
 import { Spinner, NonIdealState, Icon } from "@blueprintjs/core";
@@ -13,10 +13,6 @@ import { listOrgsRequest } from "../../store/orgs";
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 type Props = StateProps & DispatchProps;
-
-function Centered(props: { children: ReactNode }) {
-  return <div className="sbt-centered">{props.children}</div>;
-}
 
 function OrgList(props: Props) {
   useEffect(() => {
@@ -33,17 +29,15 @@ function OrgList(props: Props) {
     case "loaded":
       if (props.orgList.length === 0) {
         return (
-          <Centered>
-            <NonIdealState
-              title="No Scratch Orgs Found"
-              description="Please refresh when you have some."
-              icon="form"
-            />
-          </Centered>
+          <NonIdealState
+            title="No Scratch Orgs Found"
+            description="Please refresh when you have some."
+            icon="form"
+          />
         );
       } else {
         return (
-          <div className="sbt-org-list sbt-expanded">
+          <div className="sbt-org-list">
             {props.orgList.map((org) => (
               <OrgItem key={org.username} org={org} />
             ))}
@@ -54,40 +48,36 @@ function OrgList(props: Props) {
       return <></>;
     case "pending":
       return (
-        <Centered>
+        <NonIdealState>
           <Spinner />
-        </Centered>
+        </NonIdealState>
       );
     case "failed":
       return (
-        <Centered>
-          <NonIdealState
-            title="Don't Panic!😱"
-            description={
-              <>
-                An error occurred.
-                <br />
-                Notify a developer to help improve this software.
-              </>
-            }
-          />
-        </Centered>
+        <NonIdealState
+          title="Don't Panic!😱"
+          description={
+            <>
+              An error occurred.
+              <br />
+              Notify a developer to help improve this software.
+            </>
+          }
+        />
       );
     case "invalid_sfdx_path":
       return (
-        <Centered>
-          <NonIdealState
-            title="Just a Little Config"
-            description={
-              <>
-                No SFDX binary found.
-                <br />
-                Try setting the path in the <Icon icon="cog" /> screen and
-                coming back.
-              </>
-            }
-          />
-        </Centered>
+        <NonIdealState
+          title="Just a Little Config"
+          description={
+            <>
+              No SFDX binary found.
+              <br />
+              Try setting the path in the <Icon icon="cog" /> screen and
+              coming back.
+            </>
+          }
+        />
       );
     default:
       return <div>You shouldn't be seeing this message</div>;

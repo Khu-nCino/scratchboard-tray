@@ -18,13 +18,13 @@ function App(props: Props) {
         activeRoute={props.routeName}
         routes={{
           orgList: (
-            <div className="sbt-expanded">
+            <div className="sbt-screen">
               <OrgListTitle />
               <OrgListBody />
             </div>
           ),
           settings: (
-            <div className="sbt-expanded">
+            <div className="sbt-screen">
               <SimpleTitle title="Settings" />
               <SettingsBody />
             </div>

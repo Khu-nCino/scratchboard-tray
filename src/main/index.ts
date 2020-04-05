@@ -26,6 +26,7 @@ const mb = menubar({
   browserWindow: {
     width: 420,
     height: 600,
+    resizable: false,
     webPreferences: {
       nodeIntegration: true,
     },

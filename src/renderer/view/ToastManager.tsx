@@ -33,7 +33,7 @@ function ToastManager(props: Props) {
   return (
     <>
       <Dialog
-        title={dialogToast?.message}
+        title="Details"
         isOpen={dialogToast !== undefined}
         onClose={closeDialog}
         canEscapeKeyClose={false}

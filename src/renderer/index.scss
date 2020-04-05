@@ -37,16 +37,11 @@ body {
   }
 }
 
-.sbt-centered {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.sbt-expanded {
+.sbt-screen {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-flow: column;
 }
 
 //Titlebar
@@ -86,7 +81,6 @@ body {
 }
 
 .sbt-org-list--item {
-  width: 100%;
   height: $large;
 }
 

@@ -25,7 +25,7 @@ function exit() {
 
 function SettingsBody(props: Props) {
   return (
-    <div>
+    <div style={{overflowY: "auto"}}>
       <UpdateManager className="sbt-m_medium" />
       <FormGroup
         label="Appearance & Behavior"
@@ -50,7 +50,7 @@ function SettingsBody(props: Props) {
         />
       </FormGroup>
       <Button className="sbt-exit-button" intent="danger" onClick={exit}>
-        Exit
+        Quit
       </Button>
     </div>
   );
