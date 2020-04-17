@@ -8,10 +8,7 @@ import { listOrgsRequest } from "../../store/orgs";
 import { viewSettings } from "../../store/route";
 import { State } from "../../store";
 
-interface Props {
-  refreshOrgs(): any;
-  viewSettings(): any;
-}
+type Props = ReturnType<typeof mapDispatchToProps>
 
 function Title(props: Props) {
   return (

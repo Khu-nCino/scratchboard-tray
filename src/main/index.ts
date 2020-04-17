@@ -24,8 +24,8 @@ const mb = menubar({
   icon: img,
   showDockIcon: isDevelopment,
   browserWindow: {
-    width: 420,
-    height: 600,
+    width: 380,
+    height: 500,
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
@@ -73,12 +73,12 @@ mb.on("show", () => {
 });
 
 const updateManager = new UpdateManager();
-updateManager.listenIpc();
 
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 
 app.on("ready", () => {
+  updateManager.listenIpc();
   loginItemSettingsHooks(app);
 
   const { wasOpenedAsHidden } = app.getLoginItemSettings();

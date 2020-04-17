@@ -65,13 +65,27 @@ function OrgItem(props: Props) {
         onChange={setAliasValue}
         isOpen={pendingAlias}
         onClose={() => setPendingAlias(false)}
-        onConfirm={() => props.setAlias(aliasValue)}
+        onConfirm={async () => {
+          setLoading(true);
+          try {
+            await props.setAlias(aliasValue);
+          } finally {
+            setLoading(false);
+          }
+        }}
       />
       <DeleteConformation
         displayName={orgDisplayName}
         isOpen={pendingDelete}
         onClose={() => setPendingDelete(false)}
-        onConfirm={props.deleteOrg}
+        onConfirm={async () => {
+          setLoading(true);
+          try {
+            props.deleteOrg();
+          } finally {
+            setLoading(false);
+          }
+        }}
       />
     </>
   );

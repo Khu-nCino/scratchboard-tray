@@ -40,8 +40,8 @@ function ToastManager(props: Props) {
         canOutsideClickClose={false}
         className="sbt-mh_medium"
       >
-        <div className={`${Classes.DIALOG_BODY} sbt-wrapping-text-output`}>
-          {dialogToast?.detail}
+        <div className={`${Classes.DIALOG_BODY}`}>
+          <pre>{dialogToast?.detail}</pre>
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>

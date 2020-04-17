@@ -53,6 +53,8 @@ function UpdateButton(props: { status: UpdateStatus; updateVersion?: string }) {
 }
 
 function UpdateManager(props: Props) {
+  const downloadedStatus = props.updateStatus === "downloaded";
+
   return (
     <div className={props.className}>
       <div className="sbt-flex-container">
@@ -65,9 +67,9 @@ function UpdateManager(props: Props) {
       {props.downloadPercent !== undefined && (
         <ProgressBar
           className="sbt-mt_small"
-          intent={props.updateStatus === "downloaded" ? "success" : "primary"}
+          intent={downloadedStatus ? "success" : "primary"}
           value={props.downloadPercent}
-          stripes={false}
+          stripes={!downloadedStatus}
         />
       )}
     </div>
