@@ -16,7 +16,9 @@ const indexUrl = isDevelopment
       slashes: true,
     });
 
-const img = nativeImage.createFromDataURL(require("./cloudTemplate.png"));
+const assetsPath = app.isPackaged ? path.join(process.resourcesPath, "assets") : "assets";
+
+const img = nativeImage.createFromPath(path.join(assetsPath, "cloudTemplate.png"));
 img.isMacTemplateImage = true;
 
 const mb = menubar({
