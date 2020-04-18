@@ -12,12 +12,14 @@
     "dist": "yarn compile && electron-builder"
   },
   "devDependencies": {
+    "@types/electron-devtools-installer": "^2.2.0",
     "@types/node": "^12",
     "@types/react-dom": "^16.9.4",
     "@types/react-redux": "^7.1.5",
     "@types/react-transition-group": "^4.2.3",
     "electron": "^8.0.1",
     "electron-builder": "^22.3.3",
+    "electron-devtools-installer": "^3.0.0",
     "electron-notarize": "^0.3.0",
     "electron-webpack": "^2.7.4",
     "electron-webpack-ts": "^4.0.0",
@@ -29,6 +31,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.21.0",
+    "electron-better-ipc": "^1.0.0",
     "electron-log": "^4.0.7",
     "electron-store": "^5.1.0",
     "electron-updater": "^4.2.2",
@@ -56,11 +59,7 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "category": "public.app-category.productivity",
-      "target": [
-        "zip",
-        "dmg"
-      ]
+      "category": "public.app-category.productivity"
     },
     "extraResources": [
       "./assets/**"

@@ -1,6 +1,7 @@
 import { app, ipcMain, nativeImage, Rectangle, Point } from "electron";
 import { format as formatUrl } from "url";
 import path from "path";
+import installExtensions, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { menubar } from "menubar";
 import { loginItemSettingsHooks } from "./login-hooks";
 import { IpcEvent } from "common/IpcEvent";
@@ -16,9 +17,13 @@ const indexUrl = isDevelopment
       slashes: true,
     });
 
-const assetsPath = app.isPackaged ? path.join(process.resourcesPath, "assets") : "assets";
+const assetsPath = app.isPackaged
+  ? path.join(process.resourcesPath, "assets")
+  : "assets";
 
-const img = nativeImage.createFromPath(path.join(assetsPath, "cloudTemplate.png"));
+const img = nativeImage.createFromPath(
+  path.join(assetsPath, "cloudTemplate.png")
+);
 img.isMacTemplateImage = true;
 
 const mb = menubar({
@@ -28,7 +33,7 @@ const mb = menubar({
   browserWindow: {
     width: 380,
     height: 500,
-    resizable: false,
+    resizable: isDevelopment,
     webPreferences: {
       nodeIntegration: true,
     },
@@ -79,7 +84,13 @@ const updateManager = new UpdateManager();
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 
+
 app.on("ready", () => {
+  installExtensions([
+    REACT_DEVELOPER_TOOLS,
+    REDUX_DEVTOOLS,
+  ]);
+
   updateManager.listenIpc();
   loginItemSettingsHooks(app);
 

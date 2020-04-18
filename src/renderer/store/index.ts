@@ -3,6 +3,7 @@ import {
   combineReducers,
   applyMiddleware,
   AnyAction,
+  compose,
 } from "redux";
 
 import thunk, { ThunkMiddleware } from "redux-thunk";
@@ -31,10 +32,22 @@ export const defaultState: Partial<State> = {
   },
 };
 
+// redux devtools setup
+const devToolsCompose:
+  | ((options: any) => typeof compose)
+  | undefined = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
+
+const composeEnhancers =
+  typeof window === "object" && devToolsCompose
+    ? devToolsCompose({
+        // Specify extension’s options like name, actionsBlacklist, actionsCreators, serialize...
+      })
+    : compose;
+
 export function createStore(initial: Partial<State> = defaultState) {
   return createReduxStore(
     combineReducers<State>(reducers),
     initial,
-    applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>)
+    composeEnhancers(applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>))
   );
 }
