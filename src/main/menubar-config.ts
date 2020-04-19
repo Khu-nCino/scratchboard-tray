@@ -1,8 +1,8 @@
 import { nativeImage, Rectangle, Point } from "electron";
 import path from "path";
 import { menubar, Menubar } from "menubar";
+import { IpcMainEvent } from "common/IpcEvent";
 import { isDevelopment, indexUrl, assetsPath, browserWindowConfig } from "./common-config";
-import { IpcEvent } from "common/IpcEvent";
 
 export function createMenubar(): Menubar {
   const icon = loadIcon("cloudTemplate.png");
@@ -27,7 +27,7 @@ export function createMenubar(): Menubar {
   });
   
   mb.on("show", () => {
-    mb.window?.webContents.send(IpcEvent.WINDOW_OPENED);
+    mb.window?.webContents.send(IpcMainEvent.WINDOW_OPENED);
   });
 
   return mb;

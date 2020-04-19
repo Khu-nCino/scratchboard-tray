@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ipcRenderer } from "electron";
-import { IpcEvent } from "../../../common/IpcEvent";
+import { IpcMainEvent } from "common/IpcEvent";
 
 const oneDay = 1000 * 60 * 60 * 24;
 
@@ -16,9 +16,9 @@ export default function TimeRemaining(props: {
   }
 
   useEffect(() => {
-    ipcRenderer.addListener(IpcEvent.WINDOW_OPENED, checkTimeLeft);
+    ipcRenderer.addListener(IpcMainEvent.WINDOW_OPENED, checkTimeLeft);
     return () => {
-      ipcRenderer.removeListener(IpcEvent.WINDOW_OPENED, checkTimeLeft);
+      ipcRenderer.removeListener(IpcMainEvent.WINDOW_OPENED, checkTimeLeft);
     };
   }, []);
 

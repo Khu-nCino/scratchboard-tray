@@ -2,7 +2,7 @@ import { ipcRenderer } from "electron";
 import React from "react";
 import { connect } from "react-redux";
 import { Button, ProgressBar } from "@blueprintjs/core";
-import { IpcEvent } from "common/IpcEvent";
+import { IpcRendererEvent } from "common/IpcEvent";
 import { UpdateStatus } from "../../store/updates";
 import { State } from "../../store";
 import appVersion from "../../app-version";
@@ -16,11 +16,11 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 type Props = OwnProps & StateProps;
 
 function checkUpdates() {
-  ipcRenderer.send(IpcEvent.CHECK_FOR_UPDATES_REQUEST);
+  ipcRenderer.send(IpcRendererEvent.CHECK_FOR_UPDATES_REQUEST);
 }
 
 function quitAndInstall() {
-  ipcRenderer.send(IpcEvent.QUIT_AND_INSTALL_UPDATE_REQUEST);
+  ipcRenderer.send(IpcRendererEvent.QUIT_AND_INSTALL_UPDATE_REQUEST);
 }
 
 function UpdateButton(props: { status: UpdateStatus; updateVersion?: string }) {

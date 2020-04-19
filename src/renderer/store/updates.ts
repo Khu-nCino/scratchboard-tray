@@ -1,6 +1,6 @@
 import { Action, Store } from "redux";
 import { ipcRenderer } from "electron";
-import { IpcEvent } from "../../common/IpcEvent";
+import { IpcMainEvent } from "common/IpcEvent";
 import { createErrorToast, createToast } from "./messages";
 
 type UpdateAction =
@@ -54,29 +54,29 @@ function statusChangeAction(status: UpdateStatus): StatusChangeAction {
 }
 
 export function listenIpc(store: Store) {
-  ipcRenderer.on(IpcEvent.UPDATE_ERROR, (_event, error) => {
+  ipcRenderer.on(IpcMainEvent.UPDATE_ERROR, (_event, error) => {
     store.dispatch(statusChangeAction("initial"));
     store.dispatch(createErrorToast("Error Updating", error));
   });
 
-  ipcRenderer.on(IpcEvent.CHECKING_FOR_UPDATE, () => {
+  ipcRenderer.on(IpcMainEvent.CHECKING_FOR_UPDATE, () => {
     store.dispatch(statusChangeAction("checking"));
   });
 
-  ipcRenderer.on(IpcEvent.UPDATE_AVAILABLE, () => {
+  ipcRenderer.on(IpcMainEvent.UPDATE_AVAILABLE, () => {
     store.dispatch(statusChangeAction("downloading"));
   });
 
-  ipcRenderer.on(IpcEvent.UPDATE_NOT_AVAILABLE, () => {
+  ipcRenderer.on(IpcMainEvent.UPDATE_NOT_AVAILABLE, () => {
     store.dispatch(statusChangeAction("initial"));
     store.dispatch(createToast("No updates available", "none"));
   });
 
-  ipcRenderer.on(IpcEvent.UPDATE_DOWNLOADING, (_event, percent) => {
+  ipcRenderer.on(IpcMainEvent.UPDATE_DOWNLOADING, (_event, percent) => {
     store.dispatch(updateDownloadingAction(percent));
   });
 
-  ipcRenderer.on(IpcEvent.UPDATE_DOWNLOADED, (_event, version) => {
+  ipcRenderer.on(IpcMainEvent.UPDATE_DOWNLOADED, (_event, version) => {
     store.dispatch(updateDownloadedAction(version));
   });
 }

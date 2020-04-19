@@ -1,7 +1,7 @@
-import { ipcRenderer } from "electron";
+import { ipcRenderer as ipc } from "electron-better-ipc";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
-import { IpcEvent } from "../../common/IpcEvent";
+import { IpcRendererEvent } from "common/IpcEvent";
 import { State } from ".";
 import { validateSfdxPath } from "../api/sfdx";
 
@@ -87,16 +87,14 @@ export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
 }
 
 export function checkOpenAtLogin(): ThunkReturn<void> {
-  return (dispatch) => {
-    ipcRenderer.send(IpcEvent.LAUNCH_SETTINGS_REQUEST);
+  return async (dispatch) => {
+    const openAtLogin: boolean = await ipc.callMain(IpcRendererEvent.GET_LAUNCH_SETTINGS);
 
-    ipcRenderer.once(IpcEvent.LAUNCH_SETTINGS_REPLY, (event, value) => {
-      dispatch({
-        type: "SET_OPEN_AT_LOGIN",
-        payload: {
-          value,
-        },
-      });
+    dispatch({
+      type: "SET_OPEN_AT_LOGIN",
+      payload: {
+        value: openAtLogin,
+      }
     });
   };
 }
@@ -104,7 +102,7 @@ export function checkOpenAtLogin(): ThunkReturn<void> {
 export function toggleOpenAtLogin(): ThunkReturn<void> {
   return (dispatch, getState) => {
     const value = !getState().settings.openAtLogin;
-    ipcRenderer.send(IpcEvent.LAUNCH_SETTINGS_SET, value);
+    ipc.callMain(IpcRendererEvent.SET_LAUNCH_SETTINGS, value);
     dispatch({
       type: "SET_OPEN_AT_LOGIN",
       payload: {

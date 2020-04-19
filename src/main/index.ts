@@ -1,12 +1,12 @@
 import { app, ipcMain } from "electron";
 import installExtensions, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { IpcRendererEvent } from "common/IpcEvent";
 import { isDevelopment } from './common-config';
-import { loginItemSettingsHooks } from "./login-hooks";
-import { UpdateManager } from "./UpdateManager";
+import { loginItemSettingsIpc } from "./login-settings-ipc";
+import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
 
 const mb = createMenubar();
-const updateManager = new UpdateManager();
 
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
@@ -19,8 +19,8 @@ app.on("ready", () => {
     ]);
   }
 
-  updateManager.listenIpc();
-  loginItemSettingsHooks(app);
+  updateManagerIpc();
+  loginItemSettingsIpc();
 
   const { wasOpenedAsHidden } = app.getLoginItemSettings();
   if (!wasOpenedAsHidden) {
@@ -38,6 +38,6 @@ app.on("window-all-closed", () => {
   }
 });
 
-ipcMain.on("exit", () => {
+ipcMain.on(IpcRendererEvent.EXIT_APP, () => {
   app.exit();
 });

@@ -4,6 +4,7 @@ import { AnyAction } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import { Switch, Button, FormGroup } from "@blueprintjs/core";
+import { IpcRendererEvent } from "common/IpcEvent";
 
 import FileInput from "./FileInput";
 import { State } from "../../store";
@@ -20,7 +21,7 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 type Props = StateProps & DispatchProps;
 
 function exit() {
-  ipcRenderer.send("exit");
+  ipcRenderer.send(IpcRendererEvent.EXIT_APP);
 }
 
 function SettingsBody(props: Props) {
