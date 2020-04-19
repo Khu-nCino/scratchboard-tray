@@ -11,9 +11,9 @@ import {
 } from "@blueprintjs/core";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
-import { dismissToast } from "../store/jobs";
+import { dismissToast } from "../store/messages";
 import { State } from "../store";
-import { Toast as ToastRecord } from "../store/jobs";
+import { Toast as ToastRecord } from "../store/messages";
 
 type Props = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>;
@@ -79,7 +79,7 @@ function ToastManager(props: Props) {
 
 function mapStateToProps(state: State) {
   return {
-    toasts: state.jobs.toasts
+    toasts: state.messages.toasts
   };
 }
 

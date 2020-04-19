@@ -17,7 +17,7 @@ function App(props: Props) {
       <RouteTransitions
         activeRoute={props.routeName}
         routes={{
-          orgList: (
+          orgs: (
             <div className="sbt-screen">
               <OrgListTitle />
               <OrgListBody />

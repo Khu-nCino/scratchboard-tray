@@ -5,10 +5,10 @@ type RouteActions =
   | ViewSettingsAction
   | ViewDependenciesAction;
 
-interface ViewOrgListAction extends Action<"orgList"> {}
-interface ViewSettingsAction extends Action<"settings"> {}
+interface ViewOrgListAction extends Action<"CHANGE_ROUTE_ORGS"> {}
+interface ViewSettingsAction extends Action<"CHANGE_ROUTE_SETTINGS"> {}
 
-interface ViewDependenciesAction extends Action<"dependencies"> {
+interface ViewDependenciesAction extends Action<"CHANGE_ROUTE_DEPENDENCIES"> {
   payload: {
     orgUsername: string;
   };
@@ -16,19 +16,19 @@ interface ViewDependenciesAction extends Action<"dependencies"> {
 
 export function viewOrgList(): ViewOrgListAction {
   return {
-    type: "orgList",
+    type: "CHANGE_ROUTE_ORGS",
   };
 }
 
 export function viewSettings(): ViewSettingsAction {
   return {
-    type: "settings",
+    type: "CHANGE_ROUTE_SETTINGS",
   };
 }
 
 export function viewDependencies(orgUsername: string): ViewDependenciesAction {
   return {
-    type: "dependencies",
+    type: "CHANGE_ROUTE_DEPENDENCIES",
     payload: {
       orgUsername,
     },
@@ -36,7 +36,7 @@ export function viewDependencies(orgUsername: string): ViewDependenciesAction {
 }
 
 // State
-export type RouteName = "orgList" | "settings" | "dependencies";
+export type RouteName = "orgs" | "settings" | "dependencies";
 
 export interface RouteState {
   name: RouteName;
@@ -44,17 +44,17 @@ export interface RouteState {
 }
 
 export function routeReducer(
-  state: RouteState = { name: "orgList" },
+  state: RouteState = { name: "orgs" },
   action: RouteActions
 ): RouteState {
   switch (action.type) {
-    case "orgList": {
-      return { name: "orgList" };
+    case "CHANGE_ROUTE_ORGS": {
+      return { name: "orgs" };
     }
-    case "settings": {
+    case "CHANGE_ROUTE_SETTINGS": {
       return { name: "settings" };
     }
-    case "dependencies": {
+    case "CHANGE_ROUTE_DEPENDENCIES": {
       return {
         name: "dependencies",
         orgUsername: action.payload.orgUsername,

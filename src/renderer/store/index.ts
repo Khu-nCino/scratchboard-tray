@@ -10,7 +10,7 @@ import thunk, { ThunkMiddleware } from "redux-thunk";
 import { orgsReducer } from "./orgs";
 import { routeReducer } from "./route";
 import { settingsReducer } from "./settings";
-import { jobsReducer } from "./jobs";
+import { messagesReducer } from "./messages";
 import { updateReducer } from "./updates";
 
 type Reducers = typeof reducers;
@@ -22,13 +22,13 @@ const reducers = {
   orgs: orgsReducer,
   route: routeReducer,
   settings: settingsReducer,
-  jobs: jobsReducer,
+  messages: messagesReducer,
   updates: updateReducer,
 };
 
 export const defaultState: Partial<State> = {
   route: {
-    name: "orgList",
+    name: "orgs",
   },
 };
 

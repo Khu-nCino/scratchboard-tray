@@ -1,95 +1,23 @@
-import { app, ipcMain, nativeImage, Rectangle, Point } from "electron";
-import { format as formatUrl } from "url";
-import path from "path";
+import { app, ipcMain } from "electron";
 import installExtensions, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
-import { menubar } from "menubar";
+import { isDevelopment } from './common-config';
 import { loginItemSettingsHooks } from "./login-hooks";
-import { IpcEvent } from "common/IpcEvent";
 import { UpdateManager } from "./UpdateManager";
+import { createMenubar } from "./menubar-config";
 
-const isDevelopment = process.env.NODE_ENV !== "production";
-
-const indexUrl = isDevelopment
-  ? `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`
-  : formatUrl({
-      pathname: path.join(__dirname, "index.html"),
-      protocol: "file",
-      slashes: true,
-    });
-
-const assetsPath = app.isPackaged
-  ? path.join(process.resourcesPath, "assets")
-  : "assets";
-
-const img = nativeImage.createFromPath(
-  path.join(assetsPath, "cloudTemplate.png")
-);
-img.isMacTemplateImage = true;
-
-const mb = menubar({
-  index: indexUrl,
-  icon: img,
-  showDockIcon: isDevelopment,
-  browserWindow: {
-    width: 380,
-    height: 500,
-    resizable: isDevelopment,
-    webPreferences: {
-      nodeIntegration: true,
-    },
-  },
-});
-
-mb.on("ready", () => {
-  if (process.platform === "darwin") {
-    mb.tray.setIgnoreDoubleClickEvents(true);
-  }
-});
-
-mb.on("after-create-window", () => {
-  if (process.platform === "darwin") {
-    offsetPositioner(mb.positioner, { x: 0, y: 8 });
-  }
-});
-
-function offsetPositioner(
-  positioner: { calculate: (position: string, trayBounds: Rectangle) => Point },
-  offset: Point
-) {
-  positioner.calculate = offsetCalculate(
-    positioner.calculate.bind(positioner),
-    offset
-  );
-}
-
-function offsetCalculate(
-  calculate: (position: string, trayBounds: Rectangle) => Point,
-  offset: Point
-) {
-  return (position: string, trayBounds: Rectangle) => {
-    if (position === "trayCenter") {
-      const { x, y } = calculate(position, trayBounds);
-      return { x: x + offset.x, y: y + offset.y };
-    }
-    return calculate(position, trayBounds);
-  };
-}
-
-mb.on("show", () => {
-  mb.window?.webContents.send(IpcEvent.WINDOW_OPENED);
-});
-
+const mb = createMenubar();
 const updateManager = new UpdateManager();
 
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 
-
 app.on("ready", () => {
-  installExtensions([
-    REACT_DEVELOPER_TOOLS,
-    REDUX_DEVTOOLS,
-  ]);
+  if (isDevelopment) {
+    installExtensions([
+      REACT_DEVELOPER_TOOLS,
+      REDUX_DEVTOOLS,
+    ]);
+  }
 
   updateManager.listenIpc();
   loginItemSettingsHooks(app);

@@ -1,7 +1,7 @@
 import { Action, Store } from "redux";
 import { ipcRenderer } from "electron";
 import { IpcEvent } from "../../common/IpcEvent";
-import { createErrorToast, createToast } from "./jobs";
+import { createErrorToast, createToast } from "./messages";
 
 type UpdateAction =
   | UpdateDownloadedAction

@@ -1,7 +1,7 @@
 import { Action } from "redux";
 import { Intent } from "@blueprintjs/core";
 
-export type JobsAction = CreateToastAction | DismissToastAction;
+export type MessagesAction = CreateToastAction | DismissToastAction;
 
 interface CreateToastAction extends Action<"CREATE_TOAST"> {
   payload: Toast;
@@ -55,15 +55,15 @@ export interface Toast {
   intent: Intent;
 }
 
-interface JobsState {
+interface MessagesState {
   toasts: Toast[];
 }
 
-const defaultState: JobsState = {
+const defaultState: MessagesState = {
   toasts: [],
 };
 
-export function jobsReducer(state = defaultState, action: JobsAction) {
+export function messagesReducer(state = defaultState, action: MessagesAction) {
   switch (action.type) {
     case "CREATE_TOAST":
       return {

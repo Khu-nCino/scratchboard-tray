@@ -1,0 +1,65 @@
+import { nativeImage, Rectangle, Point } from "electron";
+import path from "path";
+import { menubar, Menubar } from "menubar";
+import { isDevelopment, indexUrl, assetsPath, browserWindowConfig } from "./common-config";
+import { IpcEvent } from "common/IpcEvent";
+
+export function createMenubar(): Menubar {
+  const icon = loadIcon("cloudTemplate.png");
+
+  const mb = menubar({
+    index: indexUrl,
+    icon,
+    showDockIcon: isDevelopment,
+    browserWindow: browserWindowConfig,
+  });
+
+  mb.on("ready", () => {
+    if (process.platform === "darwin") {
+      mb.tray.setIgnoreDoubleClickEvents(true);
+    }
+  });
+
+  mb.on("after-create-window", () => {
+    if (process.platform === "darwin") {
+      offsetPositioner(mb.positioner, { x: 0, y: 8 });
+    }
+  });
+  
+  mb.on("show", () => {
+    mb.window?.webContents.send(IpcEvent.WINDOW_OPENED);
+  });
+
+  return mb;
+}
+
+function loadIcon(name: string) {
+  const img = nativeImage.createFromPath(
+    path.join(assetsPath, name)
+  );
+  img.isMacTemplateImage = true;
+  return img;
+}
+
+function offsetPositioner(
+  positioner: { calculate: (position: string, trayBounds: Rectangle) => Point },
+  offset: Point
+) {
+  positioner.calculate = offsetCalculate(
+    positioner.calculate.bind(positioner),
+    offset
+  );
+}
+
+function offsetCalculate(
+  calculate: (position: string, trayBounds: Rectangle) => Point,
+  offset: Point
+) {
+  return (position: string, trayBounds: Rectangle) => {
+    if (position === "trayCenter") {
+      const { x, y } = calculate(position, trayBounds);
+      return { x: x + offset.x, y: y + offset.y };
+    }
+    return calculate(position, trayBounds);
+  };
+}

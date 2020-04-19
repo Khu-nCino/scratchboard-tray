@@ -10,10 +10,10 @@ import {
   frontDoorUrlApi,
   setAlias,
 } from "../api/sfdx";
-import { JobsAction, createToast, createErrorToast } from "./jobs";
+import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 
-type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | JobsAction>;
+type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
 
 // Actions
 type OrgAction =
