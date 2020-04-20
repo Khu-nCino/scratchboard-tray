@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Button, ButtonGroup, Popover, Position } from "@blueprintjs/core";
 
 import { AnyAction } from "redux";
@@ -7,7 +7,7 @@ import { ThunkDispatch } from "redux-thunk";
 
 import TimeRemaining from "../TimeRemaining";
 
-import { ScratchOrg } from "../../../api/sfdx";
+import { SalesforceOrg } from "../../../api/sfdx";
 import {
   openOrgAction,
   deleteOrgAction,
@@ -20,7 +20,7 @@ import AliasDialog from "./AliasDialog";
 import DeleteConformation from "./DeleteConformation";
 
 interface OwnProps {
-  org: ScratchOrg;
+  org: SalesforceOrg;
 }
 
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
@@ -34,11 +34,6 @@ function OrgItem(props: Props) {
   const [isLoading, setLoading] = useState(false);
 
   const orgDisplayName = props.org.alias || props.org.username;
-
-  const orgExpirationDate = useMemo(
-    () => Date.parse(props.org.expirationDate),
-    [props.org.expirationDate]
-  );
 
   const actionsMenu = (
     <ActionMenu
@@ -90,14 +85,18 @@ function OrgItem(props: Props) {
     </>
   );
 
+  const timeRemaining = props.org.isScratchOrg ? (
+    <TimeRemaining
+      className="sbt-m_xx-small sbt-ml_small"
+      date={Date.parse(props.org.expirationDate)}
+    />
+  ) : undefined;
+
   return (
     <div className="sbt-org-list--item sbt-flex-container sbt-hover-highlight">
       <div className="sbt-ml_medium">
         <h4 className="sbt-m_xx-small">{orgDisplayName}</h4>
-        <TimeRemaining
-          className="sbt-m_xx-small sbt-ml_small"
-          date={orgExpirationDate}
-        />
+        {timeRemaining}
       </div>
       <ButtonGroup className="sbt-flex-item--right sbt-mr_medium">
         <Button

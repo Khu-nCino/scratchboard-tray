@@ -2,27 +2,25 @@ import fs from "fs";
 import path from "path";
 import { executePromiseJson } from "./util";
 
-export interface SalesforceOrg {
+export type SalesforceOrg = NonScratchOrg | ScratchOrg;
+
+export interface BaseOrg {
   username: string;
   orgId: string;
   accessToken: string;
   instanceUrl: string;
-  loginUrl: string;
-  clientId: string;
   alias: string;
   lastUsed: string;
-  connectedStatus: string;
+  isDevHub: boolean;
 }
 
-export interface ScratchOrg extends SalesforceOrg {
-  createdOrgInstance: string;
-  created: string;
+export interface NonScratchOrg extends BaseOrg {
+  isScratchOrg: false;
+}
+
+export interface ScratchOrg extends BaseOrg {
+  isScratchOrg: true;
   devHubUsername: string;
-  connectedStatus: string;
-  attributes: {
-    type: string;
-    url: string;
-  };
   orgName: string;
   status: string;
   createdBy: string;
@@ -35,25 +33,40 @@ export interface ScratchOrg extends SalesforceOrg {
 }
 
 interface OrgListResult {
+  nonScratchOrgs: SalesforceOrg[];
   scratchOrgs: ScratchOrg[];
 }
 
-export function listScratchOrgs(): Promise<ScratchOrg[]> {
-  return executePromiseJson("sfdx force:org:list --json").then(
-    (orgList: OrgListResult) => orgList.scratchOrgs
-  );
+export async function listOrgs(): Promise<SalesforceOrg[]> {
+  const {
+    nonScratchOrgs,
+    scratchOrgs,
+  }: OrgListResult = await executePromiseJson("sfdx force:org:list --json");
+
+  nonScratchOrgs.forEach((org) => {
+    org.isScratchOrg = false;
+  });
+
+  scratchOrgs.forEach((org) => {
+    org.isScratchOrg = true;
+  });
+
+  return [...nonScratchOrgs, ...scratchOrgs];
 }
 
 export function openOrg(username: string): Promise<void> {
   return executePromiseJson(`sfdx force:org:open --json -u ${username}`);
 }
 
-export function frontDoorUrlApi(username: string, startUrl?: string): Promise<string> {
-  const startUrlOption = startUrl ? ` -p "${startUrl}"` : '';
+export function frontDoorUrlApi(
+  username: string,
+  startUrl?: string
+): Promise<string> {
+  const startUrlOption = startUrl ? ` -p "${startUrl}"` : "";
 
   return executePromiseJson(
     `sfdx force:org:open --json -r -u ${username}${startUrlOption}`
-  ).then(result => result.url);
+  ).then((result) => result.url);
 }
 
 export function deleteOrg(username: string): Promise<void> {
@@ -69,7 +82,7 @@ export function setAlias(username: string, alias: string): Promise<void> {
 const binaryName = process.platform === "win32" ? "sfdx.exe" : "sfdx";
 
 export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (sfdxBinPath && path.basename(sfdxBinPath).startsWith(binaryName)) {
       fs.stat(sfdxBinPath, (error, state) => {
         resolve(!Boolean(error) && state.isFile());
@@ -80,20 +93,23 @@ export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   });
 }
 
-// Find us a good home
-export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promise<string> {
+// TODO Find us a good home
+export function urlToFrontDoorUrl(
+  orgs: SalesforceOrg[],
+  rawUrl: string
+): Promise<string> {
   const url = new URL(rawUrl);
   const orgUsername = matchOrgByUrl(orgs, url)?.username;
   if (!orgUsername) {
-    throw 'Could not find org matching that url.';
+    throw "Could not find org matching that url.";
   }
 
   // correct visualforce namespace
   const namespace = extractNamespace(url);
-  let correctedPathname
-    = url.pathname.startsWith('/apex/') && namespace && !/__/.test(url.pathname)
-    ? `/apex/${namespace}__${url.pathname.slice(6)}`
-    : url.pathname;
+  let correctedPathname =
+    url.pathname.startsWith("/apex/") && namespace && !/__/.test(url.pathname)
+      ? `/apex/${namespace}__${url.pathname.slice(6)}`
+      : url.pathname;
 
   const urlPath = `${correctedPathname}${url.search}${url.hash}`;
 
@@ -101,9 +117,11 @@ export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promis
 }
 
 function matchOrgByUrl(orgs: SalesforceOrg[], url: URL) {
-  return orgs.find((org) => (
-    extractUrlIdentifier(new URL(org.instanceUrl)) === extractUrlIdentifier(url)
-  ));
+  return orgs.find(
+    (org) =>
+      extractUrlIdentifier(new URL(org.instanceUrl)) ===
+      extractUrlIdentifier(url)
+  );
 }
 
 function extractNamespace(url: URL): string | undefined {

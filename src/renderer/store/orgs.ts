@@ -3,12 +3,12 @@ import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
 import {
-  ScratchOrg,
-  listScratchOrgs,
+  listOrgs,
   openOrg,
   deleteOrg,
   frontDoorUrlApi,
   setAlias,
+  SalesforceOrg,
 } from "../api/sfdx";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
@@ -28,7 +28,7 @@ interface ListOrgsPending extends Action<"LIST_ORGS_PENDING"> {}
 
 interface ListOrgsFulfilled extends Action<"LIST_ORGS_FULFILLED"> {
   payload: {
-    scratchOrgs: ScratchOrg[];
+    orgList: SalesforceOrg[],
   };
 }
 
@@ -60,10 +60,12 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
     dispatch({ type: "LIST_ORGS_PENDING" });
 
     try {
-      const scratchOrgs = await listScratchOrgs();
+      const orgList = await listOrgs();
       dispatch({
         type: "LIST_ORGS_FULFILLED",
-        payload: { scratchOrgs },
+        payload: {
+          orgList
+        },
       });
     } catch (error) {
       dispatch({ type: "LIST_ORGS_REJECTED" });
@@ -150,7 +152,7 @@ type OrgListStatus =
 
 export interface OrgsState {
   orgListStatus: OrgListStatus;
-  orgList: ScratchOrg[];
+  orgList: SalesforceOrg[];
 }
 
 function createDefaultOrgsState(): OrgsState {
@@ -175,7 +177,7 @@ export function orgsReducer(
       return {
         ...state,
         orgListStatus: "loaded",
-        orgList: action.payload.scratchOrgs,
+        orgList: action.payload.orgList,
       };
     case "LIST_ORGS_REJECTED":
       return {
