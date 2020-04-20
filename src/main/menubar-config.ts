@@ -2,13 +2,13 @@ import { nativeImage, Rectangle, Point } from "electron";
 import path from "path";
 import { menubar, Menubar } from "menubar";
 import { IpcMainEvent } from "common/IpcEvent";
-import { isDevelopment, indexUrl, assetsPath, browserWindowConfig } from "./common-config";
+import { indexUrl, assetsPath, browserWindowConfig } from "./common-config";
 
 export function createMenubar(): Menubar {
   const mb = menubar({
     index: indexUrl,
     icon: loadTemplateIcon("cloudTemplate.png"),
-    showDockIcon: isDevelopment,
+    showDockIcon: false,
     browserWindow: browserWindowConfig,
   });
 

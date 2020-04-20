@@ -19,7 +19,7 @@ export const assetsPath = app.isPackaged
 export const browserWindowConfig: BrowserWindowConstructorOptions = {
   width: 380,
   height: 500,
-  resizable: isDevelopment,
+  resizable: false,
   webPreferences: {
     nodeIntegration: true,
   },

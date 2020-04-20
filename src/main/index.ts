@@ -1,42 +1,43 @@
-import { app, ipcMain } from "electron";
-import installExtensions, { REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { app, ipcMain, BrowserWindow } from "electron";
+import { Menubar } from "menubar";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { isDevelopment } from './common-config';
 import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
 import { registerGlobalShortcuts } from "./global-shortcuts";
+import { createDebugWindow } from "./debug-window-config";
 
-const mb = createMenubar();
+let mb: Menubar | undefined;
+let debugWindow: BrowserWindow | undefined;
+let showFunction: Function | undefined;
 
-mb.on("after-create-window", () => {
-  if (mb.window) {
-    registerGlobalShortcuts(mb.window);
-  }
-});
+if (!isDevelopment) {
+  mb = createMenubar();
+  showFunction = mb.showWindow.bind(mb);
+} else {
+  app.on("ready", () => {
+    debugWindow = createDebugWindow();
+    showFunction = debugWindow.show.bind(debugWindow);
+    registerGlobalShortcuts(debugWindow);
+  });
+}
 
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();
 
 app.on("ready", () => {
-  if (isDevelopment) {
-    installExtensions([
-      REACT_DEVELOPER_TOOLS,
-      REDUX_DEVTOOLS,
-    ]);
-  }
-
   updateManagerIpc();
   loginItemSettingsIpc();
 
   const { wasOpenedAsHidden } = app.getLoginItemSettings();
   if (!wasOpenedAsHidden) {
-    mb.showWindow();
+    showFunction?.();
   }
 });
 
 app.on("activate", () => {
-  mb.showWindow();
+  showFunction?.();
 });
 
 app.on("window-all-closed", () => {

@@ -23,7 +23,7 @@ export function registerGlobalShortcuts(browserWindow: BrowserWindow) {
       new Notification({
         title: 'Error converting frontdoor to url',
         body: error,
-      });
+      }).show();
     }
   });
 }

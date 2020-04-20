@@ -188,16 +188,7 @@ export function orgsReducer(
         orgListStatus: "invalid_sfdx_path",
       };
     case "REMOVE_ORG_LISTING": {
-      const orgList = [...state.orgList];
-      const indexToRemove = orgList.findIndex(
-        ({ username }) => username === action.payload.username
-      );
-
-      if (indexToRemove < 0) {
-        return state;
-      }
-
-      orgList.splice(indexToRemove, 1);
+      const orgList = state.orgList.filter(({ username }) => username !== action.payload.username);
 
       return {
         ...state,
