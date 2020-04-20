@@ -4,8 +4,10 @@ import path from "path";
 import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from "react-redux";
+import { ipcRenderer as ipc } from "electron-better-ipc";
 
-import { getCurrentPaths, setPaths } from "../common/path-util";
+import { getCurrentPaths, setPaths } from "common/path-util";
+import { IpcMainEvent } from "common/IpcEvent";
 import { createStore, defaultState } from "./store";
 
 import { loadPersistedState, watchAndSave, watchStore } from "./persist";
@@ -13,6 +15,7 @@ import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 import App from "./view/App";
 import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { listenIpc } from "./store/updates";
+import { urlToFrontDoorUrl } from "./api/sfdx";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -38,6 +41,12 @@ store.dispatch(checkOpenAtLogin());
 store.dispatch(checkSfdxPathValidity());
 
 listenIpc(store);
+
+// <find me a good home>
+ipc.answerMain(IpcMainEvent.CONVERT_URL, (rawUrl: string) => {
+  return urlToFrontDoorUrl(store.getState().orgs.orgList, rawUrl);
+});
+// </find me a good home>
 
 ReactDom.render(
   <Provider store={store}>

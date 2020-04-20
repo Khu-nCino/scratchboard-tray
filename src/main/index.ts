@@ -5,8 +5,15 @@ import { isDevelopment } from './common-config';
 import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
+import { registerGlobalShortcuts } from "./global-shortcuts";
 
 const mb = createMenubar();
+
+mb.on("after-create-window", () => {
+  if (mb.window) {
+    registerGlobalShortcuts(mb.window);
+  }
+});
 
 app.allowRendererProcessReuse = true;
 app.disableHardwareAcceleration();

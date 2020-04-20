@@ -8,6 +8,8 @@ export enum IpcMainEvent {
   UPDATE_DOWNLOADED = "UPDATE_DOWNLOADED",
   UPDATE_DOWNLOADING = "UPDATE_DOWNLOADING",
   UPDATE_ERROR = "UPDATE_ERROR",
+
+  CONVERT_URL = "CONVERT_URL",
 }
 
 export enum IpcRendererEvent {

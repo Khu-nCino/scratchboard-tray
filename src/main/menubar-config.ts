@@ -5,11 +5,9 @@ import { IpcMainEvent } from "common/IpcEvent";
 import { isDevelopment, indexUrl, assetsPath, browserWindowConfig } from "./common-config";
 
 export function createMenubar(): Menubar {
-  const icon = loadIcon("cloudTemplate.png");
-
   const mb = menubar({
     index: indexUrl,
-    icon,
+    icon: loadTemplateIcon("cloudTemplate.png"),
     showDockIcon: isDevelopment,
     browserWindow: browserWindowConfig,
   });
@@ -33,7 +31,7 @@ export function createMenubar(): Menubar {
   return mb;
 }
 
-function loadIcon(name: string) {
+function loadTemplateIcon(name: string) {
   const img = nativeImage.createFromPath(
     path.join(assetsPath, name)
   );
