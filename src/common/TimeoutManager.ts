@@ -1,4 +1,3 @@
-
 interface Timeout {
   date: number;
   timeoutId: number;
@@ -12,7 +11,7 @@ class TimeoutManager {
     const now = Date.now();
     this.timeoutSet.forEach((timeout) => {
       window.clearTimeout(timeout.timeoutId);
-      
+
       const timeLeft = timeout.date - now;
       if (timeLeft < 0) {
         timeout.handler();
@@ -22,7 +21,7 @@ class TimeoutManager {
           timeout.handler();
         }, timeLeft);
       }
-    })
+    });
   }
 
   setTimeout(handler: () => void, delay: number): Timeout {

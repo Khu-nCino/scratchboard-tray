@@ -34,12 +34,15 @@ interface SetLaunchAtLogin extends Action<"SET_OPEN_AT_LOGIN"> {
   };
 }
 
+interface ToggleDisplayAllOrgs extends Action<"TOGGLE_DISPLAY_ALL_ORGS"> {}
+
 type SettingsAction =
   | SetThemeAction
   | ToggleThemeAction
   | SetSfdxPath
   | SetSfdxPathValidity
-  | SetLaunchAtLogin;
+  | SetLaunchAtLogin
+  | ToggleDisplayAllOrgs;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
@@ -88,13 +91,15 @@ export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
 
 export function checkOpenAtLogin(): ThunkReturn<void> {
   return async (dispatch) => {
-    const openAtLogin: boolean = await ipc.callMain(IpcRendererEvent.GET_LAUNCH_SETTINGS);
+    const openAtLogin: boolean = await ipc.callMain(
+      IpcRendererEvent.GET_LAUNCH_SETTINGS
+    );
 
     dispatch({
       type: "SET_OPEN_AT_LOGIN",
       payload: {
         value: openAtLogin,
-      }
+      },
     });
   };
 }
@@ -112,6 +117,12 @@ export function toggleOpenAtLogin(): ThunkReturn<void> {
   };
 }
 
+export function toggleDisplayAllOrgs(): ToggleDisplayAllOrgs {
+  return {
+    type: "TOGGLE_DISPLAY_ALL_ORGS",
+  };
+}
+
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
@@ -119,12 +130,19 @@ interface SettingsState {
   isSfdxPathValid?: boolean;
   theme: UITheme;
   openAtLogin: boolean;
+
+  features: {
+    displayAllOrgs: boolean;
+  };
 }
 
 const defaultState: SettingsState = {
   sfdxPath: "",
   theme: "dark",
   openAtLogin: false,
+  features: {
+    displayAllOrgs: false,
+  },
 };
 
 export function settingsReducer(
@@ -159,6 +177,14 @@ export function settingsReducer(
       return {
         ...state,
         openAtLogin: action.payload.value,
+      };
+    case "TOGGLE_DISPLAY_ALL_ORGS":
+      return {
+        ...state,
+        features: {
+          ...state.features,
+          displayAllOrgs: !state.features.displayAllOrgs,
+        },
       };
     default: {
       return state;

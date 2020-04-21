@@ -48,6 +48,8 @@ export function createStore(initial: Partial<State> = defaultState) {
   return createReduxStore(
     combineReducers<State>(reducers),
     initial,
-    composeEnhancers(applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>))
+    composeEnhancers(
+      applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>)
+    )
   );
 }

@@ -73,8 +73,8 @@ function OrgList(props: Props) {
             <>
               No SFDX binary found.
               <br />
-              Try setting the path in the <Icon icon="cog" /> screen and
-              coming back.
+              Try setting the path in the <Icon icon="cog" /> screen and coming
+              back.
             </>
           }
         />
@@ -85,8 +85,12 @@ function OrgList(props: Props) {
 }
 
 function mapStateToProps(state: State) {
+  const displayAllOrgs = state.settings.features.displayAllOrgs;
+
   return {
-    orgList: state.orgs.orgList,
+    orgList: displayAllOrgs
+      ? state.orgs.orgList
+      : state.orgs.orgList.filter((org) => org.isScratchOrg),
     orgListStatus: state.orgs.orgListStatus,
     isSfdxPathValid: state.settings.isSfdxPathValid,
   };

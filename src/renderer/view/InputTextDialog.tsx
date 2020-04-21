@@ -8,16 +8,18 @@ import {
   Keys,
 } from "@blueprintjs/core";
 
-export default function AliasDialog(props: {
+export default function InputTextDialog(props: {
+  titleText: string;
+  placeholderText: string;
   value: string;
-  onChange: (value: string) => void;
   isOpen: boolean;
+  onChange: (value: string) => void;
   onClose: () => void;
   onConfirm: () => void;
 }) {
   return (
     <Dialog
-      title="Set Alias"
+      title={props.titleText}
       isOpen={props.isOpen}
       onClose={props.onClose}
       className="sbt-mh_medium"
@@ -25,7 +27,7 @@ export default function AliasDialog(props: {
       <div className={Classes.DIALOG_BODY}>
         <InputGroup
           value={props.value || ""}
-          placeholder="Alias"
+          placeholder={props.placeholderText}
           onChange={(event: React.FormEvent<HTMLElement>) =>
             props.onChange((event.target as HTMLInputElement).value)
           }

@@ -9,7 +9,7 @@ interface OwnProps {
   title: string;
 }
 
-type DispatchProps = ReturnType<typeof mapDispatchToProps>
+type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 
 type Props = OwnProps & DispatchProps;
 
@@ -33,7 +33,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
   };
 };
 
-export default connect(
-  undefined,
-  mapDispatchToProps
-)(SimpleTitle);
+export default connect(undefined, mapDispatchToProps)(SimpleTitle);

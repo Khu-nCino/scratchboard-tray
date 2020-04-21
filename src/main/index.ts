@@ -1,7 +1,7 @@
 import { app, ipcMain, BrowserWindow } from "electron";
 import { Menubar } from "menubar";
 import { IpcRendererEvent } from "common/IpcEvent";
-import { isDevelopment } from './common-config';
+import { isDevelopment } from "./common-config";
 import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";

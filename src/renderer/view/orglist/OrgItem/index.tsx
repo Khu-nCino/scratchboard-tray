@@ -16,8 +16,8 @@ import {
 } from "../../../store/orgs";
 import { State } from "../../../store";
 import ActionMenu from "./ActionMenu";
-import AliasDialog from "./AliasDialog";
 import DeleteConformation from "./DeleteConformation";
+import InputTextDialog from "../../InputTextDialog";
 
 interface OwnProps {
   org: SalesforceOrg;
@@ -55,7 +55,9 @@ function OrgItem(props: Props) {
 
   const dialogs = (
     <>
-      <AliasDialog
+      <InputTextDialog
+        titleText="Set Alias"
+        placeholderText="Alias"
         value={aliasValue}
         onChange={setAliasValue}
         isOpen={pendingAlias}
@@ -85,12 +87,12 @@ function OrgItem(props: Props) {
     </>
   );
 
-  const timeRemaining = props.org.isScratchOrg ? (
+  const timeRemaining = props.org.isScratchOrg && (
     <TimeRemaining
       className="sbt-m_xx-small sbt-ml_small"
       date={Date.parse(props.org.expirationDate)}
     />
-  ) : undefined;
+  );
 
   return (
     <div className="sbt-org-list--item sbt-flex-container sbt-hover-highlight">

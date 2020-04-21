@@ -23,7 +23,7 @@ export function createMenubar(): Menubar {
       offsetPositioner(mb.positioner, { x: 0, y: 8 });
     }
   });
-  
+
   mb.on("show", () => {
     mb.window?.webContents.send(IpcMainEvent.WINDOW_OPENED);
   });
@@ -32,9 +32,7 @@ export function createMenubar(): Menubar {
 }
 
 function loadTemplateIcon(name: string) {
-  const img = nativeImage.createFromPath(
-    path.join(assetsPath, name)
-  );
+  const img = nativeImage.createFromPath(path.join(assetsPath, name));
   img.isMacTemplateImage = true;
   return img;
 }

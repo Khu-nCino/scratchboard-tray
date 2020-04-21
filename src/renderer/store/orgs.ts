@@ -13,7 +13,12 @@ import {
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 
-type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
+type ThunkResult<R> = ThunkAction<
+  R,
+  State,
+  undefined,
+  OrgAction | MessagesAction
+>;
 
 // Actions
 type OrgAction =
@@ -28,7 +33,7 @@ interface ListOrgsPending extends Action<"LIST_ORGS_PENDING"> {}
 
 interface ListOrgsFulfilled extends Action<"LIST_ORGS_FULFILLED"> {
   payload: {
-    orgList: SalesforceOrg[],
+    orgList: SalesforceOrg[];
   };
 }
 
@@ -64,7 +69,7 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
       dispatch({
         type: "LIST_ORGS_FULFILLED",
         payload: {
-          orgList
+          orgList,
         },
       });
     } catch (error) {
@@ -190,7 +195,9 @@ export function orgsReducer(
         orgListStatus: "invalid_sfdx_path",
       };
     case "REMOVE_ORG_LISTING": {
-      const orgList = state.orgList.filter(({ username }) => username !== action.payload.username);
+      const orgList = state.orgList.filter(
+        ({ username }) => username !== action.payload.username
+      );
 
       return {
         ...state,

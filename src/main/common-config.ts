@@ -23,4 +23,4 @@ export const browserWindowConfig: BrowserWindowConstructorOptions = {
   webPreferences: {
     nodeIntegration: true,
   },
-}
+};

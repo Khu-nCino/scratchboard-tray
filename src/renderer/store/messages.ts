@@ -17,7 +17,7 @@ let nextToastId = 0;
 export function createToast(
   message: string,
   intent: Intent,
-  detail?: string,
+  detail?: string
 ): CreateToastAction {
   return {
     type: "CREATE_TOAST",

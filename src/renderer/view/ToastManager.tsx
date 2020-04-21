@@ -7,7 +7,7 @@ import {
   IconName,
   Dialog,
   Button,
-  Classes
+  Classes,
 } from "@blueprintjs/core";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
@@ -23,7 +23,7 @@ const intentIcons: Record<Intent, IconName | undefined> = {
   danger: "error",
   warning: "warning-sign",
   none: undefined,
-  primary: undefined
+  primary: undefined,
 };
 
 function ToastManager(props: Props) {
@@ -52,7 +52,7 @@ function ToastManager(props: Props) {
         </div>
       </Dialog>
       <Toaster position={Position.BOTTOM}>
-        {props.toasts.map(toast => {
+        {props.toasts.map((toast) => {
           const message = toast.detail ? (
             <>
               {toast.message + " "}
@@ -79,13 +79,13 @@ function ToastManager(props: Props) {
 
 function mapStateToProps(state: State) {
   return {
-    toasts: state.messages.toasts
+    toasts: state.messages.toasts,
   };
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    dismissToast: (toastId: number) => dispatch(dismissToast(toastId))
+    dismissToast: (toastId: number) => dispatch(dismissToast(toastId)),
   };
 }
 
