@@ -8,28 +8,20 @@ import { listOrgsRequest } from "../../store/orgs";
 import { viewSettings } from "../../store/route";
 import { State } from "../../store";
 
-type Props = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+type Props = ReturnType<typeof mapDispatchToProps>;
 
-function Title(props: Props) {
+function OrgListTitleBar(props: Props) {
   return (
     <div className="sbt-titlebar-container">
       <h2 className="sbt-titlebar-title">Scratchboard</h2>
 
       <ButtonGroup className="sbt-titlebar-button">
-        {props.displayAllOrgs && <Button icon="log-in" />}
         <Button icon="refresh" onClick={props.refreshOrgs} />
         <Button icon="cog" onClick={props.viewSettings} />
       </ButtonGroup>
     </div>
   );
 }
-
-const mapStateToProps = (state: State) => {
-  return {
-    displayAllOrgs: state.settings.features.displayAllOrgs,
-  };
-};
 
 const mapDispatchToProps = (
   dispatch: ThunkDispatch<State, undefined, AnyAction>
@@ -40,4 +32,4 @@ const mapDispatchToProps = (
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Title);
+export default connect(undefined, mapDispatchToProps)(OrgListTitleBar);

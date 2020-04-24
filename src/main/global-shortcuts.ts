@@ -11,10 +11,10 @@ export function registerGlobalShortcuts(browserWindow: BrowserWindow) {
   globalShortcut.register("Ctrl+Option+Cmd+F", async () => {
     const text = clipboard.readText();
 
-    new Notification({
-      title: "Converting url to Frontdoor",
-      body: text,
-    }).show();
+    showNotification(
+      "Converting url to Frontdoor",
+      text,
+    );
 
     try {
       const frontdoor: string = await ipc.callRenderer(
@@ -24,15 +24,23 @@ export function registerGlobalShortcuts(browserWindow: BrowserWindow) {
       );
       clipboard.writeText(frontdoor);
 
-      new Notification({
-        title: "Finished converting frontdoor to url",
-        body: "You can find it in you clipboard",
-      }).show();
+      showNotification(
+        "Finished converting frontdoor to url",
+        "You can find it in you clipboard",
+      )
     } catch (error) {
-      new Notification({
-        title: "Error converting frontdoor to url",
-        body: error,
-      }).show();
+      showNotification(
+        "Error converting frontdoor to url",
+        error,
+      );
     }
   });
+}
+
+function showNotification(title: string, body: string) {
+  new Notification({
+    title,
+    body,
+    closeButtonText: 'close'
+  }).show();
 }

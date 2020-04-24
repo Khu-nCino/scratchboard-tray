@@ -117,12 +117,6 @@ export function toggleOpenAtLogin(): ThunkReturn<void> {
   };
 }
 
-export function toggleDisplayAllOrgs(): ToggleDisplayAllOrgs {
-  return {
-    type: "TOGGLE_DISPLAY_ALL_ORGS",
-  };
-}
-
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
@@ -130,19 +124,12 @@ interface SettingsState {
   isSfdxPathValid?: boolean;
   theme: UITheme;
   openAtLogin: boolean;
-
-  features: {
-    displayAllOrgs: boolean;
-  };
 }
 
 const defaultState: SettingsState = {
   sfdxPath: "",
   theme: "dark",
   openAtLogin: false,
-  features: {
-    displayAllOrgs: false,
-  },
 };
 
 export function settingsReducer(
@@ -177,14 +164,6 @@ export function settingsReducer(
       return {
         ...state,
         openAtLogin: action.payload.value,
-      };
-    case "TOGGLE_DISPLAY_ALL_ORGS":
-      return {
-        ...state,
-        features: {
-          ...state.features,
-          displayAllOrgs: !state.features.displayAllOrgs,
-        },
       };
     default: {
       return state;

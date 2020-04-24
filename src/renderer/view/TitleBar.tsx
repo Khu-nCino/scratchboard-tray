@@ -13,7 +13,7 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 
 type Props = OwnProps & DispatchProps;
 
-function SimpleTitle(props: Props) {
+function TitleBar(props: Props) {
   return (
     <div className="sbt-titlebar-container">
       <h2 className="sbt-titlebar-title">{props.title}</h2>
@@ -33,4 +33,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
   };
 };
 
-export default connect(undefined, mapDispatchToProps)(SimpleTitle);
+export default connect(undefined, mapDispatchToProps)(TitleBar);

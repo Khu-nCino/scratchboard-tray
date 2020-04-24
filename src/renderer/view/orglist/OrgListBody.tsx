@@ -85,12 +85,8 @@ function OrgList(props: Props) {
 }
 
 function mapStateToProps(state: State) {
-  const displayAllOrgs = state.settings.features.displayAllOrgs;
-
   return {
-    orgList: displayAllOrgs
-      ? state.orgs.orgList
-      : state.orgs.orgList.filter((org) => org.isScratchOrg),
+    orgList: state.orgs.orgList,
     orgListStatus: state.orgs.orgListStatus,
     isSfdxPathValid: state.settings.isSfdxPathValid,
   };

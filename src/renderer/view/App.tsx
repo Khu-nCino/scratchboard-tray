@@ -4,8 +4,8 @@ import { connect } from "react-redux";
 
 import { State } from "../store";
 import OrgListBody from "./orglist/OrgListBody";
-import OrgListTitle from "./orglist/OrgListTitle";
-import SimpleTitle from "./SimpleTitle";
+import OrgListTitle from "./orglist/OrgListTitleBar";
+import TitleBar from "./TitleBar";
 import SettingsBody from "./settings/SettingsBody";
 import ToastManager from "./ToastManager";
 
@@ -25,11 +25,11 @@ function App(props: Props) {
           ),
           settings: (
             <div className="sbt-screen">
-              <SimpleTitle title="Settings" />
+              <TitleBar title="Settings" />
               <SettingsBody />
             </div>
           ),
-          dependencies: <SimpleTitle title="Dependencies" />,
+          dependencies: <TitleBar title="Dependencies" />,
         }}
       />
       <ToastManager />

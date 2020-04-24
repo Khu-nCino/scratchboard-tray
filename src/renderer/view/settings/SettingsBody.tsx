@@ -12,7 +12,6 @@ import {
   toggleTheme,
   setSfdxPath,
   toggleOpenAtLogin,
-  toggleDisplayAllOrgs,
 } from "../../store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
@@ -44,13 +43,6 @@ function SettingsBody(props: Props) {
           onChange={props.toggleOpenAtLogin}
         />
       </FormGroup>
-      <FormGroup label="Features" className="sbt-mh_medium sbt-mt_medium">
-        <Switch
-          labelElement="Display all org"
-          checked={props.displayAllOrgs}
-          onChange={props.toggleDisplayAllOrgs}
-        />
-      </FormGroup>
       <FormGroup label="SFDX Binary" className="sbt-mh_medium">
         <FileInput
           value={props.sfdxPath}
@@ -71,7 +63,6 @@ function mapStateToProps(state: State) {
     sfdxPath: state.settings.sfdxPath,
     isSfdxPathValid: state.settings.isSfdxPathValid,
     openAtLogin: state.settings.openAtLogin,
-    displayAllOrgs: state.settings.features.displayAllOrgs,
   };
 }
 
@@ -82,7 +73,6 @@ function mapDispatchToProps(
     toggleTheme: () => dispatch(toggleTheme()),
     setSfdxPath: (path: string) => dispatch(setSfdxPath(path)),
     toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin()),
-    toggleDisplayAllOrgs: () => dispatch(toggleDisplayAllOrgs()),
   };
 }
 

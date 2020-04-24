@@ -18,12 +18,6 @@ export function loadPersistedState(state: Partial<State>): Partial<State> {
       sfdxPath: electronStore.get("sfdxBinPath", state.settings?.sfdxPath),
       theme: electronStore.get("theme", state.settings?.theme),
       openAtLogin: false,
-      features: {
-        displayAllOrgs: electronStore.get(
-          "features.displayAllOrgs",
-          state.settings?.features.displayAllOrgs
-        ),
-      },
     },
   };
 }
@@ -39,12 +33,6 @@ export function watchAndSave(store: Store<AppState>) {
     store,
     (state: AppState) => state.settings.theme,
     (value: string) => electronStore.set("theme", value)
-  );
-
-  watchStore(
-    store,
-    (state: AppState) => state.settings.features.displayAllOrgs,
-    (value: boolean) => electronStore.set("features.displayAllOrgs", value)
   );
 }
 
