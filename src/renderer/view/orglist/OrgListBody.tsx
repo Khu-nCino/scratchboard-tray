@@ -1,14 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { connect } from "react-redux";
 import { Spinner, NonIdealState, Icon } from "@blueprintjs/core";
-
-import { State } from "../../store";
-
-import OrgItem from "./OrgItem";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
+
+import { State } from "../../store";
 import { listOrgsRequest } from "../../store/orgs";
+import OrgItem from "./OrgItem";
+import CollapseGroup from "../CollapseGroup";
+import { NonScratchOrg, ScratchOrg } from "renderer/api/sfdx";
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
@@ -25,25 +26,38 @@ function OrgList(props: Props) {
     }
   }, [props.isSfdxPathValid]);
 
+  const [standardOpen, setStandardOpen] = useState(false);
+  const [scratchOpen, setScratchOpen] = useState(true);
+
   switch (props.orgListStatus) {
     case "loaded":
-      if (props.orgList.length === 0) {
-        return (
-          <NonIdealState
-            title="No Scratch Orgs Found"
-            description="Please refresh when you have some."
-            icon="form"
-          />
-        );
-      } else {
-        return (
-          <div className="sbt-org-list">
-            {props.orgList.map((org) => (
+      return (
+        <div className="sbt-org-list">
+          <CollapseGroup 
+            title="Standard Orgs"
+            showPlusButton
+            isOpen={standardOpen}
+            onToggleOpen={() => {
+              setStandardOpen(!standardOpen);
+            }}
+          >
+            {props.standardOrgList.map((org) => (
+              <OrgItem key={org.username} org={org}></OrgItem>
+            ))}
+          </CollapseGroup>
+          <CollapseGroup
+            title="Scratch Orgs"
+            isOpen={scratchOpen}
+            onToggleOpen={() => {
+              setScratchOpen(!scratchOpen);
+            }}
+          >
+            {props.scratchOrgList.map((org) => (
               <OrgItem key={org.username} org={org} />
             ))}
-          </div>
-        );
-      }
+          </CollapseGroup>
+        </div>
+      );
     case "initial":
       return <></>;
     case "pending":
@@ -85,8 +99,20 @@ function OrgList(props: Props) {
 }
 
 function mapStateToProps(state: State) {
+  const scratchOrgList: ScratchOrg[] = [];
+  const standardOrgList: NonScratchOrg[] = [];
+
+  state.orgs.orgList.forEach((org) => {
+    if (org.isScratchOrg) {
+      scratchOrgList.push(org);
+    } else {
+      standardOrgList.push(org);
+    }
+  });
+
   return {
-    orgList: state.orgs.orgList,
+    scratchOrgList,
+    standardOrgList,
     orgListStatus: state.orgs.orgListStatus,
     isSfdxPathValid: state.settings.isSfdxPathValid,
   };

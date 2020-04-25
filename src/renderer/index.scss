@@ -84,6 +84,32 @@ body {
   height: $large;
 }
 
+.sbt-collapse-group--header {
+  display: flex;
+  align-items: center;
+  height: 35px;
+  cursor: pointer;
+  
+  &:hover {
+    color: $pt-link-color;
+  }
+
+  .bp3-dark &:hover {
+    color: $pt-dark-link-color;
+  }
+
+  .chevron {
+    margin-left: $x-small;
+    margin-right: $x-small;
+    transform: rotate(0);
+    transition: linear 0.2s;
+  }
+
+  .chevron.open {
+    transform: rotate(90deg);
+  }
+}
+
 //toast manager
 .sbt-wrapping-text-output {
   word-break: break-all;

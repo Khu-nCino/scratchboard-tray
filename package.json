@@ -12,6 +12,7 @@
     "dist": "yarn compile && electron-builder"
   },
   "devDependencies": {
+    "@types/classnames": "^2.2.10",
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/node": "^12",
     "@types/react-dom": "^16.9.4",
@@ -31,6 +32,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.21.0",
+    "classnames": "^2.2.6",
     "electron-better-ipc": "^1.0.0",
     "electron-log": "^4.0.7",
     "electron-store": "^5.1.0",
