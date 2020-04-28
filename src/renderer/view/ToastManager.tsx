@@ -11,7 +11,7 @@ import {
 } from "@blueprintjs/core";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
-import { dismissToast } from "../store/messages";
+import { dismissToast, createToast } from "../store/messages";
 import { State } from "../store";
 import { Toast as ToastRecord } from "../store/messages";
 
@@ -41,10 +41,16 @@ function ToastManager(props: Props) {
         className="sbt-mh_medium"
       >
         <div className={`${Classes.DIALOG_BODY}`}>
-          <pre>{dialogToast?.detail}</pre>
+          <span>{dialogToast?.detail}</span>
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            <Button onClick={async () => {
+              await navigator.clipboard.writeText(dialogToast?.detail!);
+              props.createToast("Content copied to your clipboard.", "success");
+            }}>
+              Copy to Clipboard
+            </Button>
             <Button intent={Intent.PRIMARY} onClick={closeDialog}>
               Close
             </Button>
@@ -86,6 +92,7 @@ function mapStateToProps(state: State) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     dismissToast: (toastId: number) => dispatch(dismissToast(toastId)),
+    createToast: (message: string, intent: Intent) => dispatch(createToast(message, intent)),
   };
 }
 
