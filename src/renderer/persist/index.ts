@@ -1,6 +1,6 @@
 import { Store, CombinedState } from "redux";
 import ElectronStore from "electron-store";
-import { State } from "../store";
+import { State, defaultState } from "../store";
 import appVersion from "../app-version";
 
 type AppState = CombinedState<State>;
@@ -19,21 +19,31 @@ export function loadPersistedState(state: Partial<State>): Partial<State> {
       theme: electronStore.get("theme", state.settings?.theme),
       openAtLogin: false,
     },
+    expanded: {
+      ...defaultState.expanded,
+      ...electronStore.get("expanded", {}),
+    }
   };
 }
 
 export function watchAndSave(store: Store<AppState>) {
   watchStore(
     store,
-    (state: AppState) => state.settings.sfdxPath,
-    (value: string) => electronStore.set("sfdxBinPath", value)
+    (state) => state.settings.sfdxPath,
+    (value) => electronStore.set("sfdxBinPath", value)
   );
 
   watchStore(
     store,
-    (state: AppState) => state.settings.theme,
-    (value: string) => electronStore.set("theme", value)
+    (state) => state.settings.theme,
+    (value) => electronStore.set("theme", value)
   );
+
+  watchStore(
+    store,
+    (state) => state.expanded,
+    (value) => electronStore.set("expanded", value)
+  )
 }
 
 export function watchStore<S, V>(

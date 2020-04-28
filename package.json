@@ -50,7 +50,13 @@
     "title": "Scratchboard Tray",
     "whiteListedModules": [
       "react-redux"
-    ]
+    ],
+    "main": {
+      "webpackConfig": "webpack.additions.js"
+    },
+    "renderer": {
+      "webpackConfig": "webpack.additions.js"
+    }
   },
   "build": {
     "productName": "Scratchboard Tray",

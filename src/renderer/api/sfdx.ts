@@ -41,7 +41,7 @@ export async function listOrgs(): Promise<SalesforceOrg[]> {
   const {
     nonScratchOrgs,
     scratchOrgs,
-  }: OrgListResult = await executePromiseJson("sfdx force:org:list --json");
+  }: OrgListResult = await executeSfdxCommand("org:list");
 
   nonScratchOrgs.forEach((org) => {
     org.isScratchOrg = false;
@@ -55,28 +55,70 @@ export async function listOrgs(): Promise<SalesforceOrg[]> {
 }
 
 export function openOrg(username: string): Promise<void> {
-  return executePromiseJson(`sfdx force:org:open --json -u ${username}`);
+  return executeSfdxCommand("org:open", {
+    '-u': username,
+  });
 }
 
 export function frontDoorUrlApi(
   username: string,
   startUrl?: string
 ): Promise<string> {
-  const startUrlOption = startUrl ? ` -p "${startUrl}"` : "";
-
-  return executePromiseJson(
-    `sfdx force:org:open --json -r -u ${username}${startUrlOption}`
-  ).then((result) => result.url);
+  return executeSfdxCommand("org:open", {
+    '-r': true,
+    '-u': username,
+    '-p': startUrl,
+  }).then((result) => result.url);
 }
 
 export function deleteOrg(username: string): Promise<void> {
-  return executePromiseJson(`sfdx force:org:delete --json -p -u ${username}`);
+  return executeSfdxCommand('org:delete', {
+    "-p": true,
+    "-u": username,
+  });
 }
 
 export function setAlias(username: string, alias: string): Promise<void> {
-  return executePromiseJson(
-    `sfdx force:alias:set "${alias}"=${username} --json`
-  );
+  return executeSfdxCommand("alias:set", {
+    [alias]: username
+  });
+}
+
+export function loginIn(url: string): Promise<void> {
+  return executeSfdxCommand("auth:web:login", {
+    "-r": url,
+  });
+}
+
+export function logoutOrg(username: string): Promise<void> {
+  return executeSfdxCommand("auth:logout", {
+    '-p': true,
+    '-u': username,
+  });
+}
+
+function executeSfdxCommand(command: string, params?: CommandParams): Promise<any> {
+  const cmd = `sfdx force:${command} --json${buildParams(params)}`;
+  return executePromiseJson(cmd);
+}
+
+
+type CommandParams = Record<string, string | boolean | undefined>;
+
+function buildParams(
+  params?: CommandParams
+): string {
+  if (params === undefined) {
+    return '';
+  }
+
+  return Object.entries(params)
+    .filter(([_, v]) => v !== undefined && v !== false)
+    .reduce(
+      (acc, [k, v]) =>
+        acc + (v === true ? ` "${k}"` : ` "${k}"="${v}"`),
+      ""
+    );
 }
 
 const binaryName = process.platform === "win32" ? "sfdx.exe" : "sfdx";

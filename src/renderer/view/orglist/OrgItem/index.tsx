@@ -7,17 +7,18 @@ import { ThunkDispatch } from "redux-thunk";
 
 import TimeRemaining from "../TimeRemaining";
 
-import { SalesforceOrg } from "../../../api/sfdx";
+import { SalesforceOrg } from "renderer/api/sfdx";
 import {
   openOrgAction,
   deleteOrgAction,
   copyFrontDoor,
   setAliasAction,
-} from "../../../store/orgs";
-import { State } from "../../../store";
+} from "renderer/store/orgs";
+import { State } from "renderer/store";
 import ActionMenu from "./ActionMenu";
 import DeleteConformation from "./DeleteConformation";
-import InputTextDialog from "../../InputTextDialog";
+import InputTextDialog from "renderer/view/InputTextDialog";
+import LogoutConformation from "./LogoutConformation";
 
 interface OwnProps {
   org: SalesforceOrg;
@@ -29,6 +30,7 @@ type Props = OwnProps & DispatchProps;
 
 function OrgItem(props: Props) {
   const [pendingDelete, setPendingDelete] = useState(false);
+  const [pendingLogout, setPendingLogout] = useState(false);
   const [pendingAlias, setPendingAlias] = useState(false);
   const [aliasValue, setAliasValue] = useState(props.org.alias ?? "");
   const [isLoading, setLoading] = useState(false);
@@ -37,6 +39,7 @@ function OrgItem(props: Props) {
 
   const actionsMenu = (
     <ActionMenu
+      isScratchOrg={props.org.isScratchOrg}
       onCopyFrontdoor={async () => {
         setLoading(true);
         try {
@@ -50,6 +53,7 @@ function OrgItem(props: Props) {
         setPendingAlias(true);
       }}
       onDelete={() => setPendingDelete(true)}
+      onLogout={() => setPendingLogout(true)}
     />
   );
 
@@ -75,13 +79,17 @@ function OrgItem(props: Props) {
         displayName={orgDisplayName}
         isOpen={pendingDelete}
         onClose={() => setPendingDelete(false)}
-        onConfirm={async () => {
+        onConfirm={() => {
           setLoading(true);
-          try {
-            props.deleteOrg();
-          } finally {
-            setLoading(false);
-          }
+          props.deleteOrg();
+        }}
+      />
+      <LogoutConformation
+        displayName={orgDisplayName}
+        isOpen={pendingLogout}
+        onClose={() => setPendingLogout(false)}
+        onConfirm={() => {
+          setLoading(true);
         }}
       />
     </>

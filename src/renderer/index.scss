@@ -89,6 +89,7 @@ body {
   align-items: center;
   height: 35px;
   cursor: pointer;
+  user-select: none;
   
   &:hover {
     color: $pt-link-color;

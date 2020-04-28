@@ -12,6 +12,7 @@ import { routeReducer } from "./route";
 import { settingsReducer } from "./settings";
 import { messagesReducer } from "./messages";
 import { updateReducer } from "./updates";
+import { expandedReducer, defaultExpandedState } from "./expanded";
 
 type Reducers = typeof reducers;
 export type State = {
@@ -24,12 +25,14 @@ const reducers = {
   settings: settingsReducer,
   messages: messagesReducer,
   updates: updateReducer,
+  expanded: expandedReducer,
 };
 
 export const defaultState: Partial<State> = {
   route: {
     name: "orgs",
   },
+  expanded: defaultExpandedState,
 };
 
 // redux devtools setup

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import { connect } from "react-redux";
 import { Spinner, NonIdealState, Icon } from "@blueprintjs/core";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
 
-import { State } from "../../store";
-import { listOrgsRequest } from "../../store/orgs";
+import { State } from "renderer/store";
+import { listOrgsRequest } from "renderer/store/orgs";
+import { toggleExpansion } from "renderer/store/expanded";
 import OrgItem from "./OrgItem";
 import CollapseGroup from "../CollapseGroup";
 import { NonScratchOrg, ScratchOrg } from "renderer/api/sfdx";
@@ -26,9 +27,6 @@ function OrgList(props: Props) {
     }
   }, [props.isSfdxPathValid]);
 
-  const [standardOpen, setStandardOpen] = useState(false);
-  const [scratchOpen, setScratchOpen] = useState(true);
-
   switch (props.orgListStatus) {
     case "loaded":
       return (
@@ -36,10 +34,8 @@ function OrgList(props: Props) {
           <CollapseGroup 
             title="Standard Orgs"
             showPlusButton
-            isOpen={standardOpen}
-            onToggleOpen={() => {
-              setStandardOpen(!standardOpen);
-            }}
+            isOpen={props.standardExpanded}
+            onToggleOpen={props.toggleStandardExpand}
           >
             {props.standardOrgList.map((org) => (
               <OrgItem key={org.username} org={org}></OrgItem>
@@ -47,10 +43,8 @@ function OrgList(props: Props) {
           </CollapseGroup>
           <CollapseGroup
             title="Scratch Orgs"
-            isOpen={scratchOpen}
-            onToggleOpen={() => {
-              setScratchOpen(!scratchOpen);
-            }}
+            isOpen={props.scratchExpanded}
+            onToggleOpen={props.toggleScratchExpand}
           >
             {props.scratchOrgList.map((org) => (
               <OrgItem key={org.username} org={org} />
@@ -115,6 +109,8 @@ function mapStateToProps(state: State) {
     standardOrgList,
     orgListStatus: state.orgs.orgListStatus,
     isSfdxPathValid: state.settings.isSfdxPathValid,
+    standardExpanded: state.expanded.standardOrgs,
+    scratchExpanded: state.expanded.scratchOrgs,
   };
 }
 
@@ -123,6 +119,8 @@ function mapDispatchToProps(
 ) {
   return {
     requestOrgList: () => dispatch(listOrgsRequest()),
+    toggleStandardExpand: () => dispatch(toggleExpansion('standardOrgs')),
+    toggleScratchExpand: () => dispatch(toggleExpansion('scratchOrgs')),
   };
 }
 
