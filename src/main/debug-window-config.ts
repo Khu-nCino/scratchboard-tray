@@ -2,7 +2,7 @@ import { BrowserWindow } from "electron";
 import { browserWindowConfig, indexUrl } from "./common-config";
 import { getLogger } from "common/logger";
 
-export function createDebugWindow() {
+function setupExtensions() {
   //requiring instead of importing because it's a dev dependance and wont be packaged
   const {
     default: installExtensions,
@@ -13,8 +13,12 @@ export function createDebugWindow() {
   const logger = getLogger();
 
   installExtensions(["REACT_DEVELOPER_TOOLS", "REDUX_DEVTOOLS"])
-    .then((message) => logger.debug(`Extension installed ${message}`))
+    .then((message) => logger.debug(`Extension installed: ${message}`))
     .catch((error) => logger.error(error));
+}
+
+export function createDebugWindow() {
+  setupExtensions();
 
   const browserWindow = new BrowserWindow({
     ...browserWindowConfig,
