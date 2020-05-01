@@ -32,7 +32,7 @@ function OrgList(props: Props) {
       return (
         <div className="sbt-org-list">
           <CollapseGroup 
-            title="Standard Orgs"
+            title="Shared Orgs"
             showPlusButton
             isOpen={props.standardExpanded}
             onToggleOpen={props.toggleStandardExpand}

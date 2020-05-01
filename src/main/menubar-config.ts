@@ -7,7 +7,7 @@ import { indexUrl, assetsPath, browserWindowConfig } from "./common-config";
 export function createMenubar(): Menubar {
   const mb = menubar({
     index: indexUrl,
-    icon: loadTemplateIcon("cloudTemplate.png"),
+    icon: loadTemplateIcon("cloudTemplate@2x.png"),
     showDockIcon: false,
     browserWindow: browserWindowConfig,
   });
@@ -20,7 +20,7 @@ export function createMenubar(): Menubar {
 
   mb.on("after-create-window", () => {
     if (process.platform === "darwin") {
-      offsetPositioner(mb.positioner, { x: 0, y: 8 });
+      offsetPositioner(mb.positioner, { x: 0, y: 6 });
     }
   });
 
