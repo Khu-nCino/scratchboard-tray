@@ -28,7 +28,7 @@
     "prettier": "^2.0.2",
     "sass-loader": "^8.0.0",
     "typescript": "^3.8.3",
-    "webpack": "~4.42.0"
+    "webpack": "~4.43.0"
   },
   "dependencies": {
     "@blueprintjs/core": "^3.21.0",
