@@ -13,6 +13,7 @@ import {
   deleteOrgAction,
   copyFrontDoor,
   setAliasAction,
+  logoutOrgAction,
 } from "renderer/store/orgs";
 import { State } from "renderer/store";
 import ActionMenu from "./ActionMenu";
@@ -90,6 +91,7 @@ function OrgItem(props: Props) {
         onClose={() => setPendingLogout(false)}
         onConfirm={() => {
           setLoading(true);
+          props.logoutOrg();
         }}
       />
     </>
@@ -144,6 +146,7 @@ function mapDispatchToProps(
     openOrg: () => dispatch(openOrgAction(username)),
     copyFrontdoor: () => dispatch(copyFrontDoor(username)),
     deleteOrg: () => dispatch(deleteOrgAction(username)),
+    logoutOrg: () => dispatch(logoutOrgAction(username)),
     setAlias: (alias: string) => dispatch(setAliasAction(username, alias)),
   };
 }

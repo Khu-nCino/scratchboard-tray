@@ -9,7 +9,8 @@ import {
   frontDoorUrlApi,
   setAlias,
   SalesforceOrg,
-} from "../api/sfdx";
+  logoutOrg,
+} from "renderer/api/sfdx";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 
@@ -84,7 +85,7 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
       await openOrg(username);
     } catch (error) {
       dispatch(
-        createErrorToast(`There was an error opening your org 😞`, error)
+        createErrorToast("There was an error opening your org 😞", error)
       );
     }
   };
@@ -100,8 +101,24 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
       );
     } catch (error) {
       dispatch(
-        createErrorToast(`There was an error copying your front door 😞`, error)
+        createErrorToast("There was an error copying your front door 😞", error)
       );
+    }
+  };
+}
+
+export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
+  return async (dispatch) => {
+    try {
+      await logoutOrg(username);
+      dispatch({
+        type: "REMOVE_ORG_LISTING",
+        payload: { username },
+      });
+
+      dispatch(createToast("Successfully logged out of org.", "success"));
+    } catch (error) {
+      createErrorToast("There was an error logging out of your org 😞", error);
     }
   };
 }
@@ -115,10 +132,10 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
         payload: { username },
       });
 
-      dispatch(createToast(`Successfully deleted org.`, "success"));
+      dispatch(createToast("Successfully deleted org.", "success"));
     } catch (error) {
       dispatch(
-        createErrorToast(`There was an error deleting your org 😞`, error)
+        createErrorToast("There was an error deleting your org 😞", error)
       );
     }
   };
@@ -141,7 +158,7 @@ export function setAliasAction(
       });
     } catch (error) {
       dispatch(
-        createErrorToast(`There was an error setting your alias 😞`, error)
+        createErrorToast("There was an error setting your alias 😞", error)
       );
     }
   };
