@@ -90,7 +90,7 @@ body {
   height: 35px;
   cursor: pointer;
   user-select: none;
-  
+
   &:hover {
     color: $pt-link-color;
   }
@@ -99,15 +99,29 @@ body {
     color: $pt-dark-link-color;
   }
 
-  .chevron {
+  &.sbt-disabled {
+    color: $pt-text-color-disabled;
+    cursor: default;
+  }
+
+  .bp3-dark &.sbt-disabled {
+    color: $pt-dark-text-color-disabled;
+  }
+
+  .sbt-chevron {
     margin-left: $x-small;
     margin-right: $x-small;
     transform: rotate(0);
     transition: linear 0.2s;
   }
 
-  .chevron.open {
+  .sbt-chevron.sbt-open {
     transform: rotate(90deg);
+  }
+
+  .sbt-auxiliary-button {
+    margin-left: auto;
+    margin-right: $x-small;
   }
 }
 

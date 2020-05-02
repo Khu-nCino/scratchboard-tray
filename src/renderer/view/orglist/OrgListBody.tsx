@@ -33,7 +33,7 @@ function OrgList(props: Props) {
         <div className="sbt-org-list">
           <CollapseGroup 
             title="Shared Orgs"
-            showPlusButton
+            auxButtonIcon="log-in"
             isOpen={props.standardExpanded}
             onToggleOpen={props.toggleStandardExpand}
           >
