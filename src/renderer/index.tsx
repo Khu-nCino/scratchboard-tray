@@ -44,7 +44,7 @@ listenIpc(store);
 
 // <find me a good home>
 ipc.answerMain(IpcMainEvent.CONVERT_URL, (rawUrl: string) => {
-  return urlToFrontDoorUrl(store.getState().orgs.orgList, rawUrl);
+  return urlToFrontDoorUrl(store.getState().orgs.orgList.map(({ description }) => description), rawUrl);
 });
 // </find me a good home>
 

@@ -6,11 +6,10 @@ import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
 
 import { State } from "renderer/store";
-import { listOrgsRequest } from "renderer/store/orgs";
+import { listOrgsRequest, selectSharedOrgs, selectScratchOrgs } from "renderer/store/orgs";
 import { toggleExpansion } from "renderer/store/expanded";
 import OrgItem from "./OrgItem";
 import CollapseGroup from "../CollapseGroup";
-import { NonScratchOrg, ScratchOrg } from "renderer/api/sfdx";
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
@@ -37,8 +36,8 @@ function OrgList(props: Props) {
             isOpen={props.standardExpanded}
             onToggleOpen={props.toggleStandardExpand}
           >
-            {props.standardOrgList.map((org) => (
-              <OrgItem key={org.username} org={org}></OrgItem>
+            {props.sharedOrgList.map((org) => (
+              <OrgItem key={org.description.username} org={org}></OrgItem>
             ))}
           </CollapseGroup>
           <CollapseGroup
@@ -47,7 +46,7 @@ function OrgList(props: Props) {
             onToggleOpen={props.toggleScratchExpand}
           >
             {props.scratchOrgList.map((org) => (
-              <OrgItem key={org.username} org={org} />
+              <OrgItem key={org.description.username} org={org} />
             ))}
           </CollapseGroup>
         </div>
@@ -93,20 +92,9 @@ function OrgList(props: Props) {
 }
 
 function mapStateToProps(state: State) {
-  const scratchOrgList: ScratchOrg[] = [];
-  const standardOrgList: NonScratchOrg[] = [];
-
-  state.orgs.orgList.forEach((org) => {
-    if (org.isScratchOrg) {
-      scratchOrgList.push(org);
-    } else {
-      standardOrgList.push(org);
-    }
-  });
-
   return {
-    scratchOrgList,
-    standardOrgList,
+    scratchOrgList: selectScratchOrgs(state.orgs),
+    sharedOrgList: selectSharedOrgs(state.orgs),
     orgListStatus: state.orgs.orgListStatus,
     isSfdxPathValid: state.settings.isSfdxPathValid,
     standardExpanded: state.expanded.standardOrgs,

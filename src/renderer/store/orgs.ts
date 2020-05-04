@@ -10,6 +10,9 @@ import {
   setAlias,
   SalesforceOrg,
   logoutOrg,
+  BaseOrg,
+  ScratchOrg,
+  NonScratchOrg,
 } from "renderer/api/sfdx";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
@@ -28,7 +31,8 @@ type OrgAction =
   | ListOrgsRejected
   | ListOrgsSfdxPathInvalid
   | RemoveOrgListing
-  | AliasSetAction;
+  | AliasSetAction
+  | SetPendingAction;
 
 interface ListOrgsPending extends Action<"LIST_ORGS_PENDING"> {}
 
@@ -53,6 +57,13 @@ interface AliasSetAction extends Action<"ALIAS_SET_ACTION"> {
   payload: {
     username: string;
     alias: string;
+  };
+}
+
+interface SetPendingAction extends Action<"SET_PENDING_ACTION"> {
+  payload: {
+    username: string;
+    pendingAction: boolean;
   };
 }
 
@@ -82,11 +93,14 @@ export function listOrgsRequest(): ThunkResult<Promise<void>> {
 export function openOrgAction(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
+      dispatch(setPendingAction(username, true));
       await openOrg(username);
     } catch (error) {
       dispatch(
         createErrorToast("There was an error opening your org 😞", error)
       );
+    } finally {
+      dispatch(setPendingAction(username, false));
     }
   };
 }
@@ -94,6 +108,8 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
 export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
+      dispatch(setPendingAction(username, true));
+
       const url = await frontDoorUrlApi(username);
       clipboard.writeText(url, "clipboard");
       dispatch(
@@ -103,6 +119,8 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
       dispatch(
         createErrorToast("There was an error copying your front door 😞", error)
       );
+    } finally {
+      dispatch(setPendingAction(username, false));
     }
   };
 }
@@ -110,15 +128,16 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
 export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
+      dispatch(setPendingAction(username, true));
+
       await logoutOrg(username);
-      dispatch({
-        type: "REMOVE_ORG_LISTING",
-        payload: { username },
-      });
+      dispatch(removeOrgListing(username));
 
       dispatch(createToast("Successfully logged out of org.", "success"));
     } catch (error) {
       createErrorToast("There was an error logging out of your org 😞", error);
+    } finally {
+      dispatch(setPendingAction(username, false));
     }
   };
 }
@@ -126,11 +145,10 @@ export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
 export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
+      dispatch(setPendingAction(username, true));
+
       await deleteOrg(username);
-      dispatch({
-        type: "REMOVE_ORG_LISTING",
-        payload: { username },
-      });
+      dispatch(removeOrgListing(username));
 
       dispatch(createToast("Successfully deleted org.", "success"));
     } catch (error) {
@@ -147,6 +165,7 @@ export function setAliasAction(
 ): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
+      dispatch(setPendingAction(username, true));
       await setAlias(username, alias);
 
       dispatch({
@@ -160,11 +179,45 @@ export function setAliasAction(
       dispatch(
         createErrorToast("There was an error setting your alias 😞", error)
       );
+    } finally {
+      dispatch(setPendingAction(username, false));
     }
   };
 }
 
+// Local Actions
+function setPendingAction(
+  username: string,
+  pendingAction: boolean
+): SetPendingAction {
+  return {
+    type: "SET_PENDING_ACTION",
+    payload: {
+      username,
+      pendingAction,
+    },
+  };
+}
+
+function removeOrgListing(username: string): RemoveOrgListing {
+  return {
+    type: "REMOVE_ORG_LISTING",
+    payload: {
+      username,
+    },
+  };
+}
+
 // State
+export interface OrgDataState {
+  pendingAction: boolean;
+}
+
+export interface OrgData<T extends BaseOrg> {
+  description: T;
+  state: OrgDataState;
+}
+
 type OrgListStatus =
   | "initial"
   | "pending"
@@ -174,19 +227,21 @@ type OrgListStatus =
 
 export interface OrgsState {
   orgListStatus: OrgListStatus;
-  orgList: SalesforceOrg[];
+  orgList: OrgData<SalesforceOrg>[];
 }
 
-function createDefaultOrgsState(): OrgsState {
-  return {
-    orgListStatus: "initial",
-    orgList: [],
-  };
-}
+const defaultOrgsState: OrgsState = {
+  orgListStatus: "initial",
+  orgList: [],
+};
+
+const defaultOrgDataState: OrgDataState = {
+  pendingAction: false,
+};
 
 // Reducers
 export function orgsReducer(
-  state: OrgsState = createDefaultOrgsState(),
+  state: OrgsState = defaultOrgsState,
   action: OrgAction
 ): OrgsState {
   switch (action.type) {
@@ -195,12 +250,26 @@ export function orgsReducer(
         ...state,
         orgListStatus: "pending",
       };
-    case "LIST_ORGS_FULFILLED":
+    case "LIST_ORGS_FULFILLED": {
+      const orgStates: Record<string, OrgDataState> =
+        state?.orgList?.reduce<Record<string, OrgDataState>>((acc, org) => {
+          acc[org.description.username] = org.state;
+          return acc;
+        }, {}) ?? {};
+
+      const orgList: OrgData<SalesforceOrg>[] = action.payload.orgList.map(
+        (org) => ({
+          description: org,
+          state: orgStates[org.username] ?? defaultOrgDataState,
+        })
+      );
+
       return {
         ...state,
         orgListStatus: "loaded",
-        orgList: action.payload.orgList,
+        orgList,
       };
+    }
     case "LIST_ORGS_REJECTED":
       return {
         ...state,
@@ -213,7 +282,7 @@ export function orgsReducer(
       };
     case "REMOVE_ORG_LISTING": {
       const orgList = state.orgList.filter(
-        ({ username }) => username !== action.payload.username
+        (org) => org.description.username !== action.payload.username
       );
 
       return {
@@ -225,16 +294,22 @@ export function orgsReducer(
       const { alias, username } = action.payload;
 
       const orgList = state.orgList.map((original) => {
-        if (original.username === username) {
+        if (original.description.username === username) {
           return {
             ...original,
-            alias,
+            description: {
+              ...original.description,
+              alias,
+            },
           };
         }
-        if (original.alias === alias) {
+        if (original.description.alias === alias) {
           return {
             ...original,
-            alias: "",
+            description: {
+              ...original.description,
+              alias: "",
+            },
           };
         }
         return original;
@@ -245,7 +320,36 @@ export function orgsReducer(
         orgList,
       };
     }
+    case "SET_PENDING_ACTION":
+      return {
+        ...state,
+        orgList: state.orgList.map((org) =>
+          org.description.username !== action.payload.username ||
+          org.state.pendingAction === action.payload.pendingAction
+            ? org
+            : {
+                ...org,
+                state: {
+                  ...org.state,
+                  pendingAction: action.payload.pendingAction,
+                },
+              }
+        ),
+      };
     default:
       return state;
   }
+}
+
+// Selectors
+export function selectScratchOrgs(state: OrgsState): OrgData<ScratchOrg>[] {
+  return state.orgList.filter((org) => org.description.isScratchOrg) as OrgData<
+    ScratchOrg
+  >[];
+}
+
+export function selectSharedOrgs(state: OrgsState): OrgData<NonScratchOrg>[] {
+  return state.orgList.filter(
+    (org) => !org.description.isScratchOrg
+  ) as OrgData<NonScratchOrg>[];
 }
