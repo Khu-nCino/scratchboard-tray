@@ -3,7 +3,7 @@ import { Dispatch } from "redux";
 import { connect } from "react-redux";
 import { ButtonGroup, Button } from "@blueprintjs/core";
 
-import { viewOrgList } from "../store/route";
+import { viewOrgList } from "renderer/store/route";
 
 interface OwnProps {
   title: string;

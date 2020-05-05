@@ -4,9 +4,9 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { ButtonGroup, Button } from "@blueprintjs/core";
 
-import { listOrgsRequest } from "../../store/orgs";
-import { viewSettings } from "../../store/route";
-import { State } from "../../store";
+import { listOrgsRequest } from "renderer/store/orgs";
+import { viewSettings } from "renderer/store/route";
+import { State } from "renderer/store";
 
 type Props = ReturnType<typeof mapDispatchToProps>;
 

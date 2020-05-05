@@ -7,7 +7,7 @@ import { Switch, Button, FormGroup } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
 
 import FileInput from "./FileInput";
-import { State } from "../../store";
+import { State } from "renderer/store";
 import {
   toggleTheme,
   setSfdxPath,

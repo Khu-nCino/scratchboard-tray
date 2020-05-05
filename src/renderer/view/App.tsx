@@ -2,7 +2,7 @@ import React from "react";
 import { CSSTransition } from "react-transition-group";
 import { connect } from "react-redux";
 
-import { State } from "../store";
+import { State } from "renderer/store";
 import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitleBar";
 import TitleBar from "./TitleBar";

@@ -1,7 +1,7 @@
 import { Store, CombinedState } from "redux";
 import ElectronStore from "electron-store";
 import { State, defaultState } from "../store";
-import appVersion from "../app-version";
+import appVersion from "renderer/app-version";
 
 type AppState = CombinedState<State>;
 

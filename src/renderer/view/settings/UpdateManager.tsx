@@ -3,9 +3,9 @@ import React from "react";
 import { connect } from "react-redux";
 import { Button, ProgressBar } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
-import { UpdateStatus } from "../../store/updates";
-import { State } from "../../store";
-import appVersion from "../../app-version";
+import { UpdateStatus } from "renderer/store/updates";
+import { State } from "renderer/store";
+import appVersion from "renderer/app-version";
 
 interface OwnProps {
   className?: string;

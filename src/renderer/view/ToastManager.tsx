@@ -11,9 +11,9 @@ import {
 } from "@blueprintjs/core";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
-import { dismissToast, createToast } from "../store/messages";
-import { State } from "../store";
-import { Toast as ToastRecord } from "../store/messages";
+import { dismissToast, createToast } from "renderer/store/messages";
+import { State } from "renderer/store";
+import { Toast as ToastRecord } from "renderer/store/messages";
 
 type Props = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>;

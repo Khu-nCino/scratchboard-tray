@@ -1,7 +1,7 @@
 import { ipcMain, BrowserWindow } from "electron";
 import { autoUpdater } from "electron-updater";
-import { getLogger } from "../common/logger";
-import { IpcMainEvent, IpcRendererEvent } from "../common/IpcEvent";
+import { getLogger } from "common/logger";
+import { IpcMainEvent, IpcRendererEvent } from "common/IpcEvent";
 
 export function updateManagerIpc() {
   autoUpdater.logger = getLogger();
