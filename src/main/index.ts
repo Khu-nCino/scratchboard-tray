@@ -46,6 +46,6 @@ app.on("window-all-closed", () => {
   }
 });
 
-ipcMain.on(IpcRendererEvent.EXIT_APP, () => {
-  app.exit();
+ipcMain.on(IpcRendererEvent.QUIT_APP, () => {
+  app.quit();
 });

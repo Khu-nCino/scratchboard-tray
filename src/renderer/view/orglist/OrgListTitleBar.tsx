@@ -1,12 +1,10 @@
 import React from "react";
-import { AnyAction } from "redux";
 import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
 import { ButtonGroup, Button } from "@blueprintjs/core";
 
 import { listOrgsRequest } from "renderer/store/orgs";
 import { pushRouteAction } from "renderer/store/route";
-import { State } from "renderer/store";
+import { CustomDispatch } from "renderer/store";
 
 type Props = ReturnType<typeof mapDispatchToProps>;
 
@@ -24,7 +22,7 @@ function OrgListTitleBar(props: Props) {
 }
 
 const mapDispatchToProps = (
-  dispatch: ThunkDispatch<State, undefined, AnyAction>
+  dispatch: CustomDispatch
 ) => {
   return {
     refreshOrgs: () => dispatch(listOrgsRequest()),

@@ -2,10 +2,8 @@ import React, { useEffect } from "react";
 
 import { connect } from "react-redux";
 import { Spinner, NonIdealState, Icon } from "@blueprintjs/core";
-import { ThunkDispatch } from "redux-thunk";
-import { AnyAction } from "redux";
 
-import { State } from "renderer/store";
+import { State, CustomDispatch } from "renderer/store";
 import { listOrgsRequest, selectSharedOrgs, selectScratchOrgs } from "renderer/store/orgs";
 import { toggleExpansion } from "renderer/store/expanded";
 import OrgItem from "./OrgItem";
@@ -102,7 +100,7 @@ function mapStateToProps(state: State) {
   };
 }
 
-function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>) {
+function mapDispatchToProps(dispatch: CustomDispatch) {
   return {
     viewLoginRoute: () => dispatch(pushRouteAction("login")),
     requestOrgList: () => dispatch(listOrgsRequest()),

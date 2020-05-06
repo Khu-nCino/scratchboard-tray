@@ -1,4 +1,4 @@
-import { exec, ExecOptions, ChildProcess } from "child_process";
+import { ExecOptions, ChildProcess, exec } from "child_process";
 import { getLogger } from "common/logger";
 
 const logger = getLogger();
@@ -7,7 +7,9 @@ export function executePromiseJson(
   command: string,
   path?: string
 ): { promise: Promise<any>; cancel: () => void } {
-  const options: ExecOptions = {};
+  const options: ExecOptions = {
+    windowsHide: true,
+  };
 
   if (path) {
     options.cwd = path;
@@ -26,6 +28,7 @@ export function executePromiseJson(
         return;
       }
 
+      logger.debug(`Executing: ${command}`);
       childProcess = exec(command, options, (error, stdout) => {
         if (error) {
           logger.error(error.message);

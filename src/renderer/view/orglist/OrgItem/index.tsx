@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { Button, ButtonGroup, Popover, Position } from "@blueprintjs/core";
 
-import { AnyAction } from "redux";
 import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
 
 import TimeRemaining from "../TimeRemaining";
 
@@ -16,7 +14,7 @@ import {
   logoutOrgAction,
   OrgData,
 } from "renderer/store/orgs";
-import { State } from "renderer/store";
+import { CustomDispatch } from "renderer/store";
 import ActionMenu from "./ActionMenu";
 import DeleteConformation from "./DeleteConformation";
 import InputTextDialog from "renderer/view/InputTextDialog";
@@ -117,9 +115,11 @@ function OrgItem(props: Props) {
 }
 
 function mapDispatchToProps(
-  dispatch: ThunkDispatch<State, undefined, AnyAction>,
-  { org: { description: { username } } }: OwnProps
+  dispatch: CustomDispatch,
+  ownProps: OwnProps
 ) {
+  const username = ownProps.org.description.username;
+
   return {
     openOrg: () => dispatch(openOrgAction(username)),
     copyFrontdoor: () => dispatch(copyFrontDoor(username)),

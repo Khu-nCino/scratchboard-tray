@@ -78,12 +78,6 @@ export function setAlias(username: string, alias: string): Promise<void> {
   });
 }
 
-export function loginIn(url: string): Promise<void> {
-  return executeSfdxCommand("auth:web:login", {
-    "-r": url,
-  });
-}
-
 export function logoutOrg(username: string): Promise<void> {
   return executeSfdxCommand("auth:logout", {
     "-p": true,
@@ -92,7 +86,7 @@ export function logoutOrg(username: string): Promise<void> {
 }
 
 // Returns cancel callback
-export function login(
+export function loginOrg(
   instanceUrl: string,
   alias?: string
 ): {
@@ -100,7 +94,7 @@ export function login(
   cancel: () => void;
 } {
   const params: CommandParams = {
-    "-r": instanceUrl,
+    "-r": `https://${instanceUrl}`,
     "-a": alias,
   };
   return executePromiseJson(`sfdx force:auth:web:login --json${buildParams(params)}`);

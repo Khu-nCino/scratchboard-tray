@@ -1,18 +1,12 @@
 import { ipcRenderer } from "electron";
 import React from "react";
-import { AnyAction } from "redux";
-import { ThunkDispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import { Switch, Button, FormGroup } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
 
 import FileInput from "./FileInput";
-import { State } from "renderer/store";
-import {
-  toggleTheme,
-  setSfdxPath,
-  toggleOpenAtLogin,
-} from "../../store/settings";
+import { State, CustomDispatch } from "renderer/store";
+import { toggleTheme, setSfdxPath, toggleOpenAtLogin } from "renderer/store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
 
@@ -20,23 +14,16 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 type Props = StateProps & DispatchProps;
 
-function exit() {
-  ipcRenderer.send(IpcRendererEvent.EXIT_APP);
+function quitApp() {
+  ipcRenderer.send(IpcRendererEvent.QUIT_APP);
 }
 
 function SettingsBody(props: Props) {
   return (
     <div style={{ overflowY: "auto" }}>
       <UpdateManager className="sbt-m_medium" />
-      <FormGroup
-        label="Appearance & Behavior"
-        className="sbt-mh_medium sbt-mt_medium"
-      >
-        <Switch
-          labelElement="Dark Mode"
-          checked={props.isDarkTheme}
-          onChange={props.toggleTheme}
-        />
+      <FormGroup label="Appearance & Behavior" className="sbt-mh_medium sbt-mt_medium">
+        <Switch labelElement="Dark Mode" checked={props.isDarkTheme} onChange={props.toggleTheme} />
         <Switch
           labelElement="Run at Login"
           checked={props.openAtLogin}
@@ -50,7 +37,7 @@ function SettingsBody(props: Props) {
           isValid={props.isSfdxPathValid ?? false}
         />
       </FormGroup>
-      <Button className="sbt-exit-button" intent="danger" onClick={exit}>
+      <Button className="sbt-exit-button" intent="danger" onClick={quitApp}>
         Quit
       </Button>
     </div>
@@ -66,9 +53,7 @@ function mapStateToProps(state: State) {
   };
 }
 
-function mapDispatchToProps(
-  dispatch: ThunkDispatch<State, undefined, AnyAction>
-) {
+function mapDispatchToProps(dispatch: CustomDispatch) {
   return {
     toggleTheme: () => dispatch(toggleTheme()),
     setSfdxPath: (path: string) => dispatch(setSfdxPath(path)),
