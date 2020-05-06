@@ -5,7 +5,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { ButtonGroup, Button } from "@blueprintjs/core";
 
 import { listOrgsRequest } from "renderer/store/orgs";
-import { viewSettings } from "renderer/store/route";
+import { pushRouteAction } from "renderer/store/route";
 import { State } from "renderer/store";
 
 type Props = ReturnType<typeof mapDispatchToProps>;
@@ -28,7 +28,7 @@ const mapDispatchToProps = (
 ) => {
   return {
     refreshOrgs: () => dispatch(listOrgsRequest()),
-    viewSettings: () => dispatch(viewSettings()),
+    viewSettings: () => dispatch(pushRouteAction("settings")),
   };
 };
 

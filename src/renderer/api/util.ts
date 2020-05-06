@@ -1,4 +1,4 @@
-import { exec, ExecOptions } from "child_process";
+import { exec, ExecOptions, ChildProcess } from "child_process";
 import { getLogger } from "common/logger";
 
 const logger = getLogger();
@@ -6,33 +6,46 @@ const logger = getLogger();
 export function executePromiseJson(
   command: string,
   path?: string
-): Promise<any> {
+): { promise: Promise<any>; cancel: () => void } {
   const options: ExecOptions = {};
 
   if (path) {
     options.cwd = path;
   }
 
-  return new Promise((resolve, reject) => {
-    exec(command, options, (error, stdout) => {
-      if (error) {
-        logger.error(error.message);
-        reject(error.message);
+  let isCanceled = false;
+  let childProcess: ChildProcess | undefined;
+
+  return {
+    cancel: () => {
+      isCanceled = true;
+      childProcess?.kill();
+    },
+    promise: new Promise((resolve, reject) => {
+      if (isCanceled) {
         return;
       }
 
-      try {
-        const output = JSON.parse(stdout);
-        if (output.status === 0) {
-          resolve(output.result);
-        } else {
-          logger.error(output.message);
-          reject(output.message);
+      childProcess = exec(command, options, (error, stdout) => {
+        if (error) {
+          logger.error(error.message);
+          reject(error.message);
+          return;
         }
-      } catch (exception) {
-        logger.error(exception);
-        reject(exception);
-      }
-    });
-  });
+
+        try {
+          const output = JSON.parse(stdout);
+          if (output.status === 0) {
+            resolve(output.result);
+          } else {
+            logger.error(output.message);
+            reject(output.message);
+          }
+        } catch (exception) {
+          logger.error(exception);
+          reject(exception);
+        }
+      });
+    }),
+  };
 }

@@ -29,9 +29,6 @@ const reducers = {
 };
 
 export const defaultState: Partial<State> = {
-  route: {
-    name: "orgs",
-  },
   expanded: defaultExpandedState,
 };
 

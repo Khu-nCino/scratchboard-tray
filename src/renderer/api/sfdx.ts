@@ -38,10 +38,7 @@ interface OrgListResult {
 }
 
 export async function listOrgs(): Promise<SalesforceOrg[]> {
-  const {
-    nonScratchOrgs,
-    scratchOrgs,
-  }: OrgListResult = await executeSfdxCommand("org:list");
+  const { nonScratchOrgs, scratchOrgs }: OrgListResult = await executeSfdxCommand("org:list");
 
   nonScratchOrgs.forEach((org) => {
     org.isScratchOrg = false;
@@ -56,23 +53,20 @@ export async function listOrgs(): Promise<SalesforceOrg[]> {
 
 export function openOrg(username: string): Promise<void> {
   return executeSfdxCommand("org:open", {
-    '-u': username,
+    "-u": username,
   });
 }
 
-export function frontDoorUrlApi(
-  username: string,
-  startUrl?: string
-): Promise<string> {
+export function frontDoorUrlApi(username: string, startUrl?: string): Promise<string> {
   return executeSfdxCommand("org:open", {
-    '-r': true,
-    '-u': username,
-    '-p': startUrl,
+    "-r": true,
+    "-u": username,
+    "-p": startUrl,
   }).then((result) => result.url);
 }
 
 export function deleteOrg(username: string): Promise<void> {
-  return executeSfdxCommand('org:delete', {
+  return executeSfdxCommand("org:delete", {
     "-p": true,
     "-u": username,
   });
@@ -80,7 +74,7 @@ export function deleteOrg(username: string): Promise<void> {
 
 export function setAlias(username: string, alias: string): Promise<void> {
   return executeSfdxCommand("alias:set", {
-    [alias]: username
+    [alias]: username,
   });
 }
 
@@ -92,33 +86,40 @@ export function loginIn(url: string): Promise<void> {
 
 export function logoutOrg(username: string): Promise<void> {
   return executeSfdxCommand("auth:logout", {
-    '-p': true,
-    '-u': username,
+    "-p": true,
+    "-u": username,
   });
 }
 
-function executeSfdxCommand(command: string, params?: CommandParams): Promise<any> {
-  const cmd = `sfdx force:${command} --json${buildParams(params)}`;
-  return executePromiseJson(cmd);
+// Returns cancel callback
+export function login(
+  instanceUrl: string,
+  alias?: string
+): {
+  promise: Promise<void>;
+  cancel: () => void;
+} {
+  const params: CommandParams = {
+    "-r": instanceUrl,
+    "-a": alias,
+  };
+  return executePromiseJson(`sfdx force:auth:web:login --json${buildParams(params)}`);
 }
 
+function executeSfdxCommand(command: string, params?: CommandParams): Promise<any> {
+  return executePromiseJson(`sfdx force:${command} --json${buildParams(params)}`).promise;
+}
 
 type CommandParams = Record<string, string | boolean | undefined>;
 
-function buildParams(
-  params?: CommandParams
-): string {
+function buildParams(params?: CommandParams): string {
   if (params === undefined) {
-    return '';
+    return "";
   }
 
   return Object.entries(params)
     .filter(([_, v]) => v !== undefined && v !== false)
-    .reduce(
-      (acc, [k, v]) =>
-        acc + (v === true ? ` "${k}"` : ` "${k}"="${v}"`),
-      ""
-    );
+    .reduce((acc, [k, v]) => acc + (v === true ? ` "${k}"` : ` "${k}"="${v}"`), "");
 }
 
 const binaryName = process.platform === "win32" ? "sfdx.exe" : "sfdx";
@@ -136,10 +137,7 @@ export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
 }
 
 // TODO Find us a good home
-export function urlToFrontDoorUrl(
-  orgs: SalesforceOrg[],
-  rawUrl: string
-): Promise<string> {
+export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promise<string> {
   const url = new URL(rawUrl);
   const orgUsername = matchOrgByUrl(orgs, url)?.username;
   if (!orgUsername) {
@@ -160,9 +158,7 @@ export function urlToFrontDoorUrl(
 
 function matchOrgByUrl(orgs: SalesforceOrg[], url: URL) {
   return orgs.find(
-    (org) =>
-      extractUrlIdentifier(new URL(org.instanceUrl)) ===
-      extractUrlIdentifier(url)
+    (org) => extractUrlIdentifier(new URL(org.instanceUrl)) === extractUrlIdentifier(url)
   );
 }
 

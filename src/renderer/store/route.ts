@@ -1,67 +1,57 @@
 import { Action } from "redux";
 
-type RouteActions =
-  | ViewOrgListAction
-  | ViewSettingsAction
-  | ViewDependenciesAction;
+type RouteActions = PushRouteAction | PopRouteAction;
 
-interface ViewOrgListAction extends Action<"CHANGE_ROUTE_ORGS"> {}
-interface ViewSettingsAction extends Action<"CHANGE_ROUTE_SETTINGS"> {}
-
-interface ViewDependenciesAction extends Action<"CHANGE_ROUTE_DEPENDENCIES"> {
+interface PushRouteAction extends Action<"PUSH_ROUTE_ACTION"> {
   payload: {
-    orgUsername: string;
+    name: RouteName;
   };
 }
 
-export function viewOrgList(): ViewOrgListAction {
-  return {
-    type: "CHANGE_ROUTE_ORGS",
-  };
-}
+interface PopRouteAction extends Action<"POP_ROUTE_ACTION"> {}
 
-export function viewSettings(): ViewSettingsAction {
+export function pushRouteAction(name: RouteName): PushRouteAction {
   return {
-    type: "CHANGE_ROUTE_SETTINGS",
-  };
-}
-
-export function viewDependencies(orgUsername: string): ViewDependenciesAction {
-  return {
-    type: "CHANGE_ROUTE_DEPENDENCIES",
+    type: "PUSH_ROUTE_ACTION",
     payload: {
-      orgUsername,
+      name,
     },
   };
 }
 
-// State
-export type RouteName = "orgs" | "settings" | "dependencies";
-
-export interface RouteState {
-  name: RouteName;
-  orgUsername?: string;
+export function popRouteAction(): PopRouteAction {
+  return { type: "POP_ROUTE_ACTION" };
 }
 
+// State
+export type RouteName = "orgs" | "settings" | "login";
+
+export interface RouteState {
+  activeRoute: RouteName;
+}
+
+const defaultRouteState: RouteState = {
+  activeRoute: "orgs",
+};
+
 export function routeReducer(
-  state: RouteState = { name: "orgs" },
+  state: RouteState = defaultRouteState,
   action: RouteActions
 ): RouteState {
   switch (action.type) {
-    case "CHANGE_ROUTE_ORGS": {
-      return { name: "orgs" };
+    case "PUSH_ROUTE_ACTION": {
+      return { activeRoute: action.payload.name };
     }
-    case "CHANGE_ROUTE_SETTINGS": {
-      return { name: "settings" };
-    }
-    case "CHANGE_ROUTE_DEPENDENCIES": {
-      return {
-        name: "dependencies",
-        orgUsername: action.payload.orgUsername,
-      };
+    case "POP_ROUTE_ACTION": {
+      return defaultRouteState;
     }
     default: {
       return state;
     }
   }
+}
+
+// Selectors
+export function selectActiveRoute(state: RouteState) {
+  return state.activeRoute;
 }

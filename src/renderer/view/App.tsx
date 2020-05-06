@@ -8,6 +8,8 @@ import OrgListTitle from "./orglist/OrgListTitleBar";
 import TitleBar from "./TitleBar";
 import SettingsBody from "./settings/SettingsBody";
 import ToastManager from "./ToastManager";
+import LoginBody from "./login/LoginBody";
+import { selectActiveRoute } from "renderer/store/route";
 
 type Props = ReturnType<typeof mapStateToProps>;
 
@@ -15,7 +17,7 @@ function App(props: Props) {
   return (
     <div id="app-content">
       <RouteTransitions
-        activeRoute={props.routeName}
+        activeRoute={props.activeRoute}
         routes={{
           orgs: (
             <div className="sbt-screen">
@@ -29,7 +31,12 @@ function App(props: Props) {
               <SettingsBody />
             </div>
           ),
-          dependencies: <TitleBar title="Dependencies" />,
+          login: (
+            <div className="sbt-screen">
+              <TitleBar title="Connect Org" hideBackButton />
+              <LoginBody />
+            </div>
+          )
         }}
       />
       <ToastManager />
@@ -60,7 +67,7 @@ function RouteTransitions(props: {
 
 function mapStateToProps(state: State) {
   return {
-    routeName: state.route.name,
+    activeRoute: selectActiveRoute(state.route),
     theme: state.settings.theme,
   };
 }

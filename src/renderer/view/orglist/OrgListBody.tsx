@@ -10,6 +10,7 @@ import { listOrgsRequest, selectSharedOrgs, selectScratchOrgs } from "renderer/s
 import { toggleExpansion } from "renderer/store/expanded";
 import OrgItem from "./OrgItem";
 import CollapseGroup from "../CollapseGroup";
+import { pushRouteAction } from "renderer/store/route";
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
@@ -18,8 +19,7 @@ type Props = StateProps & DispatchProps;
 function OrgList(props: Props) {
   useEffect(() => {
     if (
-      (props.orgListStatus === "initial" &&
-        props.isSfdxPathValid !== undefined) ||
+      (props.orgListStatus === "initial" && props.isSfdxPathValid !== undefined) ||
       (props.orgListStatus === "invalid_sfdx_path" && props.isSfdxPathValid)
     ) {
       props.requestOrgList();
@@ -30,11 +30,12 @@ function OrgList(props: Props) {
     case "loaded":
       return (
         <div className="sbt-org-list">
-          <CollapseGroup 
+          <CollapseGroup
             title="Shared Orgs"
             auxButtonIcon="log-in"
             isOpen={props.standardExpanded}
-            onToggleOpen={props.toggleStandardExpand}
+            onToggleOpen={props.toggleSharedExpand}
+            onAuxButtonClick={props.viewLoginRoute}
           >
             {props.sharedOrgList.map((org) => (
               <OrgItem key={org.description.username} org={org}></OrgItem>
@@ -80,8 +81,7 @@ function OrgList(props: Props) {
             <>
               No SFDX binary found.
               <br />
-              Try setting the path in the <Icon icon="cog" /> screen and coming
-              back.
+              Try setting the path in the <Icon icon="cog" /> screen and coming back.
             </>
           }
         />
@@ -97,18 +97,17 @@ function mapStateToProps(state: State) {
     sharedOrgList: selectSharedOrgs(state.orgs),
     orgListStatus: state.orgs.orgListStatus,
     isSfdxPathValid: state.settings.isSfdxPathValid,
-    standardExpanded: state.expanded.standardOrgs,
+    standardExpanded: state.expanded.sharedOrgs,
     scratchExpanded: state.expanded.scratchOrgs,
   };
 }
 
-function mapDispatchToProps(
-  dispatch: ThunkDispatch<State, undefined, AnyAction>
-) {
+function mapDispatchToProps(dispatch: ThunkDispatch<State, undefined, AnyAction>) {
   return {
+    viewLoginRoute: () => dispatch(pushRouteAction("login")),
     requestOrgList: () => dispatch(listOrgsRequest()),
-    toggleStandardExpand: () => dispatch(toggleExpansion('standardOrgs')),
-    toggleScratchExpand: () => dispatch(toggleExpansion('scratchOrgs')),
+    toggleSharedExpand: () => dispatch(toggleExpansion("sharedOrgs")),
+    toggleScratchExpand: () => dispatch(toggleExpansion("scratchOrgs")),
   };
 }
 

@@ -1,7 +1,5 @@
 import { Action } from "redux";
 
-type GroupName = keyof ExpandedState;
-
 type ExpandedAction = ToggleExpansion;
 
 interface ToggleExpansion extends Action<"TOGGLE_EXPANSION"> {
@@ -21,13 +19,15 @@ export function toggleExpansion(
   };
 }
 
+type GroupName = keyof ExpandedState;
+
 export interface ExpandedState {
-  standardOrgs: boolean;
+  sharedOrgs: boolean;
   scratchOrgs: boolean;
 }
 
 export const defaultExpandedState: ExpandedState = {
-    standardOrgs: true,
+    sharedOrgs: true,
     scratchOrgs: true,
 };
 
