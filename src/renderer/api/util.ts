@@ -4,7 +4,7 @@ import { getLogger } from "common/logger";
 const logger = getLogger();
 
 export class ExecutionError extends Error {
-  constructor(message: string, private command: string) {
+  constructor(message: string, public command: string) {
     super(message);
     this.name = "ExecutionError";
   }
