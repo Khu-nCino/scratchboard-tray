@@ -1,5 +1,6 @@
 import { Action } from "redux";
 import { Intent } from "@blueprintjs/core";
+import { ExecutionError } from "renderer/api/util";
 
 export type MessagesAction = CreateToastAction | DismissToastAction;
 
@@ -32,9 +33,16 @@ export function createToast(
 
 export function createErrorToast(
   message: string,
-  detail?: string
+  detail?: string | ExecutionError
 ): CreateToastAction {
-  return createToast(message, "danger", detail);
+  let parsedDetail: string | undefined;
+  if (detail instanceof ExecutionError) {
+    parsedDetail = detail.message;
+  } else {
+    parsedDetail = detail;
+  }
+
+  return createToast(message, "danger", parsedDetail);
 }
 
 export function dismissToast(toastId: number): DismissToastAction {

@@ -94,7 +94,7 @@ export function loginOrg(
   cancel: () => void;
 } {
   const params: CommandParams = {
-    "-r": `https://${instanceUrl}`,
+    "-r": instanceUrl,
     "-a": alias,
   };
   return executePromiseJson(`sfdx force:auth:web:login --json${buildParams(params)}`);

@@ -3,6 +3,20 @@ import { getLogger } from "common/logger";
 
 const logger = getLogger();
 
+export class ExecutionError extends Error {
+  constructor(message: string, private command: string) {
+    super(message);
+    this.name = "ExecutionError";
+  }
+}
+
+export class CanceledExecutionError extends ExecutionError {
+  constructor(command: string) {
+    super("Canceled Execution", command);
+    this.name = "CanceledExecutionError";
+  }
+}
+
 export function executePromiseJson(
   command: string,
   path?: string
@@ -25,14 +39,19 @@ export function executePromiseJson(
     },
     promise: new Promise((resolve, reject) => {
       if (isCanceled) {
-        return;
+        reject(new CanceledExecutionError(command));
       }
 
       logger.debug(`Executing: ${command}`);
       childProcess = exec(command, options, (error, stdout) => {
         if (error) {
+          if (error.killed) {
+            reject(new CanceledExecutionError(command));
+            return;
+          }
+
           logger.error(error.message);
-          reject(error.message);
+          reject(new ExecutionError(error.message, command));
           return;
         }
 
@@ -42,11 +61,11 @@ export function executePromiseJson(
             resolve(output.result);
           } else {
             logger.error(output.message);
-            reject(output.message);
+            reject(new ExecutionError(output.message, command));
           }
         } catch (exception) {
           logger.error(exception);
-          reject(exception);
+          reject(new ExecutionError(exception, command));
         }
       });
     }),
