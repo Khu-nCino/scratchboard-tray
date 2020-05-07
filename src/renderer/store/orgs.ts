@@ -69,7 +69,13 @@ interface SetPendingAction extends Action<"SET_PENDING_ACTION"> {
 
 export function listOrgsRequest(): ThunkResult<Promise<void>> {
   return async (dispatch, getState) => {
-    if (!getState().settings.isSfdxPathValid) {
+    const state = getState();
+
+    if (state.orgs.orgListStatus === "pending") {
+      return;
+    }
+
+    if (!state.settings.isSfdxPathValid) {
       dispatch({ type: "LIST_ORGS_SFDX_PATH_INVALID" });
       return;
     }

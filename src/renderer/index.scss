@@ -112,7 +112,7 @@ body {
     margin-left: $x-small;
     margin-right: $x-small;
     transform: rotate(0);
-    transition: linear 0.2s;
+    transition: transform linear 0.2s;
   }
 
   .sbt-chevron.sbt-open {

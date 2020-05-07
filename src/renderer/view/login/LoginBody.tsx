@@ -66,11 +66,11 @@ function LoginBody(props: Props) {
             intent="primary"
             className="sbt-ml_small"
             onClick={async () => {
-              const action = loginOrg(instanceUrl, alias !== '' ? alias : undefined);
-              setCancelProcess(() => action.cancel);
+              const childProcess = loginOrg(instanceUrl, alias !== "" ? alias : undefined);
+              setCancelProcess(() => childProcess.cancel);
 
               try {
-                await action.promise;
+                await childProcess.promise;
                 props.loadOrgs();
                 props.popRoute();
               } catch (error) {}

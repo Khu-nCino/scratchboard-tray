@@ -1,6 +1,6 @@
 {
   "name": "scratchboard-tray",
-  "version": "0.3.0",
+  "version": "0.3.0-beta.1",
   "license": "MIT",
   "author": {
     "name": "Gabriel Keith"
@@ -67,7 +67,10 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg"
+      ]
     },
     "extraResources": [
       "./assets/**"
