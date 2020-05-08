@@ -10,15 +10,24 @@ import { createDebugWindow } from "./debug-window-config";
 
 let mb: Menubar | undefined;
 let debugWindow: BrowserWindow | undefined;
-let showFunction: Function | undefined;
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
 
 if (!isDevelopment) {
   mb = createMenubar();
-  showFunction = mb.showWindow.bind(mb);
+  mb.on("after-hide", () => {
+    app.hide();
+  });
 } else {
   app.on("ready", () => {
     debugWindow = createDebugWindow();
-    showFunction = debugWindow.show.bind(debugWindow);
+
+    debugWindow.on("ready-to-show", () => {
+      debugWindow?.show();
+    });
+
     registerGlobalShortcuts(debugWindow);
   });
 }
@@ -29,15 +38,6 @@ app.disableHardwareAcceleration();
 app.on("ready", () => {
   updateManagerIpc();
   loginItemSettingsIpc();
-
-  const { wasOpenedAsHidden } = app.getLoginItemSettings();
-  if (!wasOpenedAsHidden) {
-    showFunction?.();
-  }
-});
-
-app.on("activate", () => {
-  showFunction?.();
 });
 
 app.on("window-all-closed", () => {

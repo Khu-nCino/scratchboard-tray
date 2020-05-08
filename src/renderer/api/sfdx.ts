@@ -116,13 +116,13 @@ function buildParams(params?: CommandParams): string {
     .reduce((acc, [k, v]) => acc + (v === true ? ` "${k}"` : ` "${k}"="${v}"`), "");
 }
 
-const binaryName = process.platform === "win32" ? "sfdx.exe" : "sfdx";
+const binaryName = "sfdx";
 
 export function validateSfdxPath(sfdxBinPath: string): Promise<boolean> {
   return new Promise((resolve) => {
     if (sfdxBinPath && path.basename(sfdxBinPath).startsWith(binaryName)) {
       fs.stat(sfdxBinPath, (error, state) => {
-        resolve(!Boolean(error) && state.isFile());
+        resolve(!error && state.isFile());
       });
     } else {
       resolve(false);

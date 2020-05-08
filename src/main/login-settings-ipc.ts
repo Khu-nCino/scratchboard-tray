@@ -8,6 +8,7 @@ export function loginItemSettingsIpc() {
     return openAtLogin;
   });
 
+  // TODO needs windows and linux support
   ipc.answerRenderer(IpcRendererEvent.SET_LAUNCH_SETTINGS, (value: boolean) => {
     app.setLoginItemSettings({
       openAtLogin: value,

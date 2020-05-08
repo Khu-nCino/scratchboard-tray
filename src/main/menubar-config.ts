@@ -9,7 +9,11 @@ export function createMenubar(): Menubar {
     index: indexUrl,
     icon: loadTemplateIcon("cloudTemplate@2x.png"),
     showDockIcon: false,
-    browserWindow: browserWindowConfig,
+    preloadWindow: true,
+    browserWindow: {
+      ...browserWindowConfig,
+      skipTaskbar: true,
+    },
   });
 
   mb.on("ready", () => {
