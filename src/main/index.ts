@@ -1,5 +1,6 @@
-import { app, ipcMain, BrowserWindow } from "electron";
+import { app, ipcMain, BrowserWindow, shell } from "electron";
 import { Menubar } from "menubar";
+import { ipcMain as ipc } from "electron-better-ipc";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { isDevelopment } from "./common-config";
 import { loginItemSettingsIpc } from "./login-settings-ipc";
@@ -48,4 +49,12 @@ app.on("window-all-closed", () => {
 
 ipcMain.on(IpcRendererEvent.QUIT_APP, () => {
   app.quit();
+});
+
+ipc.answerRenderer(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER, () => {
+  shell.showItemInFolder(app.getPath("userData"));
+});
+
+ipc.answerRenderer(IpcRendererEvent.SHOW_LOGS_IN_FOLDER, () => {
+  shell.showItemInFolder(app.getPath("logs"));
 });

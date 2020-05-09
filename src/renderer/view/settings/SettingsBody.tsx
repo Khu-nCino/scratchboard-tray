@@ -3,6 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Switch, Button, FormGroup } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
+import { ipcRenderer as ipc } from "electron-better-ipc";
 
 import FileInput from "./FileInput";
 import { State, CustomDispatch } from "renderer/store";
@@ -37,6 +38,14 @@ function SettingsBody(props: Props) {
           isValid={props.isSfdxPathValid ?? false}
         />
       </FormGroup>
+      <div className="sbt-mh_medium">
+        <Button className="sbt-mr_small sbt-mb_small" onClick={() => {
+          ipc.callMain(IpcRendererEvent.SHOW_LOGS_IN_FOLDER);
+        }}>Open Log Folder</Button>
+        <Button className="sbt-mb_small" onClick={() => {
+          ipc.callMain(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER);
+        }}>Open AppData Folder</Button>
+      </div>
       <Button className="sbt-exit-button" intent="danger" onClick={quitApp}>
         Quit
       </Button>
