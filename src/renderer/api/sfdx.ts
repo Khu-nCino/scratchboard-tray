@@ -16,6 +16,7 @@ export interface BaseOrg {
 
 export interface NonScratchOrg extends BaseOrg {
   isScratchOrg: false;
+  isDefaultDevHubUsername: boolean;
 }
 
 export interface ScratchOrg extends BaseOrg {

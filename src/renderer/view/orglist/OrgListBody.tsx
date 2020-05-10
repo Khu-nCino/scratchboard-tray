@@ -30,10 +30,11 @@ function OrgList(props: Props) {
         <div className="sbt-org-list">
           <CollapseGroup
             title="Shared Orgs"
-            auxButtonIcon="log-in"
+            auxButtonIcon="plus"
             isOpen={props.standardExpanded}
             onToggleOpen={props.toggleSharedExpand}
             onAuxButtonClick={props.viewLoginRoute}
+            auxButtonTip="Authenticate Org"
           >
             {props.sharedOrgList.map((org) => (
               <OrgItem key={org.description.username} org={org}></OrgItem>

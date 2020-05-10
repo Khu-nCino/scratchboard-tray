@@ -24,7 +24,7 @@ export function popRouteAction(): PopRouteAction {
 }
 
 // State
-export type RouteName = "orgs" | "settings" | "login";
+export type RouteName = "orgs" | "settings" | "login" | "frontdoor";
 
 export interface RouteState {
   activeRoute: RouteName;

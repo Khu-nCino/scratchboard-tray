@@ -93,11 +93,7 @@ function OrgItem(props: Props) {
         {timeRemaining}
       </div>
       <ButtonGroup className="sbt-flex-item--right sbt-mr_medium">
-        <Button
-          intent="primary"
-          onClick={props.openOrg}
-          loading={state.pendingAction}
-        >
+        <Button intent="primary" onClick={props.openOrg} loading={state.pendingAction}>
           Open
         </Button>
         <Popover
@@ -114,10 +110,7 @@ function OrgItem(props: Props) {
   );
 }
 
-function mapDispatchToProps(
-  dispatch: CustomDispatch,
-  ownProps: OwnProps
-) {
+function mapDispatchToProps(dispatch: CustomDispatch, ownProps: OwnProps) {
   const username = ownProps.org.description.username;
 
   return {

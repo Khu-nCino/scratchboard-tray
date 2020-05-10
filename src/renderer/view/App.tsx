@@ -33,10 +33,15 @@ function App(props: Props) {
           ),
           login: (
             <div className="sbt-screen">
-              <TitleBar title="Connect Org" hideBackButton />
+              <TitleBar title="Authenticate Org" hideBackButton />
               <LoginBody />
             </div>
-          )
+          ),
+          frontdoor: (
+            <div className="sbt-screen">
+              <TitleBar title="URL Converter" />
+            </div>
+          ),
         }}
       />
       <ToastManager />
