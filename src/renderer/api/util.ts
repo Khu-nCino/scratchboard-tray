@@ -8,6 +8,10 @@ export class ExecutionError extends Error {
     super(message);
     this.name = "ExecutionError";
   }
+
+  toString(): string {
+    return `${this.command} - ${this.message}`;
+  }
 }
 
 export class CanceledExecutionError extends ExecutionError {
@@ -44,28 +48,31 @@ export function executePromiseJson(
 
       logger.debug(`Executing: ${command}`);
       childProcess = exec(command, options, (error, stdout) => {
-        if (error) {
-          if (error.killed) {
-            reject(new CanceledExecutionError(command));
-            return;
-          }
-
-          logger.error(error.message);
-          reject(new ExecutionError(error.message, command));
-          return;
-        }
-
         try {
           const output = JSON.parse(stdout);
           if (output.status === 0) {
             resolve(output.result);
           } else {
-            logger.error(output.message);
-            reject(new ExecutionError(output.message, command));
+            const e = new ExecutionError(output.message, command);
+            logger.error(e.toString());
+            reject(e);
           }
         } catch (exception) {
-          logger.error(exception);
-          reject(new ExecutionError(exception, command));
+          if (error) {
+            if (error.killed) {
+              reject(new CanceledExecutionError(command));
+              return;
+            }
+
+            const e = new ExecutionError(error.message, command);
+            logger.error(e.toString());
+            reject(e);
+            return;
+          } else {
+            const e = new ExecutionError(exception, command);
+            logger.error(e.toString());
+            reject(e);
+          }
         }
       });
     }),

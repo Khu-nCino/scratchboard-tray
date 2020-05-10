@@ -37,7 +37,7 @@ export function createErrorToast(
 ): CreateToastAction {
   let parsedDetail: string | undefined;
   if (detail instanceof ExecutionError) {
-    parsedDetail = detail.message;
+    parsedDetail = detail.toString();
   } else {
     parsedDetail = detail;
   }
