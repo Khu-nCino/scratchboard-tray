@@ -40,13 +40,14 @@ function ToastManager(props: Props) {
         canOutsideClickClose={false}
         className="sbt-mh_medium"
       >
-        <div className={`${Classes.DIALOG_BODY}`}>
-          <span>{dialogToast?.detail}</span>
+        <div className={Classes.DIALOG_BODY}>
+          <span className="bp3-code-block">{dialogToast?.detail}</span>
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
             <Button onClick={async () => {
               await navigator.clipboard.writeText(dialogToast?.detail!);
+              // TODO convert to tooltip
               props.createToast("Content copied to your clipboard.", "success");
             }}>
               Copy to Clipboard

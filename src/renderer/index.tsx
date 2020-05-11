@@ -16,6 +16,7 @@ import App from "./view/App";
 import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { listenIpc } from "./store/updates";
 import { urlToFrontDoorUrl } from "./api/sfdx";
+import { FocusStyleManager } from "@blueprintjs/core";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -47,6 +48,8 @@ ipc.answerMain(IpcMainEvent.CONVERT_URL, (rawUrl: string) => {
   return urlToFrontDoorUrl(store.getState().orgs.orgList.map(({ description }) => description), rawUrl);
 });
 // </find me a good home>
+
+FocusStyleManager.onlyShowFocusOnTabs();
 
 ReactDom.render(
   <Provider store={store}>

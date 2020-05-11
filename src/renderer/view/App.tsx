@@ -7,6 +7,7 @@ import OrgListBody from "./orglist/OrgListBody";
 import OrgListTitle from "./orglist/OrgListTitleBar";
 import TitleBar from "./TitleBar";
 import SettingsBody from "./settings/SettingsBody";
+import FrontDoorBody from "./frontdoor/FrontDoorBody";
 import ToastManager from "./ToastManager";
 import LoginBody from "./login/LoginBody";
 import { selectActiveRoute } from "renderer/store/route";
@@ -39,7 +40,8 @@ function App(props: Props) {
           ),
           frontdoor: (
             <div className="sbt-screen">
-              <TitleBar title="URL Converter" />
+              <TitleBar title="URL Converter" helpText="Convert a salesforce URL into a shareable frontdoor link." />
+              <FrontDoorBody />
             </div>
           ),
         }}
