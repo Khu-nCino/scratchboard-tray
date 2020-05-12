@@ -118,7 +118,7 @@ function mapDispatchToProps(dispatch: CustomDispatch, ownProps: OwnProps) {
     copyFrontdoor: () => dispatch(copyFrontDoor(username)),
     deleteOrg: () => dispatch(deleteOrgAction(username)),
     logoutOrg: () => dispatch(logoutOrgAction(username)),
-    setAlias: (alias: string) => dispatch(setAliasAction(username, alias)),
+    setAlias: (newAlias: string) => dispatch(setAliasAction(username, newAlias)),
   };
 }
 

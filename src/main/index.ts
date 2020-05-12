@@ -51,6 +51,10 @@ ipcMain.on(IpcRendererEvent.QUIT_APP, () => {
   app.quit();
 });
 
+ipcMain.on(IpcRendererEvent.OPEN_EXTERNAL, (_event, url) => {
+  shell.openExternal(url);
+});
+
 ipc.answerRenderer(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER, () => {
   shell.showItemInFolder(app.getPath("userData"));
 });

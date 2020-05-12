@@ -6,7 +6,7 @@ import {
   listOrgs,
   openOrg,
   deleteOrg,
-  frontDoorUrlApi,
+  createFrontDoor,
   setAlias,
   SalesforceOrg,
   logoutOrg,
@@ -116,7 +116,7 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
     try {
       dispatch(setPendingAction(username, true));
 
-      const url = await frontDoorUrlApi(username);
+      const url = await createFrontDoor(username);
       clipboard.writeText(url, "clipboard");
       dispatch(
         createToast("The front door is copied to your clipboard.", "success")
@@ -167,26 +167,23 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
 
 export function setAliasAction(
   username: string,
-  alias: string
+  newAlias: string,
 ): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
-      dispatch(setPendingAction(username, true));
-      await setAlias(username, alias);
+      await setAlias(username, newAlias);
 
       dispatch({
         type: "ALIAS_SET_ACTION",
         payload: {
           username,
-          alias,
+          alias: newAlias,
         },
       });
     } catch (error) {
       dispatch(
         createErrorToast("There was an error setting your alias 😞", error)
       );
-    } finally {
-      dispatch(setPendingAction(username, false));
     }
   };
 }

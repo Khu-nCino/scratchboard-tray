@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.21.0",
+    "@salesforce/core": "^2.4.1",
     "classnames": "^2.2.6",
     "electron-better-ipc": "^1.0.0",
     "electron-log": "^4.0.7",
