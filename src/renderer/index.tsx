@@ -5,18 +5,17 @@ import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from "react-redux";
 import { ipcRenderer as ipc } from "electron-better-ipc";
+import { FocusStyleManager } from "@blueprintjs/core";
 
 import { getCurrentPaths, setPaths } from "common/path-util";
 import { IpcMainEvent } from "common/IpcEvent";
 import { createStore, defaultState } from "./store";
-
-import { loadPersistedState, watchAndSave, watchStore } from "./persist";
-
-import App from "./view/App";
-import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { listenIpc } from "./store/updates";
+import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
+import { selectOrgDescriptions } from "./store/orgs";
+import { loadPersistedState, watchAndSave, watchStore } from "./persist";
+import App from "./view/App";
 import { urlToFrontDoorUrl } from "./api/url";
-import { FocusStyleManager } from "@blueprintjs/core";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -45,7 +44,7 @@ listenIpc(store);
 
 // <find me a good home>
 ipc.answerMain(IpcMainEvent.CONVERT_URL, (rawUrl: string) => {
-  return urlToFrontDoorUrl(store.getState().orgs.orgList.map(({ description }) => description), rawUrl);
+  return urlToFrontDoorUrl(selectOrgDescriptions(store.getState().orgs), rawUrl);
 });
 // </find me a good home>
 

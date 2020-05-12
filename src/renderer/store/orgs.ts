@@ -359,3 +359,7 @@ export function selectSharedOrgs(state: OrgsState): OrgData<NonScratchOrg>[] {
     (org) => !org.description.isScratchOrg
   ) as OrgData<NonScratchOrg>[];
 }
+
+export function selectOrgDescriptions(state: OrgsState): SalesforceOrg[] {
+  return state.orgList.map(({ description }) => description);
+}
