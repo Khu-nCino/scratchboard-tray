@@ -34,13 +34,13 @@ function App(props: Props) {
           ),
           login: (
             <div className="sbt-screen">
-              <TitleBar title="Authenticate Org" hideBackButton />
+              <TitleBar title="Authenticate Org" />
               <LoginBody />
             </div>
           ),
           frontdoor: (
             <div className="sbt-screen">
-              <TitleBar title="URL Converter" helpText="Convert a salesforce URL into a shareable frontdoor link." />
+              <TitleBar title="Link Converter" helpText="This route converts a salesforce URL into a shareable frontdoor link." />
               <FrontDoorBody />
             </div>
           ),

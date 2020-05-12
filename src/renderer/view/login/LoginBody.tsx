@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { InputGroup, Button, FormGroup, NonIdealState, Spinner } from "@blueprintjs/core";
-import { popRouteAction } from "renderer/store/route";
+import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
 import { connect } from "react-redux";
 import { loginOrg } from "renderer/api/sfdx";
 import { listOrgsRequest } from "renderer/store/orgs";
 import { CustomDispatch } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { CanceledExecutionError } from "renderer/api/util";
+import { validInstanceUrl, coerceInstanceUrl } from "renderer/api/url";
 
 const defaultInstanceUrl = "login.salesforce.com";
 
@@ -34,6 +35,7 @@ function LoginBody(props: Props) {
             onClick={() => {
               cancelProcess();
               setCancelProcess(undefined);
+              props.setNavigationEnabled(true);
             }}
           >
             Abort
@@ -66,13 +68,12 @@ function LoginBody(props: Props) {
           </FormGroup>
         </div>
         <div>
-          <Button onClick={props.popRoute}>Cancel</Button>
           <Button
             intent="primary"
-            className="sbt-ml_small"
             disabled={!isUrlValid}
             onClick={async () => {
-              const childProcess = loginOrg(correctInstanceUrl(instanceUrl), alias !== "" ? alias : undefined);
+              const childProcess = loginOrg(coerceInstanceUrl(instanceUrl), alias !== "" ? alias : undefined);
+              props.setNavigationEnabled(false);
               setCancelProcess(() => childProcess.cancel);
 
               try {
@@ -83,6 +84,7 @@ function LoginBody(props: Props) {
                 if (!(error instanceof CanceledExecutionError)) {
                   props.createErrorToast("Error authenticating", error);
                 }
+                props.setNavigationEnabled(true);
                 setCancelProcess(undefined);
               }
             }}
@@ -95,22 +97,11 @@ function LoginBody(props: Props) {
   }
 }
 
-const pattern = new RegExp('^(https:\\/\\/)?'+ // protocol
-  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-  '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*$', 'i'); // port and path
-
-function validInstanceUrl(str: string): boolean {
-  return pattern.test(str);
-}
-
-function correctInstanceUrl(url: string): string {
-  return url.startsWith("https://") ? url : `https://${url}`;
-}
 
 function mapDispatchToState(dispatch: CustomDispatch) {
   return {
     popRoute: () => dispatch(popRouteAction()),
+    setNavigationEnabled: (value: boolean) => dispatch(setNavigationEnabledAction(value)),
     loadOrgs: () => dispatch(listOrgsRequest()),
     createErrorToast: (message: string, detail: string) => dispatch(createErrorToast(message, detail)),
   };

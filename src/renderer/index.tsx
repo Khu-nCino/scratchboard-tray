@@ -15,7 +15,7 @@ import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 import App from "./view/App";
 import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { listenIpc } from "./store/updates";
-import { urlToFrontDoorUrl } from "./api/sfdx";
+import { urlToFrontDoorUrl } from "./api/url";
 import { FocusStyleManager } from "@blueprintjs/core";
 
 const initialState = loadPersistedState(defaultState);
