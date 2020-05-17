@@ -3,11 +3,11 @@ import { InputGroup, Button, FormGroup, NonIdealState, Spinner } from "@blueprin
 import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
 import { connect } from "react-redux";
 import { loginOrg } from "renderer/api/sfdx";
-import { listOrgsRequest } from "renderer/store/orgs";
 import { CustomDispatch } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { CanceledExecutionError } from "renderer/api/util";
 import { validInstanceUrl, coerceInstanceUrl } from "renderer/api/url";
+import { manager } from "renderer/api/OrgManager";
 
 const defaultInstanceUrl = "login.salesforce.com";
 
@@ -78,7 +78,7 @@ function LoginBody(props: Props) {
 
               try {
                 await childProcess.promise;
-                props.loadOrgs();
+                await manager.checkOrgChanges();
                 props.popRoute();
               } catch (error) {
                 if (!(error instanceof CanceledExecutionError)) {
@@ -102,7 +102,6 @@ function mapDispatchToState(dispatch: CustomDispatch) {
   return {
     popRoute: () => dispatch(popRouteAction()),
     setNavigationEnabled: (value: boolean) => dispatch(setNavigationEnabledAction(value)),
-    loadOrgs: () => dispatch(listOrgsRequest()),
     createErrorToast: (message: string, detail: string) => dispatch(createErrorToast(message, detail)),
   };
 }
