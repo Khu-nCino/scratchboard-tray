@@ -1,4 +1,5 @@
-import { SalesforceOrg, createFrontDoor } from "./sfdx";
+import { SalesforceOrg } from "./sfdx";
+import { manager } from "./OrgManager";
 
 export function validInstanceUrl(str: string): boolean {
   return Boolean(str);
@@ -24,7 +25,7 @@ export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promis
 
   const urlPath = `${correctedPathname}${url.search}${url.hash}`;
 
-  return createFrontDoor(orgUsername, urlPath);
+  return manager.getFrontDoor(orgUsername, urlPath);
 }
 
 function matchOrgByUrl(orgs: SalesforceOrg[], url: URL) {

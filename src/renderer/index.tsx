@@ -1,10 +1,10 @@
 import "./index.scss";
 
 import path from "path";
+import { ipcRenderer } from "electron";
 import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from "react-redux";
-import { ipcRenderer as ipc } from "electron-better-ipc";
 import { FocusStyleManager } from "@blueprintjs/core";
 
 import { getCurrentPaths, setPaths } from "common/path-util";
@@ -12,10 +12,10 @@ import { IpcMainEvent } from "common/IpcEvent";
 import { createStore, defaultState } from "./store";
 import { listenIpc } from "./store/updates";
 import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
-import { selectOrgDescriptions } from "./store/orgs";
+import { orgListChanged } from "./store/orgs";
 import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 import App from "./view/App";
-import { urlToFrontDoorUrl } from "./api/url";
+import { manager } from "./api/OrgManager";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -40,13 +40,21 @@ watchStore(
 store.dispatch(checkOpenAtLogin());
 store.dispatch(checkSfdxPathValidity());
 
-listenIpc(store);
-
-// <find me a good home>
-ipc.answerMain(IpcMainEvent.CONVERT_URL, (rawUrl: string) => {
-  return urlToFrontDoorUrl(selectOrgDescriptions(store.getState().orgs), rawUrl);
+let checkingOrgs = true;
+manager.checkOrgChanges().then(() => { checkingOrgs == false });
+ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, async () => {
+  if (!checkingOrgs) {
+    checkingOrgs = true;
+    await manager.checkOrgChanges();
+    checkingOrgs = false;
+  }
 });
-// </find me a good home>
+
+manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
+  store.dispatch(orgListChanged(changed, removed));
+});
+
+listenIpc(store);
 
 FocusStyleManager.onlyShowFocusOnTabs();
 

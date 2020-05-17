@@ -6,7 +6,6 @@ import { isDevelopment } from "./common-config";
 import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
-import { registerGlobalShortcuts } from "./global-shortcuts";
 import { createDebugWindow } from "./debug-window-config";
 
 let mb: Menubar | undefined;
@@ -28,8 +27,6 @@ if (!isDevelopment) {
     debugWindow.on("ready-to-show", () => {
       debugWindow?.show();
     });
-
-    registerGlobalShortcuts(debugWindow);
   });
 }
 

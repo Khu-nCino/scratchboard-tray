@@ -1,9 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { ipcRenderer } from "electron";
-import { AuthInfo, Aliases, AliasGroup, Connection } from "@salesforce/core";
 import { executePromiseJson } from "./util";
-import { IpcRendererEvent } from "common/IpcEvent";
 
 export type SalesforceOrg = NonScratchOrg | ScratchOrg;
 
@@ -26,94 +23,11 @@ export interface ScratchOrg extends BaseOrg {
   expirationDate: string;
 }
 
-export async function listOrgs(): Promise<SalesforceOrg[]> {
-  const authFileNames = await AuthInfo.listAllAuthFiles();
-  const usernames = authFileNames.map((fileName) => fileName.substring(0, fileName.length - 5)); // remove .json
-  const authInfos = await Promise.all(usernames.map((username) => AuthInfo.create({ username })));
-
-  const aliases = await Aliases.create(Aliases.getDefaultOptions());
-  const orgAliases = Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<
-    Record<string, string>
-  >((acc, [alias, username]) => {
-    acc[`${username}`] = alias;
-    return acc;
-  }, {});
-
-  return authInfos
-    .filter((info) => {
-      // filter expired orgs
-      const expirationDate = info.getFields().expirationDate;
-      return !expirationDate || Date.parse(expirationDate) > Date.now();
-    })
-    .map((info) => {
-      const fields = info.getFields();
-      if (fields.expirationDate) {
-        return {
-          isDevHub: false,
-          isScratchOrg: true,
-          username: fields.username!!,
-          accessToken: fields.accessToken!!,
-          alias: fields.alias || orgAliases[fields.username!!],
-          devHubUsername: fields.devHubUsername!!,
-          orgId: fields.orgId!!,
-          instanceUrl: fields.instanceUrl!!,
-          expirationDate: fields.expirationDate,
-        };
-      } else {
-        return {
-          isDevHub: fields.isDevHub!!,
-          isScratchOrg: false,
-          username: fields.username!!,
-          accessToken: fields.accessToken!!,
-          alias: fields.alias || orgAliases[fields.username!!],
-          instanceUrl: fields.instanceUrl!!,
-          orgId: fields.orgId!!,
-        };
-      }
-    });
-}
-
-export async function openOrg(username: string): Promise<void> {
-  ipcRenderer.send(IpcRendererEvent.OPEN_EXTERNAL, await createFrontDoor(username));
-}
-
-export async function createFrontDoor(username: string, startUrl?: string): Promise<string> {
-  const conn = await Connection.create({ authInfo: await AuthInfo.create({ username }) });
-
-  const accessToken = conn.accessToken;
-  const instanceUrl = conn.getAuthInfoFields().instanceUrl;
-
-  const frontDoorUrl = `${instanceUrl}/secur/frontdoor.jsp?sid=${accessToken}`;
-
-  if (startUrl) {
-    const cleanStartUrl = encodeURIComponent(decodeURIComponent(startUrl));
-    return `${frontDoorUrl}&retURL=${cleanStartUrl}`;
-  }
-  return frontDoorUrl;
-}
-
 export async function deleteOrg(username: string): Promise<void> {
   return executeSfdxCommand("org:delete", {
     "-p": true,
     "-u": username,
   });
-}
-
-export async function setAlias(username: string, newAlias?: string): Promise<void> {
-  const aliases = await Aliases.create(Aliases.getDefaultOptions());
-
-  const [ oldAlias ] = Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).find(
-    ([_, name]) => name === username
-  ) ?? [ undefined ];
-
-
-  if (newAlias) {
-    aliases.set(newAlias, username);
-  }
-  if (oldAlias) {
-    aliases.unset(oldAlias);
-  }
-  aliases.write();
 }
 
 export function logoutOrg(username: string): Promise<void> {
