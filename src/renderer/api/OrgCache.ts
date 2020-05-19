@@ -2,13 +2,15 @@ import { AuthInfo, Aliases, Connection, Org } from "@salesforce/core";
 import { arrayDiff } from "common/util";
 import { CachedResource } from "common/CachedResource";
 import { Emitter } from "common/Emitter";
+import { getLogger } from "common/logger";
 
 export type OrgListChangeListener = (added: string[], removed: string[]) => void;
 export type AliasChangeListener = () => void;
 
+const logger = getLogger();
 export class OrgCache {
   orgChangeEvent = new Emitter<{ added: string[]; removed: string[] }>();
-  aliasChangeEvent = new Emitter();
+  syncErrorEvent = new Emitter<{ name: string, detail: Error }>();
 
   private currentUsernames: string[] = [];
 
@@ -39,12 +41,17 @@ export class OrgCache {
   }
 
   checkOrgChanges = notConcurrent(async () => {
-    const nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2username);
-    const { added, removed } = arrayDiff(nextUsernames, this.currentUsernames);
-    this.currentUsernames = nextUsernames;
+    try {
+      const nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2username);
+      const { added, removed } = arrayDiff(nextUsernames, this.currentUsernames);
+      this.currentUsernames = nextUsernames;
 
-    if (added.length > 0 || removed.length > 0) {
-      await this.orgChangeEvent.emit({ added, removed });
+      if (added.length > 0 || removed.length > 0) {
+        await this.orgChangeEvent.emit({ added, removed });
+      }
+    } catch (error) {
+      logger.error(error.detail ?? error);
+      this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
     }
   });
 

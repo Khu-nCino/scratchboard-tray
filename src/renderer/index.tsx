@@ -16,6 +16,7 @@ import { orgListChanged } from "./store/orgs";
 import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 import App from "./view/App";
 import { manager } from "./api/OrgManager";
+import { createErrorToast } from "./store/messages";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -47,6 +48,10 @@ ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {
 
 manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
   store.dispatch(orgListChanged(changed, removed));
+});
+
+manager.syncErrorEvent.addListener(async ({ name, detail }) => {
+  store.dispatch(createErrorToast(name, detail));
 });
 
 listenIpc(store);

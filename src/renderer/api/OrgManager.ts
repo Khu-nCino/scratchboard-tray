@@ -1,47 +1,66 @@
 import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/core";
 import { Emitter } from "common/Emitter";
+import { getLogger } from "common/logger";
 import { OrgCache } from "./OrgCache";
 import { SalesforceOrg } from "./sfdx";
 
+const logger = getLogger();
 export class OrgManager {
   orgDataChangeEvent = new Emitter<{ changed: SalesforceOrg[]; removed: string[] }>();
-  orgDataErrorEvent = new Emitter<{ error: Error }>();
+  syncErrorEvent = new Emitter<{ name: string, detail: Error }>();
   private cache = new OrgCache();
 
   constructor() {
+    this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event) )
+
     this.cache.orgChangeEvent.addListener(async ({ added, removed }) => {
-      const addedInfos = await Promise.all(
-        added.map((username) => this.cache.getAuthInfo(username))
-      );
-
-      const active = addedInfos.filter(isActive);
-      if (active.length > 0 || removed.length > 0) {
-        const formattedAdded = await this.formatDescriptions(active);
-        this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
-
-        const missingExpirationDates = active.filter((org) => {
-          const field = org.getFields();
-          return field.devHubUsername && !field.expirationDate;
-        });
-        if (missingExpirationDates.length > 0) {
-          await this.populateExpirationDates(missingExpirationDates);
-
-          const expirationPopulated: AuthInfo[] = [];
-          const expired: string[] = [];
-          missingExpirationDates.forEach((missingExpirationDate) => {
-            const fields = missingExpirationDate.getFields();
-            if (Date.parse(fields.expirationDate!!) > Date.now()) {
-              expirationPopulated.push(missingExpirationDate);
-            } else {
-              expired.push(fields.username!!);
+      try {
+        const addedInfos: AuthInfo[] = (await Promise.all(
+          added.map(async (username) => {
+            try {
+              return await this.cache.getAuthInfo(username)
+            } catch (error) {
+              const name = `Error reading data for ${username}`;
+              logger.error(name);
+              logger.error(error.detail ?? error);
+              this.syncErrorEvent.emit({ name, detail: error });
+              return;
             }
-          });
+          })
+        )).filter(notUndefined);
 
-          this.orgDataChangeEvent.emit({
-            changed: await this.formatDescriptions(expirationPopulated),
-            removed: expired,
+        const active = addedInfos.filter(isActive);
+        if (active.length > 0 || removed.length > 0) {
+          const formattedAdded = await this.formatDescriptions(active);
+          this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
+
+          const missingExpirationDates = active.filter((org) => {
+            const field = org.getFields();
+            return field.devHubUsername && !field.expirationDate;
           });
+          if (missingExpirationDates.length > 0) {
+            await this.populateExpirationDates(missingExpirationDates);
+
+            const expirationPopulated: AuthInfo[] = [];
+            const expired: string[] = [];
+            missingExpirationDates.forEach((missingExpirationDate) => {
+              const fields = missingExpirationDate.getFields();
+              if (Date.parse(fields.expirationDate!!) > Date.now()) {
+                expirationPopulated.push(missingExpirationDate);
+              } else {
+                expired.push(fields.username!!);
+              }
+            });
+
+            this.orgDataChangeEvent.emit({
+              changed: await this.formatDescriptions(expirationPopulated),
+              removed: expired,
+            });
+          }
         }
+      } catch (error) {
+        logger.error(error.detail ?? error);
+        this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
       }
     });
   }
@@ -175,6 +194,10 @@ export class OrgManager {
       )
     );
   }
+}
+
+function notUndefined<T>(x: T | undefined): x is T {
+  return x !== undefined;
 }
 
 function isScratch(info: AuthInfo) {
