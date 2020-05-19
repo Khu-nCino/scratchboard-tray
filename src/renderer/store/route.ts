@@ -1,6 +1,6 @@
 import { Action } from "redux";
 
-type RouteActions = PushRouteAction | PopRouteAction | SetNavigationEnabledAction;
+type RouteActions = PushRouteAction | PopRouteAction | SetNavigationEnabledAction | SetIsVisibleAction;
 
 interface PushRouteAction extends Action<"PUSH_ROUTE_ACTION"> {
   payload: {
@@ -14,6 +14,12 @@ interface SetNavigationEnabledAction extends Action<"SET_NAVIGATION_ENABLED_ACTI
   payload: {
     value: boolean;
   };
+}
+
+interface SetIsVisibleAction extends Action<"SET_IS_VISIBLE_ACTION"> {
+  payload: {
+    value: boolean;
+  }
 }
 
 export function pushRouteAction(name: RouteName): PushRouteAction {
@@ -38,17 +44,28 @@ export function setNavigationEnabledAction(value: boolean): SetNavigationEnabled
   };
 }
 
+export function setIsVisible(value: boolean): SetIsVisibleAction {
+  return {
+    type: "SET_IS_VISIBLE_ACTION",
+    payload: {
+      value,
+    },
+  };
+}
+
 // State
 export type RouteName = "orgs" | "settings" | "login" | "frontdoor";
 
 export interface RouteState {
   activeRoute: RouteName;
   navigationEnabled: boolean;
+  isVisible: boolean;
 }
 
 const defaultRouteState: RouteState = {
   activeRoute: "orgs",
   navigationEnabled: true,
+  isVisible: false,
 };
 
 export function routeReducer(
@@ -60,10 +77,13 @@ export function routeReducer(
       return { ...state, activeRoute: action.payload.name };
     }
     case "POP_ROUTE_ACTION": {
-      return defaultRouteState;
+      return { ...state, navigationEnabled: true, activeRoute: defaultRouteState.activeRoute };
     }
     case "SET_NAVIGATION_ENABLED_ACTION": {
       return { ...state, navigationEnabled: action.payload.value };
+    }
+    case "SET_NAVIGATION_ENABLED_ACTION": {
+      return { ...state, isVisible: action.payload.value };
     }
     default: {
       return state;

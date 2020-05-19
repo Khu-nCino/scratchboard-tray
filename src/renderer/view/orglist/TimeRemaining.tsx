@@ -8,20 +8,20 @@ export default function TimeRemaining(props: {
   className?: string;
   date: number;
 }) {
-  const [timeLeft, setTimeLeft] = useState(props.date - Date.now());
-
-  function checkTimeLeft() {
-    const nextTimeLeft = props.date - Date.now();
-    setTimeLeft(nextTimeLeft);
-  }
+  const [, updateState] = useState<{} | undefined>();
 
   useEffect(() => {
-    ipcRenderer.addListener(IpcMainEvent.WINDOW_OPENED, checkTimeLeft);
+    ipcRenderer.addListener(IpcMainEvent.WINDOW_OPENED, () => updateState({}));
     return () => {
-      ipcRenderer.removeListener(IpcMainEvent.WINDOW_OPENED, checkTimeLeft);
+      ipcRenderer.removeListener(IpcMainEvent.WINDOW_OPENED, () => updateState({}));
     };
   }, []);
 
+  if (Number.isNaN(props.date)) {
+    return <div className={props.className + ' bp3-skeleton'}>99 Days Remaining</div>
+  }
+
+  const timeLeft = props.date - Date.now();
   const daysRemaining = Math.max(0, Math.floor(timeLeft / oneDay));
   const daysLabel = daysRemaining === 1 ? "Day" : "Days";
 

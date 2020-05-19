@@ -1,10 +1,11 @@
-import { AliasGroup, Org, AuthInfo, Connection } from "@salesforce/core";
+import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/core";
 import { Emitter } from "common/Emitter";
 import { OrgCache } from "./OrgCache";
 import { SalesforceOrg } from "./sfdx";
 
 export class OrgManager {
   orgDataChangeEvent = new Emitter<{ changed: SalesforceOrg[]; removed: string[] }>();
+  orgDataErrorEvent = new Emitter<{ error: Error }>();
   private cache = new OrgCache();
 
   constructor() {
@@ -14,11 +15,34 @@ export class OrgManager {
       );
 
       const active = addedInfos.filter(isActive);
-      const formattedAdded = await this.formatOrgData(active);
-      this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
+      if (active.length > 0 || removed.length > 0) {
+        const formattedAdded = await this.formatDescriptions(active);
+        this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
 
-      //const missingExpirationDates
-      // TODO
+        const missingExpirationDates = active.filter((org) => {
+          const field = org.getFields();
+          return field.devHubUsername && !field.expirationDate;
+        });
+        if (missingExpirationDates.length > 0) {
+          await this.populateExpirationDates(missingExpirationDates);
+
+          const expirationPopulated: AuthInfo[] = [];
+          const expired: string[] = [];
+          missingExpirationDates.forEach((missingExpirationDate) => {
+            const fields = missingExpirationDate.getFields();
+            if (Date.parse(fields.expirationDate!!) > Date.now()) {
+              expirationPopulated.push(missingExpirationDate);
+            } else {
+              expired.push(fields.username!!);
+            }
+          });
+
+          this.orgDataChangeEvent.emit({
+            changed: await this.formatDescriptions(expirationPopulated),
+            removed: expired,
+          });
+        }
+      }
     });
   }
 
@@ -53,7 +77,7 @@ export class OrgManager {
     return formatFrontdoorUrl(instanceUrl, accessToken, startUrl);
   }
 
-  async formatOrgData(authInfos: AuthInfo[]): Promise<SalesforceOrg[]> {
+  async formatDescriptions(authInfos: AuthInfo[]): Promise<SalesforceOrg[]> {
     const usernameAliasMap = await this.getUsernameAliasMap();
 
     return authInfos.map((info) => {
@@ -89,25 +113,40 @@ export class OrgManager {
     const connections = await this.groupByDevHubConnection(authInfos);
 
     const results = await Promise.all(
-      connections.map(async ([connection, infos]) => {
-        const formattedUsernames = infos.map((info) => info.getFields().username!!).join(",");
-        const results = await connection.query(
-          `SELECT Username,ExpirationDate FROM ActiveScratchOrg WHERE ScratchOrg IN (${formattedUsernames})`
-        );
-        return results.records as { Username: string; ExpirationDate: string }[];
-      })
+      connections.map(
+        ([connection, infos]) =>
+          new Promise<{ SignupUsername: string; ExpirationDate: string }[]>((resolve, reject) => {
+            const formattedUsernames = infos
+              .map((info) => `'${info.getFields().username}'`)
+              .join(",");
+            connection.query(
+              `SELECT SignupUsername,ExpirationDate FROM ActiveScratchOrg WHERE SignupUsername IN (${formattedUsernames})`,
+              { autoFetch: true },
+              (err, result) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(result.records as { SignupUsername: string; ExpirationDate: string }[]);
+                }
+              }
+            );
+          })
+      )
     );
 
-    const expirationDates = results.flat().reduce<Record<string, string>>((acc, { Username, ExpirationDate }) => {
-      acc[Username] = ExpirationDate;
-      return acc;
-    }, {});
+    const expirationDates = results
+      .flat()
+      .reduce<Record<string, string>>((acc, { SignupUsername, ExpirationDate }) => {
+        acc[SignupUsername] = ExpirationDate;
+        return acc;
+      }, {});
 
-    for (const info of authInfos) {
-      const fields = info.getFields();
-      fields.expirationDate = expirationDates[fields.username!!];
-      info.save(fields);
-    }
+    await Promise.all(
+      authInfos.map((info) => {
+        const fields: AuthFields = info.getFields();
+        return info.save({ expirationDate: expirationDates[fields.username!!] });
+      })
+    );
   }
 
   private async getUsernameAliasMap(): Promise<Map<string, string>> {

@@ -6,7 +6,8 @@ export function validInstanceUrl(str: string): boolean {
 }
 
 export function coerceInstanceUrl(url: string): string {
-  return url.startsWith("https://") ? url : `https://${url}`;
+  const trimmedUrl = url.trim();
+  return trimmedUrl.startsWith("https://") ? trimmedUrl : `https://${trimmedUrl}`;
 }
 
 export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promise<string> {

@@ -188,9 +188,7 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
       const { changed, removed } = action.payload;
 
       if (changed.length === 0 && removed.length === 0) {
-        return {
-          ...state,
-        };
+        return state;
       }
 
       const prevUsernameSet = state.orgList.reduce((acc, org) => {

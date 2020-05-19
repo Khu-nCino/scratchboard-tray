@@ -35,14 +35,7 @@ export function createErrorToast(
   message: string,
   detail?: string | ExecutionError
 ): CreateToastAction {
-  let parsedDetail: string | undefined;
-  if (detail instanceof ExecutionError) {
-    parsedDetail = detail.toString();
-  } else {
-    parsedDetail = detail;
-  }
-
-  return createToast(message, "danger", parsedDetail);
+  return createToast(message, "danger", `${detail}`);
 }
 
 export function dismissToast(toastId: number): DismissToastAction {
@@ -79,15 +72,9 @@ export function messagesReducer(state = defaultState, action: MessagesAction) {
         toasts: [...state.toasts, action.payload],
       };
     case "DISMISS_TOAST": {
-      const toasts = [...state.toasts];
-      const indexToRemove = toasts.findIndex(
-        (toast) => toast.id === action.payload.id
-      );
-      toasts.splice(indexToRemove, 1);
-
       return {
         ...state,
-        toasts,
+        toasts: state.toasts.filter((toast) => toast.id !== action.payload.id),
       };
     }
     default:

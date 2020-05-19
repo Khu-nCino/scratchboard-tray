@@ -40,14 +40,9 @@ watchStore(
 store.dispatch(checkOpenAtLogin());
 store.dispatch(checkSfdxPathValidity());
 
-let checkingOrgs = true;
-manager.checkOrgChanges().then(() => { checkingOrgs == false });
-ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, async () => {
-  if (!checkingOrgs) {
-    checkingOrgs = true;
-    await manager.checkOrgChanges();
-    checkingOrgs = false;
-  }
+manager.checkOrgChanges();
+ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {
+  manager.checkOrgChanges();
 });
 
 manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
