@@ -42,13 +42,14 @@ export class OrgCache {
     return this.orgCache.get(username);
   }
 
-  getAliases(): Promise<Aliases> {
-    return this.aliases ?? (this.aliases = Aliases.create(Aliases.getDefaultOptions()));
+  getAliases(reload: boolean = false): Promise<Aliases> {
+    return this.aliases === undefined || reload
+      ? (this.aliases = Aliases.create(Aliases.getDefaultOptions()))
+      : this.aliases;
   }
 
   checkOrgChanges = notConcurrent(async () => {
     try {
-      this.aliases = undefined;
       await this.checkAliasChanges();
 
       const nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2username);
@@ -76,7 +77,7 @@ export class OrgCache {
   }
 
   private async checkAliasChanges() {
-    const aliases = await this.getAliases();
+    const aliases = await this.getAliases(true);
 
     const orgGroup = aliases.getGroup(AliasGroup.ORGS)!!;
     const nextAliases = Object.entries(orgGroup).reduce<Record<string, string>>(
