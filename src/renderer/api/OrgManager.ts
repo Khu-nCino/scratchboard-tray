@@ -13,6 +13,13 @@ export class OrgManager {
   constructor() {
     this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event) )
 
+    this.cache.aliasChangeEvent.addListener(async ({ changed }) => {
+      const infos = await Promise.all(changed.map((username) => this.cache.getCachedAuthInfo(username)).filter(notUndefined));
+      if (infos.length > 0) {
+        this.orgDataChangeEvent.emit({ changed: await this.formatDescriptions(infos), removed: [] });
+      }
+    });
+
     this.cache.orgChangeEvent.addListener(async ({ added, removed }) => {
       try {
         const addedInfos: AuthInfo[] = (await Promise.all(

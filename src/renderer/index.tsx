@@ -60,6 +60,7 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 ReactDom.render(
   <Provider store={store}>
+    <button onClick={() => manager.checkOrgChanges()}>Test</button>
     <App />
   </Provider>,
   document.getElementById("app")
