@@ -19,17 +19,17 @@ $duration: 500ms;
 
 .route-transition--reverse {
   &-enter {
-    transform: translate(100%, -100%);
+    transform: translateX(100%);
   }
   &-enter-active {
-    transform: translate(0, -100%);
+    transform: translateX(0);
     transition: transform $duration;
   }
   &-exit {
-    transform: translate(0, -100%);
+    transform: translateX(0);
   }
   &-exit-active {
-    transform: translate(100%, -100%);
+    transform: translateX(100%);
     transition: transform $duration;
   }
 }
