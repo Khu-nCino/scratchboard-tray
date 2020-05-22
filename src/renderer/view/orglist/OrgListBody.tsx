@@ -17,15 +17,6 @@ function OrgList(props: Props) {
   return (
     <div className="sbt-org-list">
       <CollapseGroup
-        title="Scratch Orgs"
-        isOpen={props.scratchExpanded}
-        onToggleOpen={props.toggleScratchExpand}
-      >
-        {props.scratchOrgList.map((org) => (
-          <OrgItem key={org.description.username} org={org} />
-        ))}
-      </CollapseGroup>
-      <CollapseGroup
         title="Shared Orgs"
         auxButtonIcon="plus"
         isOpen={props.standardExpanded}
@@ -35,6 +26,15 @@ function OrgList(props: Props) {
       >
         {props.sharedOrgList.map((org) => (
           <OrgItem key={org.description.username} org={org}></OrgItem>
+        ))}
+      </CollapseGroup>
+      <CollapseGroup
+        title="Scratch Orgs"
+        isOpen={props.scratchExpanded}
+        onToggleOpen={props.toggleScratchExpand}
+      >
+        {props.scratchOrgList.map((org) => (
+          <OrgItem key={org.description.username} org={org} />
         ))}
       </CollapseGroup>
     </div>

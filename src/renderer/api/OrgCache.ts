@@ -1,4 +1,5 @@
-import { AuthInfo, Aliases, Connection, Org, AliasGroup } from "@salesforce/core";
+import path from "path";
+import { AuthInfo, Aliases, Connection, Org, AliasGroup, Global, fs } from "@salesforce/core";
 import { arrayDiff } from "common/util";
 import { CachedResource } from "common/CachedResource";
 import { Emitter } from "common/Emitter";
@@ -42,6 +43,10 @@ export class OrgCache {
     return this.orgCache.get(username);
   }
 
+  getAllAuthInfo(usernames: string[]): Promise<AuthInfo[]> {
+    return Promise.all(usernames.map((username) => this.getAuthInfo(username)));
+  }
+
   getAliases(reload: boolean = false): Promise<Aliases> {
     return this.aliases === undefined || reload
       ? (this.aliases = Aliases.create(Aliases.getDefaultOptions()))
@@ -65,11 +70,30 @@ export class OrgCache {
     }
   });
 
+  async deleteData(username: string): Promise<void> {
+    const aliases = await this.getAliases(true);
+    const reverseOrgGroup = readOrgGroupReverse(aliases);
+    const alias: string | undefined = reverseOrgGroup[username];
+    if (alias) {
+      aliases.unset(alias);
+      await aliases.write();
+      this.currentAliases = readOrgGroup(aliases);
+    }
+
+    this.clearCache(username);
+    await fs.unlink(path.join(Global.DIR, `${username}.json`));
+  }
+
+  clearCaches(usernames: string[]): boolean {
+    return usernames.reduce<boolean>((acc, username) => acc || this.clearCache(username), false);
+  }
+
   clearCache(username: string): boolean {
     this.currentUsernames = this.currentUsernames.filter(
       (currentUsername) => currentUsername !== username
     );
     return (
+      AuthInfo.clearCache(username) ||
       this.authInfoCache.delete(username) ||
       this.connectionCache.delete(username) ||
       this.orgCache.delete(username)
@@ -79,23 +103,30 @@ export class OrgCache {
   private async checkAliasChanges() {
     const aliases = await this.getAliases(true);
 
-    const orgGroup = aliases.getGroup(AliasGroup.ORGS)!!;
-    const nextAliases = Object.entries(orgGroup).reduce<Record<string, string>>(
-      (acc, [alias, username]) => {
-        acc[alias] = `${username}`;
-        return acc;
-      },
-      {}
-    );
+    const nextAliases = readOrgGroup(aliases)
 
     const changed = compareAliases(nextAliases, this.currentAliases);
     this.currentAliases = nextAliases;
     this.aliasChangeEvent.emit({ changed });
   }
+
 }
 
 // util
 
+function readOrgGroup(aliases: Aliases): Record<string, string> {
+  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>((acc, [alias, username]) => {
+    acc[alias] = `${username}`;
+    return acc;
+  }, {});
+}
+
+export function readOrgGroupReverse(aliases: Aliases): Record<string, string> {
+  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>((acc, [alias, username]) => {
+    acc[`${username}`] = alias;
+    return acc;
+  }, {});
+}
 function compareAliases(
   nextAliases: Record<string, string>,
   oldAliases: Record<string, string>

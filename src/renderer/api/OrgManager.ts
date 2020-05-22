@@ -1,44 +1,39 @@
 import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/core";
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
-import { OrgCache } from "./OrgCache";
+import { OrgCache, readOrgGroupReverse } from "./OrgCache";
 import { SalesforceOrg } from "./sfdx";
+import { binaryGroups } from "common/util";
 
 const logger = getLogger();
 export class OrgManager {
   orgDataChangeEvent = new Emitter<{ changed: SalesforceOrg[]; removed: string[] }>();
-  syncErrorEvent = new Emitter<{ name: string, detail: Error }>();
+  syncErrorEvent = new Emitter<{ name: string; detail: Error }>();
   private cache = new OrgCache();
 
   constructor() {
-    this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event) )
+    this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event));
 
     this.cache.aliasChangeEvent.addListener(async ({ changed }) => {
-      const infos = await Promise.all(changed.map((username) => this.cache.getCachedAuthInfo(username)).filter(notUndefined));
+      const infos = await Promise.all(
+        changed.map((username) => this.cache.getCachedAuthInfo(username)).filter(notUndefined)
+      );
       if (infos.length > 0) {
-        this.orgDataChangeEvent.emit({ changed: await this.formatDescriptions(infos), removed: [] });
+        this.orgDataChangeEvent.emit({
+          changed: await this.formatDescriptions(infos),
+          removed: [],
+        });
       }
     });
 
     this.cache.orgChangeEvent.addListener(async ({ added, removed }) => {
       try {
-        const addedInfos: AuthInfo[] = (await Promise.all(
-          added.map(async (username) => {
-            try {
-              return await this.cache.getAuthInfo(username)
-            } catch (error) {
-              const name = `Error reading data for ${username}`;
-              logger.error(name);
-              logger.error(error.detail ?? error);
-              this.syncErrorEvent.emit({ name, detail: error });
-              return;
-            }
-          })
-        )).filter(notUndefined);
-
+        const addedInfos = await this.cache.getAllAuthInfo(added);
         const active = addedInfos.filter(isActive);
+
         if (active.length > 0 || removed.length > 0) {
           const formattedAdded = await this.formatDescriptions(active);
+          this.cache.clearCaches(removed);
           this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
 
           const missingExpirationDates = active.filter((org) => {
@@ -48,20 +43,16 @@ export class OrgManager {
           if (missingExpirationDates.length > 0) {
             await this.populateExpirationDates(missingExpirationDates);
 
-            const expirationPopulated: AuthInfo[] = [];
-            const expired: string[] = [];
-            missingExpirationDates.forEach((missingExpirationDate) => {
-              const fields = missingExpirationDate.getFields();
-              if (Date.parse(fields.expirationDate!!) > Date.now()) {
-                expirationPopulated.push(missingExpirationDate);
-              } else {
-                expired.push(fields.username!!);
-              }
-            });
+            const [notExpured, expired] = binaryGroups(
+              missingExpirationDates,
+              (info) => Date.parse(info.getFields().expirationDate!!) > Date.now()
+            );
+            const expiredUsernames = expired.map((info) => info.getFields().username!!);
+            this.cache.clearCaches(expiredUsernames);
 
             this.orgDataChangeEvent.emit({
-              changed: await this.formatDescriptions(expirationPopulated),
-              removed: expired,
+              changed: await this.formatDescriptions(notExpured),
+              removed: expiredUsernames,
             });
           }
         }
@@ -103,12 +94,30 @@ export class OrgManager {
     return formatFrontdoorUrl(instanceUrl, accessToken, startUrl);
   }
 
+  logoutOrg(username: string): Promise<void> {
+    return this.cache.deleteData(username);
+  }
+
+  async deleteScratchOrg(username: string): Promise<void> {
+    const org = await this.cache.getOrg(username);
+    const devHub = await org.getDevHubOrg();
+    if (devHub === undefined) {
+      throw new Error(`Can't delete scratchOrg no devhub for ${username}`);
+    }
+
+    const devHubConn = devHub.getConnection();
+    await devHubConn
+      .sobject("ActiveScratchOrg")
+      .delete(await this.queryOrgId(devHubConn, username));
+    await this.cache.deleteData(username);
+  }
+
   async formatDescriptions(authInfos: AuthInfo[]): Promise<SalesforceOrg[]> {
-    const usernameAliasMap = await this.getUsernameAliasMap();
+    const usernameAliasMap = readOrgGroupReverse(await this.cache.getAliases());
 
     return authInfos.map((info) => {
       const fields = info.getFields();
-      const alias = fields.alias || usernameAliasMap.get(fields.username!!) || "";
+      const alias = fields.alias || usernameAliasMap[fields.username!!] || "";
       if (fields.devHubUsername) {
         return {
           isDevHub: false,
@@ -132,6 +141,25 @@ export class OrgManager {
           orgId: fields.orgId!!,
         };
       }
+    });
+  }
+
+  private async queryOrgId(devHubConn: Connection, username: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      devHubConn.query(
+        `SELECT Id FROM ActiveScratchOrg WHERE SignupUsername = '${username}'`,
+        {},
+        (err, result) => {
+          if (err) {
+            reject(err);
+          }
+          const records = result.records as { Id: string }[];
+          if (records.length !== 1) {
+            reject(new Error(`Couldn't identify org to delete from username: ${username}`));
+          }
+          resolve(records[0].Id);
+        }
+      );
     });
   }
 
@@ -173,15 +201,6 @@ export class OrgManager {
         return info.save({ expirationDate: expirationDates[fields.username!!] });
       })
     );
-  }
-
-  private async getUsernameAliasMap(): Promise<Map<string, string>> {
-    const out = new Map<string, string>();
-    const aliases = await this.cache.getAliases();
-    for (const [alias, username] of Object.entries(aliases.getGroup(AliasGroup.ORGS)!!)) {
-      out.set(`${username}`, alias);
-    }
-    return out;
   }
 
   private groupByDevHubConnection(authInfos: AuthInfo[]): Promise<[Connection, AuthInfo[]][]> {

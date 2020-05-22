@@ -3,9 +3,7 @@ import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
 import {
-  deleteOrg,
   SalesforceOrg,
-  logoutOrg,
   BaseOrg,
   ScratchOrg,
   NonScratchOrg,
@@ -103,7 +101,7 @@ export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
     try {
       dispatch(setPendingAction(username, true));
 
-      await logoutOrg(username);
+      await manager.logoutOrg(username);
       dispatch(orgListChanged([], [username]));
 
       dispatch(createToast("Successfully logged out of org.", "success"));
@@ -120,7 +118,7 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
     try {
       dispatch(setPendingAction(username, true));
 
-      await deleteOrg(username);
+      await manager.deleteScratchOrg(username);
       dispatch(orgListChanged([], [username]));
 
       dispatch(createToast("Successfully deleted org.", "success"));
