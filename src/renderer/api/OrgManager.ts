@@ -99,13 +99,14 @@ export class OrgManager {
   }
 
   async deleteScratchOrg(username: string): Promise<void> {
-    const org = await this.cache.getOrg(username);
-    const devHub = await org.getDevHubOrg();
-    if (devHub === undefined) {
+    const orgInfo = await this.cache.getAuthInfo(username);
+    const devHubUsername = orgInfo.getFields().devHubUsername;
+    if (devHubUsername === undefined) {
       throw new Error(`Can't delete scratchOrg no devhub for ${username}`);
     }
 
-    const devHubConn = devHub.getConnection();
+
+    const devHubConn = await this.cache.getConnection(devHubUsername);
     await devHubConn
       .sobject("ActiveScratchOrg")
       .delete(await this.queryOrgId(devHubConn, username));
