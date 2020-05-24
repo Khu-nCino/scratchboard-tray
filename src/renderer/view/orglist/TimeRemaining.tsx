@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { ipcRenderer } from "electron";
-import { IpcMainEvent } from "common/IpcEvent";
+import React from "react";
+import { connect } from "react-redux";
+import { State } from "renderer/store";
 
 const oneDay = 1000 * 60 * 60 * 24;
 
-export default function TimeRemaining(props: {
+type OwnProps = {
   className?: string;
   date: number;
-}) {
-  const [, updateState] = useState<{} | undefined>();
+};
 
-  useEffect(() => {
-    ipcRenderer.addListener(IpcMainEvent.WINDOW_OPENED, () => updateState({}));
-    return () => {
-      ipcRenderer.removeListener(IpcMainEvent.WINDOW_OPENED, () => updateState({}));
-    };
-  }, []);
+type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 
+function TimeRemaining(props: Props) {
   if (Number.isNaN(props.date)) {
     return <div className={props.className + ' bp3-skeleton'}>99 Days Remaining</div>
   }
@@ -31,3 +26,11 @@ export default function TimeRemaining(props: {
     </div>
   );
 }
+
+function mapStateToProps(state: State) {
+  return {
+    isVisible: state.route.isVisible, // use to trigger a rerender
+  };
+}
+
+export default connect(mapStateToProps)(TimeRemaining);

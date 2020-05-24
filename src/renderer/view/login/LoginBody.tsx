@@ -1,9 +1,16 @@
 import React, { useState, useMemo } from "react";
-import { InputGroup, Button, FormGroup, NonIdealState, Spinner } from "@blueprintjs/core";
+import {
+  InputGroup,
+  Button,
+  FormGroup,
+  NonIdealState,
+  Spinner,
+  Icon,
+} from "@blueprintjs/core";
 import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
 import { connect } from "react-redux";
 import { loginOrg } from "renderer/api/sfdx";
-import { CustomDispatch } from "renderer/store";
+import { CustomDispatch, State } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { CanceledExecutionError } from "renderer/api/util";
 import { validInstanceUrl, coerceInstanceUrl } from "renderer/api/url";
@@ -13,8 +20,9 @@ const defaultInstanceUrl = "login.salesforce.com";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement>;
 
-type DispatchProps = ReturnType<typeof mapDispatchToState>;
-type Props = DispatchProps;
+type StateProps = ReturnType<typeof mapStateToProps>;
+type DispatchProps = ReturnType<typeof mapDispatchToProps>;
+type Props = StateProps & DispatchProps;
 
 function LoginBody(props: Props) {
   const [instanceUrl, setInstanceUrl] = useState(defaultInstanceUrl);
@@ -23,7 +31,49 @@ function LoginBody(props: Props) {
 
   const isUrlValid = useMemo(() => validInstanceUrl(instanceUrl), [instanceUrl]);
 
-  if (cancelProcess !== undefined) {
+  const handleLogin = async () => {
+    if (isUrlValid) {
+      const childProcess = loginOrg(
+        coerceInstanceUrl(instanceUrl),
+        alias !== "" ? alias : undefined
+      );
+      props.setNavigationEnabled(false);
+      setCancelProcess(() => childProcess.cancel);
+
+      try {
+        await childProcess.promise;
+        await manager.checkOrgChanges();
+        props.popRoute();
+      } catch (error) {
+        if (!(error instanceof CanceledExecutionError)) {
+          props.createErrorToast("Error authenticating", error);
+        }
+        props.setNavigationEnabled(true);
+        setCancelProcess(undefined);
+      }
+    }
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      handleLogin();
+    }
+  };
+
+  if (!props.sfdxValid) {
+    return (
+      <NonIdealState
+        title="SFDX Config Required"
+        description={
+          <>
+            No SFDX binary found.
+            <br />
+            Try setting the path in the <Icon icon="cog" /> screen and coming back.
+          </>
+        }
+      />
+    );
+  } else if (cancelProcess !== undefined) {
     return (
       <NonIdealState
         title="Authenticating"
@@ -55,6 +105,7 @@ function LoginBody(props: Props) {
               onChange={(event: ChangeEvent) => {
                 setInstanceUrl(event.target.value);
               }}
+              onKeyPress={handleKeyPress}
             />
           </FormGroup>
           <FormGroup label="Alias">
@@ -64,31 +115,12 @@ function LoginBody(props: Props) {
               onChange={(event: ChangeEvent) => {
                 setAlias(event.target.value);
               }}
+              onKeyPress={handleKeyPress}
             />
           </FormGroup>
         </div>
         <div>
-          <Button
-            intent="primary"
-            disabled={!isUrlValid}
-            onClick={async () => {
-              const childProcess = loginOrg(coerceInstanceUrl(instanceUrl), alias !== "" ? alias : undefined);
-              props.setNavigationEnabled(false);
-              setCancelProcess(() => childProcess.cancel);
-
-              try {
-                await childProcess.promise;
-                await manager.checkOrgChanges();
-                props.popRoute();
-              } catch (error) {
-                if (!(error instanceof CanceledExecutionError)) {
-                  props.createErrorToast("Error authenticating", error);
-                }
-                props.setNavigationEnabled(true);
-                setCancelProcess(undefined);
-              }
-            }}
-          >
+          <Button intent="primary" disabled={!isUrlValid} onClick={handleLogin}>
             Login
           </Button>
         </div>
@@ -97,13 +129,19 @@ function LoginBody(props: Props) {
   }
 }
 
-
-function mapDispatchToState(dispatch: CustomDispatch) {
+function mapStateToProps(state: State) {
   return {
-    popRoute: () => dispatch(popRouteAction()),
-    setNavigationEnabled: (value: boolean) => dispatch(setNavigationEnabledAction(value)),
-    createErrorToast: (message: string, detail: string) => dispatch(createErrorToast(message, detail)),
+    sfdxValid: state.settings.isSfdxPathValid,
   };
 }
 
-export default connect(undefined, mapDispatchToState)(LoginBody);
+function mapDispatchToProps(dispatch: CustomDispatch) {
+  return {
+    popRoute: () => dispatch(popRouteAction()),
+    setNavigationEnabled: (value: boolean) => dispatch(setNavigationEnabledAction(value)),
+    createErrorToast: (message: string, detail: string) =>
+      dispatch(createErrorToast(message, detail)),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginBody);

@@ -17,6 +17,7 @@ import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 import App from "./view/App";
 import { manager } from "./api/OrgManager";
 import { createErrorToast } from "./store/messages";
+import { setIsVisible } from "./store/route";
 
 const initialState = loadPersistedState(defaultState);
 const store = createStore(initialState);
@@ -44,6 +45,11 @@ store.dispatch(checkSfdxPathValidity());
 manager.checkOrgChanges();
 ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {
   manager.checkOrgChanges();
+  store.dispatch(setIsVisible(true));
+});
+
+ipcRenderer.on(IpcMainEvent.WINDOW_CLOSED, () => {
+  store.dispatch(setIsVisible(false));
 });
 
 manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {

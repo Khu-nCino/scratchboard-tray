@@ -32,6 +32,10 @@ export function createMenubar(): Menubar {
     mb.window?.webContents.send(IpcMainEvent.WINDOW_OPENED);
   });
 
+  mb.on("hide", () => {
+    mb.window?.webContents.send(IpcMainEvent.WINDOW_CLOSED);
+  });
+
   return mb;
 }
 

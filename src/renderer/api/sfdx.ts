@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { executePromiseJson } from "./util";
 
-export type SalesforceOrg = NonScratchOrg | ScratchOrg;
+export type SalesforceOrg = SharedOrg | ScratchOrg;
 
 export interface BaseOrg {
   username: string;
@@ -13,7 +13,7 @@ export interface BaseOrg {
   isDevHub: boolean;
 }
 
-export interface NonScratchOrg extends BaseOrg {
+export interface SharedOrg extends BaseOrg {
   isScratchOrg: false;
 }
 
@@ -21,20 +21,6 @@ export interface ScratchOrg extends BaseOrg {
   isScratchOrg: true;
   devHubUsername: string;
   expirationDate: string;
-}
-
-export async function deleteOrg(username: string): Promise<void> {
-  return executeSfdxCommand("org:delete", {
-    "-p": true,
-    "-u": username,
-  });
-}
-
-export function logoutOrg(username: string): Promise<void> {
-  return executeSfdxCommand("auth:logout", {
-    "-p": true,
-    "-u": username,
-  });
 }
 
 // Returns cancel callback
@@ -50,10 +36,6 @@ export function loginOrg(
     "-a": alias,
   };
   return executePromiseJson(`sfdx force:auth:web:login --json${buildParams(params)}`);
-}
-
-function executeSfdxCommand(command: string, params?: CommandParams): Promise<any> {
-  return executePromiseJson(`sfdx force:${command} --json${buildParams(params)}`).promise;
 }
 
 type CommandParams = Record<string, string | boolean | undefined>;

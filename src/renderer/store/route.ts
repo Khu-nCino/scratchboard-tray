@@ -82,7 +82,7 @@ export function routeReducer(
     case "SET_NAVIGATION_ENABLED_ACTION": {
       return { ...state, navigationEnabled: action.payload.value };
     }
-    case "SET_NAVIGATION_ENABLED_ACTION": {
+    case "SET_IS_VISIBLE_ACTION": {
       return { ...state, isVisible: action.payload.value };
     }
     default: {

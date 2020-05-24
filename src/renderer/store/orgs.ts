@@ -6,7 +6,7 @@ import {
   SalesforceOrg,
   BaseOrg,
   ScratchOrg,
-  NonScratchOrg,
+  SharedOrg,
 } from "renderer/api/sfdx";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
@@ -41,21 +41,6 @@ interface SetPendingAction extends Action<"SET_PENDING_ACTION"> {
     pendingAction: boolean;
   };
 }
-
-// export function checkOrgsRequest(): ThunkResult<Promise<void>> {
-//   return async (dispatch, getState) => {
-//     const state = getState();
-//     if (state.orgs.orgListStatus === "pending") {
-//       return;
-//     }
-
-//     const oldUsernameCache = state.orgs.usernameCache;
-//     const newUsernameCache = await listAllUsernames();
-//     if (!unorderedCompare(oldUsernameCache, newUsernameCache)) {
-//       dispatch(listOrgsRequest());
-//     }
-//   };
-// }
 
 export function orgListChanged(changed: SalesforceOrg[], removed: string[]): OrgListChanges {
   return {
@@ -285,13 +270,25 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
 
 // Selectors
 export function selectScratchOrgs(state: OrgsState): OrgData<ScratchOrg>[] {
-  return state.orgList.filter((org) => org.description.isScratchOrg) as OrgData<ScratchOrg>[];
+  return state.orgList.filter(isScratchOrg).sort(orgCompare);
 }
 
-export function selectSharedOrgs(state: OrgsState): OrgData<NonScratchOrg>[] {
-  return state.orgList.filter((org) => !org.description.isScratchOrg) as OrgData<NonScratchOrg>[];
+export function selectSharedOrgs(state: OrgsState): OrgData<SharedOrg>[] {
+  return state.orgList.filter(isSharedOrg).sort(orgCompare);
 }
 
 export function selectOrgDescriptions(state: OrgsState): SalesforceOrg[] {
   return state.orgList.map(({ description }) => description);
+}
+
+function isScratchOrg(org: OrgData<SalesforceOrg>): org is OrgData<ScratchOrg> {
+  return org.description.isScratchOrg;
+}
+
+function isSharedOrg(org: OrgData<SalesforceOrg>): org is OrgData<SharedOrg> {
+  return !org.description.isScratchOrg;
+}
+
+function orgCompare(a: OrgData<SalesforceOrg>, b: OrgData<SalesforceOrg>): number {
+  return a.description.username.localeCompare(b.description.username);
 }
