@@ -1,5 +1,5 @@
 import React from "react";
-import { Dialog, Classes, InputGroup, Button, Intent, Keys } from "@blueprintjs/core";
+import { Dialog, Classes, InputGroup, Button, Intent } from "@blueprintjs/core";
 
 export default function InputTextDialog(props: {
   titleText: string;
