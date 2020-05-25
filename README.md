@@ -2,7 +2,7 @@
   Scratchboard
 </h1>
 
-<h4 align="center">A tray based salesforce org manager built for easy of use. <a href="http://electron.atom.io" target="_blank">Electron</a>, <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</a> and <a href="https://github.com/forcedotcom/sfdx-core">sfdx-core</a>.</h4>
+<h4 align="center">A tray based salesforce org manager built for easy of use with <a href="http://electron.atom.io" target="_blank">Electron</a>, <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</a> and <a href="https://github.com/forcedotcom/sfdx-core">sfdx-core</a>.</h4>
 
 <p align="center">
   <a href="#motivation">Motivation</a> •
@@ -17,7 +17,7 @@
 
 ## Motivation
 
-* I wanted to see if it was possible to make it easier to track and manager your salesforce orgs with a sfdx-core based gui.
+* To make it easier to track and manager your salesforce orgs with a sfdx-core based tray application.
 * People can forget that a scratch org will soon expire and an active reminder could be useful.
 
 ## Features
@@ -44,7 +44,7 @@
 
 ## Download
 
-You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/download/v0.3.0/scratchboard-tray-0.3.0-mac.dmg).
+You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/download/v0.3.0/scratchboard-tray-0.3.1-mac.dmg).
 
 There can be a problem with the zip version for new installations but it's required for auto-update to function so it's included anyway. Because of this it's recommend you use the dmg version for new installations.
 
