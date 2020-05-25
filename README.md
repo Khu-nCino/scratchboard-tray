@@ -2,10 +2,9 @@
   Scratchboard
 </h1>
 
-<h4 align="center">A scratch org manager for your tray, build using <a href="http://electron.atom.io" target="_blank">Electron</a> and <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</>.</h4>
+<h4 align="center">A tray based salesforce org manager built for easy of use. <a href="http://electron.atom.io" target="_blank">Electron</a>, <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</a> and <a href="https://github.com/forcedotcom/sfdx-core">sfdx-core</a>.</h4>
 
 <p align="center">
-  <a href="#prerelease-disclaimer">Prerelease Disclaimer</a> •
   <a href="#motivation">Motivation</a> •
   <a href="#features">Features</a> •
   <a href="#download">Download</a> •
@@ -13,29 +12,30 @@
 </p>
 
 <div align="center">
-<img width="440" alt="Scratchboard" src="https://user-images.githubusercontent.com/47356856/76692137-93a4d680-6628-11ea-961c-a2de5a31ea18.png">
+<img width="440" alt="Scratchboard" src="screenshots/application.png">
 </div>
-
-## Prerelease Disclaimer
-
-This Project is in prerelease and bugs should be expected.  
-However if you'd like to give it a try and provide feedback you're more than welcome!
 
 ## Motivation
 
-* Often it's quicker to open an org through a tray based app than it is to type the command into your terminal.
-* It's easy to forget that an orgs expiration is approaching, this app is meant to remind you how much time is left on an org.
+* I wanted to see if it was possible to make it easier to track and manager your salesforce orgs with a sfdx-core based gui.
+* People can forget that a scratch org will soon expire and an active reminder could be useful.
 
 ## Features
 
 * Tray Based
   - Lives in your computer tray for quick access.
+* Supports both scratch orgs and standard orgs
 * SFDX Actions
   - Open Orgs
   - Set Aliases
   - Copy Frontdoor
-  - Delete Orgs
-* See days until org expiration.
+  - Delete Orgs (Scratch orgs only)
+  - Logout of Orgs (NonScratch orgs only)
+  - Login to orgs
+  - Convert an arbitrary salesforce url into a frontdoor url.
+  - More to come...
+* Quickly see days until org expiration.
+* Automaticly stays in sync with sfdx with no need to manually refresh org list.
 * Dark/Light mode
 * Automatically Download and Install Updates
 * OS Support
@@ -44,13 +44,14 @@ However if you'd like to give it a try and provide feedback you're more than wel
 
 ## Download
 
-You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/tag/v2.0.0).
+You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/tag/v3.0.0).
 
 ## Setup
 
 #### Dependencies
 
-[NodeJs](https://nodejs.org/en/) and [SFDX](https://developer.salesforce.com/tools/sfdxcli) are required for scratchboard to work.  
+This project can mostly function without sfdx installed but
+[NodeJs](https://nodejs.org/en/) and [SFDX](https://developer.salesforce.com/tools/sfdxcli) are still required to use the login functionality.  
 Using [nvm](https://github.com/nvm-sh/nvm) to manage your node version is supported.
 
 #### SFDX Binary Path
