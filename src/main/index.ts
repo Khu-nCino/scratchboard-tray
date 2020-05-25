@@ -53,9 +53,9 @@ ipcMain.on(IpcRendererEvent.OPEN_EXTERNAL, (_event, url) => {
 });
 
 ipc.answerRenderer(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER, () => {
-  shell.showItemInFolder(app.getPath("userData"));
+  shell.openPath(app.getPath("userData"));
 });
 
 ipc.answerRenderer(IpcRendererEvent.SHOW_LOGS_IN_FOLDER, () => {
-  shell.showItemInFolder(app.getPath("logs"));
+  shell.openPath(app.getPath("logs"));
 });

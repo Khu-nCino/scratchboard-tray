@@ -1,4 +1,4 @@
-import { nativeImage } from "electron";
+import { nativeImage, app } from "electron";
 import path from "path";
 import { IpcMainEvent } from "common/IpcEvent";
 import { menubar, Menubar } from "./menubar";
@@ -28,6 +28,15 @@ export function createMenubar(): Menubar {
 
   mb.on("hide", () => {
     mb.window?.webContents.send(IpcMainEvent.WINDOW_CLOSED);
+  });
+
+  mb.on("after-create-window", () => {
+    if (process.platform === "darwin") {
+      const { openAsHidden } = app.getLoginItemSettings();
+      if (!openAsHidden) {
+        mb.showWindow();
+      }
+    }
   });
 
   return mb;
