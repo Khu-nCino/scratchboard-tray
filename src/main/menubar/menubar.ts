@@ -1,12 +1,12 @@
-import { BrowserWindow, Tray } from 'electron';
-import Positioner from 'electron-positioner';
-import { EventEmitter } from 'events';
-import fs from 'fs';
-import path from 'path';
+import { BrowserWindow, Tray } from "electron";
+import Positioner from "electron-positioner";
+import { EventEmitter } from "events";
+import fs from "fs";
+import path from "path";
 
-import { Options } from './types';
-import { cleanOptions } from './util/cleanOptions';
-import { getWindowPosition } from './util/getWindowPosition';
+import { Options } from "./types";
+import { cleanOptions } from "./util/cleanOptions";
+import { getWindowPosition } from "./util/getWindowPosition";
 
 /**
  * The main Menubar class.
@@ -33,12 +33,10 @@ export class Menubar extends EventEmitter {
 
     if (app.isReady()) {
       // See https://github.com/maxogden/menubar/pull/151
-      process.nextTick(() =>
-        this.appReady().catch((err) => console.error('menubar: ', err))
-      );
+      process.nextTick(() => this.appReady().catch((err) => console.error("menubar: ", err)));
     } else {
-      app.on('ready', () => {
-        this.appReady().catch((err) => console.error('menubar: ', err));
+      app.on("ready", () => {
+        this.appReady().catch((err) => console.error("menubar: ", err));
       });
     }
   }
@@ -59,7 +57,7 @@ export class Menubar extends EventEmitter {
   get positioner(): any {
     if (!this._positioner) {
       throw new Error(
-        'Please access `this.positioner` after the `after-create-window` event has fired.'
+        "Please access `this.positioner` after the `after-create-window` event has fired."
       );
     }
 
@@ -71,9 +69,7 @@ export class Menubar extends EventEmitter {
    */
   get tray(): Tray {
     if (!this._tray) {
-      throw new Error(
-        'Please access `this.tray` after the `ready` event has fired.'
-      );
+      throw new Error("Please access `this.tray` after the `ready` event has fired.");
     }
 
     return this._tray;
@@ -103,9 +99,9 @@ export class Menubar extends EventEmitter {
     if (!this._browserWindow || !this._isVisible) {
       return;
     }
-    this.emit('hide');
+    this.emit("hide");
     this._browserWindow.hide();
-    this.emit('after-hide');
+    this.emit("after-hide");
     this._isVisible = false;
     if (this._blurTimeout) {
       clearTimeout(this._blurTimeout);
@@ -129,8 +125,10 @@ export class Menubar extends EventEmitter {
    * @param trayPos - The bounds to show the window in.
    */
   async showWindow(trayPos?: Electron.Rectangle): Promise<void> {
+    this._isVisible = true;
+
     if (!this.tray) {
-      throw new Error('Tray should have been instantiated by now');
+      throw new Error("Tray should have been instantiated by now");
     }
 
     if (!this._browserWindow) {
@@ -139,9 +137,9 @@ export class Menubar extends EventEmitter {
 
     // Use guard for TypeScript, to avoid ! everywhere
     if (!this._browserWindow) {
-      throw new Error('Window has been initialized just above. qed.');
+      throw new Error("Window has been initialized just above. qed.");
     }
-    this.emit('show');
+    this.emit("show");
 
     if (trayPos && trayPos.x !== 0) {
       // Cache the bounds
@@ -159,10 +157,9 @@ export class Menubar extends EventEmitter {
     if (
       (trayPos === undefined || trayPos.x === 0) &&
       this._options.windowPosition &&
-      this._options.windowPosition.startsWith('tray')
+      this._options.windowPosition.startsWith("tray")
     ) {
-      noBoundsPosition =
-        process.platform === 'win32' ? 'bottomRight' : 'topRight';
+      noBoundsPosition = process.platform === "win32" ? "bottomRight" : "topRight";
     }
 
     const position = this.positioner.calculate(
@@ -172,34 +169,31 @@ export class Menubar extends EventEmitter {
 
     // Not using `||` because x and y can be zero.
     const x =
-      this._options.browserWindow.x !== undefined
-        ? this._options.browserWindow.x
-        : position.x;
+      this._options.browserWindow.x !== undefined ? this._options.browserWindow.x : position.x;
     let y =
-      this._options.browserWindow.y !== undefined
-        ? this._options.browserWindow.y
-        : position.y;
+      this._options.browserWindow.y !== undefined ? this._options.browserWindow.y : position.y;
 
     // Multi-Taskbar: optimize vertical position
     // https://github.com/maxogden/menubar/pull/217
-    if (process.platform === 'win32') {
+    if (process.platform === "win32") {
       if (
         trayPos &&
         this._options.windowPosition &&
-        this._options.windowPosition.startsWith('bottom')
+        this._options.windowPosition.startsWith("bottom")
       ) {
-        y =
-          trayPos.y +
-          trayPos.height / 2 -
-          this._browserWindow.getBounds().height / 2;
+        y = trayPos.y + trayPos.height / 2 - this._browserWindow.getBounds().height / 2;
       }
+    }
+
+    if (process.platform === "darwin") {
+      y += 6; // TODO find a better way to use the offset
     }
 
     // `.setPosition` crashed on non-integers
     // https://github.com/maxogden/menubar/issues/233
     this._browserWindow.setPosition(Math.round(x), Math.round(y));
     this._browserWindow.show();
-    this.emit('after-show');
+    this.emit("after-show");
     return;
   }
 
@@ -208,34 +202,31 @@ export class Menubar extends EventEmitter {
       this.app.dock.hide();
     }
 
-    this.app.on('activate', (_event, hasVisibleWindows) => {
+    this.app.on("activate", (_event, hasVisibleWindows) => {
       if (!hasVisibleWindows) {
         this.showWindow();
       }
     });
 
-    let trayImage =
-      this._options.icon || path.join(this._options.dir, 'IconTemplate.png');
-    if (typeof trayImage === 'string' && !fs.existsSync(trayImage)) {
-      trayImage = path.join(__dirname, '..', 'assets', 'IconTemplate.png'); // Default cat icon
+    let trayImage = this._options.icon || path.join(this._options.dir, "IconTemplate.png");
+    if (typeof trayImage === "string" && !fs.existsSync(trayImage)) {
+      trayImage = path.join(__dirname, "..", "assets", "IconTemplate.png"); // Default cat icon
     }
 
-    const defaultClickEvent = this._options.showOnRightClick
-      ? 'right-click'
-      : 'click';
+    const defaultClickEvent = this._options.showOnRightClick ? "right-click" : "click";
 
     this._tray = this._options.tray || new Tray(trayImage);
     // Type guards for TS not to complain
     if (!this.tray) {
-      throw new Error('Tray has been initialized above');
+      throw new Error("Tray has been initialized above");
     }
     this.tray.on(
-      defaultClickEvent as Parameters<Tray['on']>[0],
+      defaultClickEvent as Parameters<Tray["on"]>[0],
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       this.clicked.bind(this)
     );
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.tray.on('double-click', this.clicked.bind(this));
+    this.tray.on("double-click", this.clicked.bind(this));
     this.tray.setToolTip(this._options.tooltip);
 
     if (!this._options.windowPosition) {
@@ -247,7 +238,7 @@ export class Menubar extends EventEmitter {
       await this.createWindow();
     }
 
-    this.emit('ready');
+    this.emit("ready");
   }
 
   /**
@@ -274,12 +265,11 @@ export class Menubar extends EventEmitter {
     }
 
     this._cachedBounds = bounds || this._cachedBounds;
-    this._isVisible = true;
     await this.showWindow(this._cachedBounds);
   }
 
   private async createWindow(): Promise<void> {
-    this.emit('create-window');
+    this.emit("create-window");
 
     // We add some default behavior for menubar's browserWindow, to make it
     // look like a menubar
@@ -295,14 +285,14 @@ export class Menubar extends EventEmitter {
 
     this._positioner = new Positioner(this._browserWindow);
 
-    this._browserWindow.on('blur', () => {
+    this._browserWindow.on("blur", () => {
       if (!this._browserWindow) {
         return;
       }
 
       // hack to close if icon clicked when open
       this._browserWindow.isAlwaysOnTop()
-        ? this.emit('focus-lost')
+        ? this.emit("focus-lost")
         : (this._blurTimeout = setTimeout(() => {
             this.hideWindow();
           }, 100));
@@ -312,21 +302,18 @@ export class Menubar extends EventEmitter {
       this._browserWindow.setVisibleOnAllWorkspaces(true);
     }
 
-    this._browserWindow.on('close', this.windowClear.bind(this));
+    this._browserWindow.on("close", this.windowClear.bind(this));
 
     // If the user explicity set options.index to false, we don't loadURL
     // https://github.com/maxogden/menubar/issues/255
     if (this._options.index !== false) {
-      await this._browserWindow.loadURL(
-        this._options.index,
-        this._options.loadUrlOptions
-      );
+      await this._browserWindow.loadURL(this._options.index, this._options.loadUrlOptions);
     }
-    this.emit('after-create-window');
+    this.emit("after-create-window");
   }
 
   private windowClear(): void {
     this._browserWindow = undefined;
-    this.emit('after-close');
+    this.emit("after-close");
   }
 }

@@ -1,3 +1,5 @@
+
+// TODO use standard nodejs events
 type Listener<E> = (event: E) => Promise<void>;
 
 export class Emitter<E> {

@@ -1,7 +1,7 @@
 import { app, ipcMain, BrowserWindow, shell } from "electron";
-import { Menubar } from "menubar";
 import { ipcMain as ipc } from "electron-better-ipc";
 import { IpcRendererEvent } from "common/IpcEvent";
+import { Menubar } from "./menubar";
 import { isDevelopment } from "./common-config";
 import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
@@ -15,7 +15,7 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 
-if (!isDevelopment) {
+if (isDevelopment) {
   mb = createMenubar();
   mb.on("after-hide", () => {
     app.hide();
