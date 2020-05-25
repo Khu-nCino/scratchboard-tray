@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Dialog,
-  Classes,
-  InputGroup,
-  Button,
-  Intent,
-  Keys,
-} from "@blueprintjs/core";
+import { Dialog, Classes, InputGroup, Button, Intent, Keys } from "@blueprintjs/core";
 
 export default function InputTextDialog(props: {
   titleText: string;
@@ -32,7 +25,7 @@ export default function InputTextDialog(props: {
             props.onChange((event.target as HTMLInputElement).value)
           }
           onKeyDown={(event) => {
-            if (event.keyCode === Keys.ENTER) {
+            if (event.key === "Enter") {
               props.onConfirm();
               props.onClose();
             }

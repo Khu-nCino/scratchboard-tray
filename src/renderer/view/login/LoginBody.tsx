@@ -13,7 +13,7 @@ import { loginOrg } from "renderer/api/sfdx";
 import { CustomDispatch, State } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { CanceledExecutionError } from "renderer/api/util";
-import { validInstanceUrl, coerceInstanceUrl } from "renderer/api/url";
+import { coerceInstanceUrl } from "renderer/api/url";
 import { manager } from "renderer/api/OrgManager";
 
 const defaultInstanceUrl = "login.salesforce.com";
@@ -29,7 +29,7 @@ function LoginBody(props: Props) {
   const [alias, setAlias] = useState("");
   const [cancelProcess, setCancelProcess] = useState<() => void | undefined>();
 
-  const isUrlValid = useMemo(() => validInstanceUrl(instanceUrl), [instanceUrl]);
+  const isUrlValid = Boolean(instanceUrl);
 
   const handleLogin = async () => {
     if (isUrlValid) {

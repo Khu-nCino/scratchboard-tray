@@ -35,7 +35,7 @@ function SettingsBody(props: Props) {
         <FileInput
           value={props.sfdxPath}
           onChange={props.setSfdxPath}
-          isValid={props.isSfdxPathValid ?? false}
+          isValid={!props.sfdxPath || (props.isSfdxPathValid ?? false)}
         />
       </FormGroup>
       <div className="sbt-mh_medium">

@@ -1,21 +1,13 @@
 import { SalesforceOrg } from "./sfdx";
 import { manager } from "./OrgManager";
 
-export function validInstanceUrl(str: string): boolean {
-  return Boolean(str);
-}
-
 export function coerceInstanceUrl(url: string): string {
   const trimmedUrl = url.trim();
   return trimmedUrl.startsWith("https://") ? trimmedUrl : `https://${trimmedUrl}`;
 }
 
-export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promise<string> {
+export function urlToFrontDoorUrl(username: string, rawUrl: string): Promise<string> {
   const url = new URL(rawUrl);
-  const orgUsername = matchOrgByUrl(orgs, url)?.username;
-  if (!orgUsername) {
-    throw "Could not find org matching that url.";
-  }
 
   // correct visualforce namespace
   const namespace = extractNamespace(url);
@@ -26,12 +18,12 @@ export function urlToFrontDoorUrl(orgs: SalesforceOrg[], rawUrl: string): Promis
 
   const urlPath = `${correctedPathname}${url.search}${url.hash}`;
 
-  return manager.getFrontDoor(orgUsername, urlPath);
+  return manager.getFrontDoor(username, urlPath);
 }
 
-function matchOrgByUrl(orgs: SalesforceOrg[], url: URL) {
-  return orgs.find(
-    (org) => extractUrlIdentifier(new URL(org.instanceUrl)) === extractUrlIdentifier(url)
+export function matchOrgByUrl(orgs: SalesforceOrg[], url: string): SalesforceOrg[] {
+  return orgs.filter(
+    (org) => extractUrlIdentifier(new URL(org.instanceUrl)) === extractUrlIdentifier(new URL(coerceInstanceUrl(url)))
   );
 }
 
