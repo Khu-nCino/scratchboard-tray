@@ -36,6 +36,7 @@
     "classnames": "^2.2.6",
     "electron-better-ipc": "^1.0.0",
     "electron-log": "^4.0.7",
+    "electron-positioner": "^4.1.0",
     "electron-store": "^5.1.0",
     "electron-updater": "^4.2.2",
     "menubar": "^8.0.1",
