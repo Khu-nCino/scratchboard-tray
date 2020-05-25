@@ -15,7 +15,7 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 
-if (isDevelopment) {
+if (!isDevelopment) {
   mb = createMenubar();
   mb.on("after-hide", () => {
     app.hide();
