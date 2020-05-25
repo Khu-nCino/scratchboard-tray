@@ -32,8 +32,8 @@ export function createMenubar(): Menubar {
 
   mb.on("after-create-window", () => {
     if (process.platform === "darwin") {
-      const { openAsHidden } = app.getLoginItemSettings();
-      if (!openAsHidden) {
+      const { wasOpenedAsHidden } = app.getLoginItemSettings();
+      if (!wasOpenedAsHidden) {
         mb.showWindow();
       }
     }
