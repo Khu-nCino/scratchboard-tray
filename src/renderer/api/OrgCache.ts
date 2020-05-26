@@ -1,6 +1,6 @@
 import path from "path";
 import { AuthInfo, Aliases, Connection, Org, AliasGroup, Global, fs } from "@salesforce/core";
-import { arrayDiff } from "common/util";
+import { arrayDiff, notUndefined } from "common/util";
 import { CachedResource } from "common/CachedResource";
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
@@ -43,8 +43,20 @@ export class OrgCache {
     return this.orgCache.get(username);
   }
 
-  getAllAuthInfo(usernames: string[]): Promise<AuthInfo[]> {
-    return Promise.all(usernames.map((username) => this.getAuthInfo(username)));
+  async getAllAuthInfo(usernames: string[]): Promise<AuthInfo[]> {
+    return (
+      await Promise.all(
+        usernames.map(async (username) => {
+          try {
+            return await this.getAuthInfo(username);
+          } catch (error) {
+            logger.error(error.detail ?? error);
+            this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
+            return;
+          }
+        })
+      )
+    ).filter(notUndefined);
   }
 
   getAliases(reload: boolean = false): Promise<Aliases> {
@@ -103,29 +115,34 @@ export class OrgCache {
   private async checkAliasChanges() {
     const aliases = await this.getAliases(true);
 
-    const nextAliases = readOrgGroup(aliases)
+    const nextAliases = readOrgGroup(aliases);
 
     const changed = compareAliases(nextAliases, this.currentAliases);
     this.currentAliases = nextAliases;
     this.aliasChangeEvent.emit({ changed });
   }
-
 }
 
 // util
 
 function readOrgGroup(aliases: Aliases): Record<string, string> {
-  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>((acc, [alias, username]) => {
-    acc[alias] = `${username}`;
-    return acc;
-  }, {});
+  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>(
+    (acc, [alias, username]) => {
+      acc[alias] = `${username}`;
+      return acc;
+    },
+    {}
+  );
 }
 
 export function readOrgGroupReverse(aliases: Aliases): Record<string, string> {
-  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>((acc, [alias, username]) => {
-    acc[`${username}`] = alias;
-    return acc;
-  }, {});
+  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>(
+    (acc, [alias, username]) => {
+      acc[`${username}`] = alias;
+      return acc;
+    },
+    {}
+  );
 }
 function compareAliases(
   nextAliases: Record<string, string>,

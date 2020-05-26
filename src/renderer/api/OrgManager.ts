@@ -1,9 +1,9 @@
 import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/core";
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
+import { binaryGroups, notUndefined } from "common/util";
 import { OrgCache, readOrgGroupReverse } from "./OrgCache";
 import { SalesforceOrg } from "./sfdx";
-import { binaryGroups } from "common/util";
 
 const logger = getLogger();
 export class OrgManager {
@@ -221,10 +221,6 @@ export class OrgManager {
       )
     );
   }
-}
-
-function notUndefined<T>(x: T | undefined): x is T {
-  return x !== undefined;
 }
 
 function isScratch(info: AuthInfo) {

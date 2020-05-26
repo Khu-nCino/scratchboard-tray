@@ -18,3 +18,7 @@ export function arrayDiff<T>(next: T[], prev: T[]) {
 export function binaryGroups<T>(xs: T[], func: (x: T) => boolean): [T[], T[]] {
   return [xs.filter(func), xs.filter((x) => !func(x))];
 }
+
+export function notUndefined<T>(x: T | undefined): x is T {
+  return x !== undefined;
+}
