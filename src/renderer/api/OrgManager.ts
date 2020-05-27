@@ -100,16 +100,15 @@ export class OrgManager {
 
   async deleteScratchOrg(username: string): Promise<void> {
     const orgInfo = await this.cache.getAuthInfo(username);
-    const devHubUsername = orgInfo.getFields().devHubUsername;
+    const { orgId, devHubUsername } = orgInfo.getFields();
     if (devHubUsername === undefined) {
       throw new Error(`Can't delete scratchOrg no devhub for ${username}`);
     }
 
-
     const devHubConn = await this.cache.getConnection(devHubUsername);
     await devHubConn
       .sobject("ActiveScratchOrg")
-      .delete(await this.queryOrgId(devHubConn, username));
+      .delete(await this.queryOrgId(devHubConn, orgId!));
     await this.cache.deleteData(username);
   }
 
@@ -145,10 +144,10 @@ export class OrgManager {
     });
   }
 
-  private async queryOrgId(devHubConn: Connection, username: string): Promise<string> {
+  private async queryOrgId(devHubConn: Connection, orgId: string): Promise<string> {
     return new Promise((resolve, reject) => {
       devHubConn.query(
-        `SELECT Id FROM ActiveScratchOrg WHERE SignupUsername = '${username}'`,
+        `SELECT Id FROM ActiveScratchOrg WHERE ScratchOrg = '${trimTo15(orgId)}'`,
         {},
         (err, result) => {
           if (err) {
@@ -156,7 +155,7 @@ export class OrgManager {
           }
           const records = result.records as { Id: string }[];
           if (records.length !== 1) {
-            reject(new Error(`Couldn't identify org to delete from username: ${username}`));
+            reject(new Error("Couldn't identify single org to delete"));
           }
           resolve(records[0].Id);
         }
@@ -170,18 +169,35 @@ export class OrgManager {
     const results = await Promise.all(
       connections.map(
         ([connection, infos]) =>
-          new Promise<{ SignupUsername: string; ExpirationDate: string }[]>((resolve, reject) => {
-            const formattedUsernames = infos
-              .map((info) => `'${info.getFields().username}'`)
+          new Promise<{ username: string; expirationDate: string }[]>((resolve, reject) => {
+            const orgIdToUsername = infos.reduce<Record<string, string>>((acc, info) => {
+              const { orgId, username } = info.getFields();
+              acc[trimTo15(orgId!)] = username!;
+              return acc;
+            }, {});
+
+            const formatedOrgIds = Object.keys(orgIdToUsername)
+              .map((orgId) => `'${orgId}'`)
               .join(",");
+
             connection.query(
-              `SELECT SignupUsername,ExpirationDate FROM ActiveScratchOrg WHERE SignupUsername IN (${formattedUsernames})`,
+              `SELECT ScratchOrg,ExpirationDate FROM ActiveScratchOrg WHERE ScratchOrg IN (${formatedOrgIds})`,
               { autoFetch: true },
               (err, result) => {
                 if (err) {
                   reject(err);
                 } else {
-                  resolve(result.records as { SignupUsername: string; ExpirationDate: string }[]);
+                  const records = result.records as {
+                    ScratchOrg: string;
+                    ExpirationDate: string;
+                  }[];
+
+                  resolve(
+                    records.map(({ ScratchOrg, ExpirationDate }) => ({
+                      username: orgIdToUsername[ScratchOrg],
+                      expirationDate: ExpirationDate,
+                    }))
+                  );
                 }
               }
             );
@@ -191,8 +207,8 @@ export class OrgManager {
 
     const expirationDates = results
       .flat()
-      .reduce<Record<string, string>>((acc, { SignupUsername, ExpirationDate }) => {
-        acc[SignupUsername] = ExpirationDate;
+      .reduce<Record<string, string>>((acc, { username, expirationDate }) => {
+        acc[username] = expirationDate;
         return acc;
       }, {});
 
@@ -221,6 +237,14 @@ export class OrgManager {
       )
     );
   }
+}
+
+function trimTo15(orgId: string) {
+  if (orgId !== null && orgId !== undefined && orgId.length && orgId.length > 15) {
+    orgId = orgId.substring(0, 15);
+  }
+
+  return orgId;
 }
 
 function isScratch(info: AuthInfo) {

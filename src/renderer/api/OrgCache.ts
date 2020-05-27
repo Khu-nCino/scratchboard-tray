@@ -69,7 +69,7 @@ export class OrgCache {
     try {
       await this.checkAliasChanges();
 
-      const nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2username);
+      const nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2Username);
       const { added, removed } = arrayDiff(nextUsernames, this.currentUsernames);
       this.currentUsernames = nextUsernames;
 
@@ -168,7 +168,7 @@ function compareAliases(
   return changedUsernames;
 }
 
-function authFileName2username(filename: string): string {
+function authFileName2Username(filename: string): string {
   return filename.substring(0, filename.length - 5);
 }
 
