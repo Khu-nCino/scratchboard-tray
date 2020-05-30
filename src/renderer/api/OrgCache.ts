@@ -96,14 +96,16 @@ export class OrgCache {
     await fs.unlink(path.join(Global.DIR, `${username}.json`));
   }
 
-  clearCaches(usernames: string[]): boolean {
-    return usernames.reduce<boolean>((acc, username) => acc || this.clearCache(username), false);
+  clearCaches(usernames: string[], preventReload: boolean = false): boolean {
+    return usernames.reduce<boolean>((acc, username) => acc || this.clearCache(username, preventReload), false);
   }
 
-  clearCache(username: string): boolean {
-    this.currentUsernames = this.currentUsernames.filter(
-      (currentUsername) => currentUsername !== username
-    );
+  clearCache(username: string, preventReload: boolean = false): boolean {
+    if (!preventReload) {
+      this.currentUsernames = this.currentUsernames.filter(
+        (currentUsername) => currentUsername !== username
+      );
+    }
     return (
       AuthInfo.clearCache(username) ||
       this.authInfoCache.delete(username) ||

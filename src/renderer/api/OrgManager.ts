@@ -48,7 +48,7 @@ export class OrgManager {
               (info) => Date.parse(info.getFields().expirationDate!!) > Date.now()
             );
             const expiredUsernames = expired.map((info) => info.getFields().username!!);
-            this.cache.clearCaches(expiredUsernames);
+            this.cache.clearCaches(expiredUsernames, true);
 
             this.orgDataChangeEvent.emit({
               changed: await this.formatDescriptions(notExpured),
