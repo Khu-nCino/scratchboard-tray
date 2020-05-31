@@ -8,9 +8,7 @@ interface ToggleExpansion extends Action<"TOGGLE_EXPANSION"> {
   };
 }
 
-export function toggleExpansion(
-  groupName: GroupName
-): ToggleExpansion {
+export function toggleExpansion(groupName: GroupName): ToggleExpansion {
   return {
     type: "TOGGLE_EXPANSION",
     payload: {
@@ -27,8 +25,8 @@ export interface ExpandedState {
 }
 
 export const defaultExpandedState: ExpandedState = {
-    sharedOrgs: true,
-    scratchOrgs: true,
+  sharedOrgs: true,
+  scratchOrgs: true,
 };
 
 export function expandedReducer(

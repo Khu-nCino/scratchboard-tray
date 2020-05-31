@@ -91,9 +91,7 @@ export function checkSfdxPathValidity(): ThunkReturn<Promise<boolean>> {
 
 export function checkOpenAtLogin(): ThunkReturn<void> {
   return async (dispatch) => {
-    const openAtLogin: boolean = await ipc.callMain(
-      IpcRendererEvent.GET_LAUNCH_SETTINGS
-    );
+    const openAtLogin: boolean = await ipc.callMain(IpcRendererEvent.GET_LAUNCH_SETTINGS);
 
     dispatch({
       type: "SET_OPEN_AT_LOGIN",

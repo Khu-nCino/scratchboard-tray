@@ -2,12 +2,7 @@ import { clipboard, ipcRenderer as ipc } from "electron";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
-import {
-  SalesforceOrg,
-  BaseOrg,
-  ScratchOrg,
-  SharedOrg,
-} from "renderer/api/SalesforceOrg";
+import { SalesforceOrg, BaseOrg, ScratchOrg, SharedOrg } from "renderer/api/SalesforceOrg";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 import { manager } from "renderer/api/core/OrgManager";
@@ -16,10 +11,7 @@ import { IpcRendererEvent } from "common/IpcEvent";
 type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
 
 // Actions
-type OrgAction =
-  | OrgListChanges
-  | AliasSetAction
-  | SetPendingAction;
+type OrgAction = OrgListChanges | AliasSetAction | SetPendingAction;
 
 interface OrgListChanges extends Action<"ORG_LIST_CHANGES"> {
   payload: {
@@ -184,13 +176,10 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
         return acc;
       }, new Set<string>());
 
-      const addedOrgs = changed.reduce<Record<string, SalesforceOrg>>(
-        (acc, org) => {
-          acc[org.username] = org;
-          return acc;
-        },
-        {}
-      );
+      const addedOrgs = changed.reduce<Record<string, SalesforceOrg>>((acc, org) => {
+        acc[org.username] = org;
+        return acc;
+      }, {});
 
       const carryOver: OrgData<SalesforceOrg>[] = state.orgList
         .filter((org) => !removedUsernameSet.has(org.description.username))

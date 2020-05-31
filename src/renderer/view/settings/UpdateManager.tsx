@@ -58,10 +58,7 @@ function UpdateManager(props: Props) {
     <div className={props.className}>
       <div className="sbt-flex-container">
         <span>Version {props.appVersion}</span>
-        <UpdateButton
-          status={props.updateStatus}
-          updateVersion={props.updateVersion}
-        />
+        <UpdateButton status={props.updateStatus} updateVersion={props.updateVersion} />
       </div>
       {props.downloadPercent !== undefined && (
         <ProgressBar

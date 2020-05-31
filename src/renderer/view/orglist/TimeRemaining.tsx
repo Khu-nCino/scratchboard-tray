@@ -13,7 +13,7 @@ type Props = OwnProps & ReturnType<typeof mapStateToProps>;
 
 function TimeRemaining(props: Props) {
   if (Number.isNaN(props.date)) {
-    return <div className={props.className + ' bp3-skeleton'}>99 Days Remaining</div>
+    return <div className={props.className + " bp3-skeleton"}>99 Days Remaining</div>;
   }
 
   const timeLeft = props.date - Date.now();

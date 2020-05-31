@@ -39,12 +39,22 @@ function SettingsBody(props: Props) {
         />
       </FormGroup>
       <div className="sbt-mh_medium">
-        <Button className="sbt-mr_small sbt-mb_small" onClick={() => {
-          ipc.callMain(IpcRendererEvent.SHOW_LOGS_IN_FOLDER);
-        }}>Open Log Folder</Button>
-        <Button className="sbt-mb_small" onClick={() => {
-          ipc.callMain(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER);
-        }}>Open AppData Folder</Button>
+        <Button
+          className="sbt-mr_small sbt-mb_small"
+          onClick={() => {
+            ipc.callMain(IpcRendererEvent.SHOW_LOGS_IN_FOLDER);
+          }}
+        >
+          Open Log Folder
+        </Button>
+        <Button
+          className="sbt-mb_small"
+          onClick={() => {
+            ipc.callMain(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER);
+          }}
+        >
+          Open AppData Folder
+        </Button>
       </div>
       <Button className="sbt-exit-button" intent="danger" onClick={quitApp}>
         Quit

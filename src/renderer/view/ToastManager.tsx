@@ -15,8 +15,7 @@ import { dismissToast, createToast } from "renderer/store/messages";
 import { State } from "renderer/store";
 import { Toast as ToastRecord } from "renderer/store/messages";
 
-type Props = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>;
+type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
 
 const intentIcons: Record<Intent, IconName | undefined> = {
   success: "tick",
@@ -45,11 +44,13 @@ function ToastManager(props: Props) {
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={async () => {
-              await navigator.clipboard.writeText(dialogToast?.detail!);
-              // TODO convert to tooltip
-              props.createToast("Content copied to your clipboard.", "success");
-            }}>
+            <Button
+              onClick={async () => {
+                await navigator.clipboard.writeText(dialogToast?.detail!);
+                // TODO convert to tooltip
+                props.createToast("Content copied to your clipboard.", "success");
+              }}
+            >
               Copy to Clipboard
             </Button>
             <Button intent={Intent.PRIMARY} onClick={closeDialog}>

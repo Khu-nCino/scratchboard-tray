@@ -40,7 +40,10 @@ function App(props: Props) {
           ),
           frontdoor: (
             <div className="sbt-screen">
-              <TitleBar title="Link Converter" helpText="This route converts a salesforce URL into a shareable frontdoor link." />
+              <TitleBar
+                title="Link Converter"
+                helpText="This route converts a salesforce URL into a shareable frontdoor link."
+              />
               <FrontDoorBody />
             </div>
           ),

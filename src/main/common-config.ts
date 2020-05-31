@@ -12,9 +12,7 @@ export const indexUrl = isDevelopment
       slashes: true,
     });
 
-export const assetsPath = app.isPackaged
-  ? path.join(process.resourcesPath, "assets")
-  : "assets";
+export const assetsPath = app.isPackaged ? path.join(process.resourcesPath, "assets") : "assets";
 
 export const browserWindowConfig: BrowserWindowConstructorOptions = {
   width: 380,

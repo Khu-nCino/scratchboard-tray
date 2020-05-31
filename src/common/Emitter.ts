@@ -1,4 +1,3 @@
-
 // TODO use standard nodejs events
 type Listener<E> = (event: E) => Promise<void>;
 
@@ -10,8 +9,6 @@ export class Emitter<E> {
   }
 
   emit(event: E): Promise<any> {
-    return Promise.allSettled(
-      this.listeners.map((listener) => listener(event))
-    );
+    return Promise.allSettled(this.listeners.map((listener) => listener(event)));
   }
 }

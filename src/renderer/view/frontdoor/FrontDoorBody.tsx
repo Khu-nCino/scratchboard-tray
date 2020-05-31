@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
-import { InputGroup, FormGroup, Button, ControlGroup, RadioGroup, Radio, Intent } from "@blueprintjs/core";
 import {
-  urlToFrontDoorUrl,
-  coerceInstanceUrl,
-  matchOrgByUrl,
-} from "renderer/api/url";
+  InputGroup,
+  FormGroup,
+  Button,
+  ControlGroup,
+  RadioGroup,
+  Radio,
+  Intent,
+} from "@blueprintjs/core";
+import { urlToFrontDoorUrl, coerceInstanceUrl, matchOrgByUrl } from "renderer/api/url";
 import { State, CustomDispatch } from "renderer/store";
 import { createErrorToast, createToast } from "renderer/store/messages";
 import { SalesforceOrg } from "renderer/api/SalesforceOrg";
@@ -25,7 +29,7 @@ function FrontDoorBody(props: Props) {
     try {
       const orgs = matchOrgByUrl(props.orgList, value);
       setOrgsOptions(orgs);
-      setSelectedOrgUsername(orgs[0]?.username)
+      setSelectedOrgUsername(orgs[0]?.username);
     } catch (e) {
       setOrgsOptions([]);
       setSelectedOrgUsername(undefined);
@@ -37,7 +41,10 @@ function FrontDoorBody(props: Props) {
       setIsLoading(true);
 
       try {
-        const frontDoorUrl = await urlToFrontDoorUrl(selectedOrgUsername, coerceInstanceUrl(inputUrl));
+        const frontDoorUrl = await urlToFrontDoorUrl(
+          selectedOrgUsername,
+          coerceInstanceUrl(inputUrl)
+        );
         await navigator.clipboard.writeText(frontDoorUrl);
         setOutputUrl(frontDoorUrl);
         props.createToast("The url is copied to you clipboard.");
@@ -68,7 +75,7 @@ function FrontDoorBody(props: Props) {
     helperText = `Username: ${org.alias || org.username}`;
   } else {
     intent = "success";
-    helperText = "Please select the username you would like to use below."
+    helperText = "Please select the username you would like to use below.";
   }
 
   return (
@@ -83,22 +90,32 @@ function FrontDoorBody(props: Props) {
           onKeyPress={onKeyPress}
         />
       </FormGroup>
-      {orgOptions.length > 1 && <RadioGroup
-        onChange={(event) =>
-          setSelectedOrgUsername(event.currentTarget.value)
-        }
-        selectedValue={selectedOrgUsername}
-      >
-        {orgOptions.map((org) => (
-          <Radio key={org.username} label={org.alias || org.username} value={org.username} onKeyPress={onKeyPress} />
-        ))}
-      </RadioGroup>}
+      {orgOptions.length > 1 && (
+        <RadioGroup
+          onChange={(event) => setSelectedOrgUsername(event.currentTarget.value)}
+          selectedValue={selectedOrgUsername}
+        >
+          {orgOptions.map((org) => (
+            <Radio
+              key={org.username}
+              label={org.alias || org.username}
+              value={org.username}
+              onKeyPress={onKeyPress}
+            />
+          ))}
+        </RadioGroup>
+      )}
       <FormGroup label="URL Output">
         <ControlGroup fill>
           <InputGroup readOnly value={outputUrl} />
         </ControlGroup>
       </FormGroup>
-      <Button intent="primary" disabled={!selectedOrgUsername} loading={isLoading} onClick={handleConvert}>
+      <Button
+        intent="primary"
+        disabled={!selectedOrgUsername}
+        loading={isLoading}
+        onClick={handleConvert}
+      >
         Convert & Copy
       </Button>
     </div>

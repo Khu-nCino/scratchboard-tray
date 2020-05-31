@@ -3,10 +3,7 @@ import { ipcRenderer } from "electron";
 import { IpcMainEvent } from "common/IpcEvent";
 import { createErrorToast, createToast } from "./messages";
 
-type UpdateAction =
-  | UpdateDownloadedAction
-  | UpdateDownloadingAction
-  | StatusChangeAction;
+type UpdateAction = UpdateDownloadedAction | UpdateDownloadingAction | StatusChangeAction;
 
 interface UpdateDownloadedAction extends Action<"UPDATE_DOWNLOADED"> {
   payload: {

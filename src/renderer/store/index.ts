@@ -36,9 +36,8 @@ export const defaultState: Partial<State> = {
 };
 
 // redux devtools setup
-const devToolsCompose:
-  | ((options: any) => typeof compose)
-  | undefined = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
+const devToolsCompose: ((options: any) => typeof compose) | undefined = (window as any)
+  .__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
 
 const composeEnhancers =
   typeof window === "object" && devToolsCompose
@@ -51,8 +50,6 @@ export function createStore(initial: DeepPartial<State> = defaultState) {
   return createReduxStore(
     combineReducers<State>(reducers),
     initial as State,
-    composeEnhancers(
-      applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>)
-    )
+    composeEnhancers(applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>))
   );
 }

@@ -30,7 +30,7 @@ export class PersistManager {
       updates: {
         ...defaultState.updates,
         appVersion: this.appVersion,
-      }
+      },
     };
   }
 
@@ -40,19 +40,19 @@ export class PersistManager {
       (state) => state.settings.sfdxPath,
       (value) => this.electronStore.set("sfdxBinPath", value)
     );
-  
+
     watchStore(
       store,
       (state) => state.settings.theme,
       (value) => this.electronStore.set("theme", value)
     );
-  
+
     watchStore(
       store,
       (state) => state.expanded,
       (value) => this.electronStore.set("expanded", value)
     );
-  } 
+  }
 }
 
 export function watchStore<S, V>(

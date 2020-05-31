@@ -31,7 +31,7 @@ function TitleBar(props: Props) {
         </span>
       )}
       <ButtonGroup className="sbt-titlebar-button">
-        <Button icon="caret-left" onClick={props.back} disabled={!props.navigationEnabled} >
+        <Button icon="caret-left" onClick={props.back} disabled={!props.navigationEnabled}>
           Back
         </Button>
       </ButtonGroup>
@@ -49,6 +49,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     back: () => dispatch(popRouteAction()),
   };
-};
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(TitleBar);

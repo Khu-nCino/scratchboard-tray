@@ -1,6 +1,10 @@
 import { Action } from "redux";
 
-type RouteActions = PushRouteAction | PopRouteAction | SetNavigationEnabledAction | SetIsVisibleAction;
+type RouteActions =
+  | PushRouteAction
+  | PopRouteAction
+  | SetNavigationEnabledAction
+  | SetIsVisibleAction;
 
 interface PushRouteAction extends Action<"PUSH_ROUTE_ACTION"> {
   payload: {
@@ -19,7 +23,7 @@ interface SetNavigationEnabledAction extends Action<"SET_NAVIGATION_ENABLED_ACTI
 interface SetIsVisibleAction extends Action<"SET_IS_VISIBLE_ACTION"> {
   payload: {
     value: boolean;
-  }
+  };
 }
 
 export function pushRouteAction(name: RouteName): PushRouteAction {

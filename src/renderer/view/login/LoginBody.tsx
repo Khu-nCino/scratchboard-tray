@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  InputGroup,
-  Button,
-  FormGroup,
-  NonIdealState,
-  Spinner,
-  Icon,
-} from "@blueprintjs/core";
+import { InputGroup, Button, FormGroup, NonIdealState, Spinner, Icon } from "@blueprintjs/core";
 import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
 import { connect } from "react-redux";
 import { loginOrg } from "renderer/api/subprocess/sfdx";
