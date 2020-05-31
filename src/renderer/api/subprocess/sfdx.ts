@@ -1,27 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { executePromiseJson } from "./util";
-
-export type SalesforceOrg = SharedOrg | ScratchOrg;
-
-export interface BaseOrg {
-  username: string;
-  orgId: string;
-  accessToken: string;
-  instanceUrl: string;
-  alias?: string;
-  isDevHub: boolean;
-}
-
-export interface SharedOrg extends BaseOrg {
-  isScratchOrg: false;
-}
-
-export interface ScratchOrg extends BaseOrg {
-  isScratchOrg: true;
-  devHubUsername: string;
-  expirationDate: string;
-}
+import { executePromiseJson } from "./execute-promise-json";
 
 // Returns cancel callback
 export function loginOrg(

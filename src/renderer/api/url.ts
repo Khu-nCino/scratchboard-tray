@@ -1,9 +1,26 @@
-import { SalesforceOrg } from "./sfdx";
-import { manager } from "./OrgManager";
+import { SalesforceOrg } from "./SalesforceOrg";
+import { manager } from "./core/OrgManager";
 
 export function coerceInstanceUrl(url: string): string {
   const trimmedUrl = url.trim();
   return trimmedUrl.startsWith("https://") ? trimmedUrl : `https://${trimmedUrl}`;
+}
+
+export function formatFrontDoorUrl(
+  instanceUrl: string,
+  accessToken: string,
+  startUrl?: string
+): string {
+  const cleanInstanceUrl = instanceUrl.endsWith("/")
+    ? instanceUrl.substring(0, instanceUrl.length - 1)
+    : instanceUrl;
+  const frontDoorUrl = `${cleanInstanceUrl}/secur/frontdoor.jsp?sid=${accessToken}`;
+
+  if (startUrl) {
+    const cleanStartUrl = encodeURIComponent(decodeURIComponent(startUrl));
+    return `${frontDoorUrl}&retURL=${cleanStartUrl}`;
+  }
+  return frontDoorUrl;
 }
 
 export function urlToFrontDoorUrl(username: string, rawUrl: string): Promise<string> {
@@ -23,7 +40,9 @@ export function urlToFrontDoorUrl(username: string, rawUrl: string): Promise<str
 
 export function matchOrgByUrl(orgs: SalesforceOrg[], url: string): SalesforceOrg[] {
   return orgs.filter(
-    (org) => extractUrlIdentifier(new URL(org.instanceUrl)) === extractUrlIdentifier(new URL(coerceInstanceUrl(url)))
+    (org) =>
+      extractUrlIdentifier(new URL(org.instanceUrl)) ===
+      extractUrlIdentifier(new URL(coerceInstanceUrl(url)))
   );
 }
 

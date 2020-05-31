@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 
 import TimeRemaining from "../TimeRemaining";
 
-import { SalesforceOrg } from "renderer/api/sfdx";
+import { SalesforceOrg } from "renderer/api/SalesforceOrg";
 import {
   openOrgAction,
   deleteOrgAction,

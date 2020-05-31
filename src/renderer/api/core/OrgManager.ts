@@ -2,8 +2,10 @@ import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/c
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
 import { binaryGroups, notUndefined } from "common/util";
-import { OrgCache, readOrgGroupReverse } from "./OrgCache";
-import { SalesforceOrg } from "./sfdx";
+import { OrgCache } from "./OrgCache";
+import { SalesforceOrg } from "../SalesforceOrg";
+import { formatFrontDoorUrl } from "../url";
+import { isActive, readOrgGroupReverse, trimTo15 } from "./util";
 
 const logger = getLogger();
 export class OrgManager {
@@ -13,57 +15,59 @@ export class OrgManager {
 
   constructor() {
     this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event));
-
-    this.cache.aliasChangeEvent.addListener(async ({ changed }) => {
-      const infos = await Promise.all(
-        changed.map((username) => this.cache.getCachedAuthInfo(username)).filter(notUndefined)
-      );
-      if (infos.length > 0) {
-        this.orgDataChangeEvent.emit({
-          changed: await this.formatDescriptions(infos),
-          removed: [],
-        });
-      }
-    });
-
-    this.cache.orgChangeEvent.addListener(async ({ added, removed }) => {
-      try {
-        const addedInfos = await this.cache.getAllAuthInfo(added);
-        const active = addedInfos.filter(isActive);
-
-        if (active.length > 0 || removed.length > 0) {
-          const formattedAdded = await this.formatDescriptions(active);
-          this.cache.clearCaches(removed);
-          this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
-
-          const missingExpirationDates = active.filter((org) => {
-            const field = org.getFields();
-            return field.devHubUsername && !field.expirationDate;
-          });
-          if (missingExpirationDates.length > 0) {
-            await this.populateExpirationDates(missingExpirationDates);
-
-            const [notExpured, expired] = binaryGroups(
-              missingExpirationDates,
-              (info) => Date.parse(info.getFields().expirationDate!!) > Date.now()
-            );
-            const expiredUsernames = expired.map((info) => info.getFields().username!!);
-            this.cache.clearCaches(expiredUsernames, true);
-
-            this.orgDataChangeEvent.emit({
-              changed: await this.formatDescriptions(notExpured),
-              removed: expiredUsernames,
-            });
-          }
-        }
-      } catch (error) {
-        logger.error(error.detail ?? error);
-        this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
-      }
-    });
+    this.cache.aliasChangeEvent.addListener(this.handleAliasChangeEvent.bind(this));
+    this.cache.orgChangeEvent.addListener(this.handleOrgChangeEvent.bind(this));
   }
 
-  checkOrgChanges() {
+  async handleAliasChangeEvent({ changed }: { changed: string[] }) {
+    const infos = await Promise.all(
+      changed.map((username) => this.cache.getCachedAuthInfo(username)).filter(notUndefined)
+    );
+    if (infos.length > 0) {
+      this.orgDataChangeEvent.emit({
+        changed: await this.formatDescriptions(infos),
+        removed: [],
+      });
+    }
+  }
+
+  async handleOrgChangeEvent({ added, removed }: { added: string[]; removed: string[] }) {
+    try {
+      const addedInfos = await this.cache.getAllAuthInfo(added);
+      const active = addedInfos.filter(isActive);
+
+      if (active.length > 0 || removed.length > 0) {
+        const formattedAdded = await this.formatDescriptions(active);
+        this.cache.clearCaches(removed);
+        this.orgDataChangeEvent.emit({ changed: formattedAdded, removed });
+
+        const missingExpirationDates = active.filter((org) => {
+          const field = org.getFields();
+          return field.devHubUsername && !field.expirationDate;
+        });
+        if (missingExpirationDates.length > 0) {
+          await this.populateExpirationDates(missingExpirationDates);
+
+          const [notExpured, expired] = binaryGroups(
+            missingExpirationDates,
+            (info) => Date.parse(info.getFields().expirationDate!!) > Date.now()
+          );
+          const expiredUsernames = expired.map((info) => info.getFields().username!!);
+          this.cache.clearCaches(expiredUsernames, true);
+
+          this.orgDataChangeEvent.emit({
+            changed: await this.formatDescriptions(notExpured),
+            removed: expiredUsernames,
+          });
+        }
+      }
+    } catch (error) {
+      logger.error(error.detail ?? error);
+      this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
+    }
+  }
+
+  checkOrgChanges(): Promise<void> {
     return this.cache.checkOrgChanges();
   }
 
@@ -91,7 +95,7 @@ export class OrgManager {
     const instanceUrl = `${org.getField(Org.Fields.INSTANCE_URL)}`;
     const accessToken = org.getConnection().accessToken;
 
-    return formatFrontdoorUrl(instanceUrl, accessToken, startUrl);
+    return formatFrontDoorUrl(instanceUrl, accessToken, startUrl);
   }
 
   logoutOrg(username: string): Promise<void> {
@@ -106,9 +110,7 @@ export class OrgManager {
     }
 
     const devHubConn = await this.cache.getConnection(devHubUsername);
-    await devHubConn
-      .sobject("ActiveScratchOrg")
-      .delete(await this.queryOrgId(devHubConn, orgId!));
+    await devHubConn.sobject("ActiveScratchOrg").delete(await this.queryOrgId(devHubConn, orgId!));
     await this.cache.deleteData(username);
   }
 
@@ -237,36 +239,6 @@ export class OrgManager {
       )
     );
   }
-}
-
-function trimTo15(orgId: string) {
-  if (orgId !== null && orgId !== undefined && orgId.length && orgId.length > 15) {
-    orgId = orgId.substring(0, 15);
-  }
-
-  return orgId;
-}
-
-function isScratch(info: AuthInfo) {
-  return info.getFields().devHubUsername;
-}
-
-function isActive(info: AuthInfo) {
-  const expirationDate = info.getFields().expirationDate;
-  return !isScratch(info) || !expirationDate || Date.parse(expirationDate) > Date.now();
-}
-
-function formatFrontdoorUrl(instanceUrl: string, accessToken: string, startUrl?: string): string {
-  const cleanInstanceUrl = instanceUrl.endsWith("/")
-    ? instanceUrl.substring(0, instanceUrl.length - 1)
-    : instanceUrl;
-  const frontDoorUrl = `${cleanInstanceUrl}/secur/frontdoor.jsp?sid=${accessToken}`;
-
-  if (startUrl) {
-    const cleanStartUrl = encodeURIComponent(decodeURIComponent(startUrl));
-    return `${frontDoorUrl}&retURL=${cleanStartUrl}`;
-  }
-  return frontDoorUrl;
 }
 
 export const manager = new OrgManager();

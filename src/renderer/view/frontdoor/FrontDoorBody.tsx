@@ -8,7 +8,7 @@ import {
 } from "renderer/api/url";
 import { State, CustomDispatch } from "renderer/store";
 import { createErrorToast, createToast } from "renderer/store/messages";
-import { SalesforceOrg } from "renderer/api/sfdx";
+import { SalesforceOrg } from "renderer/api/SalesforceOrg";
 
 type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
 

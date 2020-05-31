@@ -1,9 +1,10 @@
 import path from "path";
-import { AuthInfo, Aliases, Connection, Org, AliasGroup, Global, fs } from "@salesforce/core";
-import { arrayDiff, notUndefined } from "common/util";
+import { AuthInfo, Aliases, Connection, Org, Global, fs } from "@salesforce/core";
+import { arrayDiff, notUndefined, notConcurrent } from "common/util";
 import { CachedResource } from "common/CachedResource";
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
+import { readOrgGroup, compareAliases, authFileName2Username, readOrgGroupReverse } from "./util";
 
 export type OrgListChangeListener = (added: string[], removed: string[]) => void;
 export type AliasChangeListener = () => void;
@@ -97,7 +98,10 @@ export class OrgCache {
   }
 
   clearCaches(usernames: string[], preventReload: boolean = false): boolean {
-    return usernames.reduce<boolean>((acc, username) => acc || this.clearCache(username, preventReload), false);
+    return usernames.reduce<boolean>(
+      (acc, username) => acc || this.clearCache(username, preventReload),
+      false
+    );
   }
 
   clearCache(username: string, preventReload: boolean = false): boolean {
@@ -123,70 +127,4 @@ export class OrgCache {
     this.currentAliases = nextAliases;
     this.aliasChangeEvent.emit({ changed });
   }
-}
-
-// util
-
-function readOrgGroup(aliases: Aliases): Record<string, string> {
-  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>(
-    (acc, [alias, username]) => {
-      acc[alias] = `${username}`;
-      return acc;
-    },
-    {}
-  );
-}
-
-export function readOrgGroupReverse(aliases: Aliases): Record<string, string> {
-  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>(
-    (acc, [alias, username]) => {
-      acc[`${username}`] = alias;
-      return acc;
-    },
-    {}
-  );
-}
-function compareAliases(
-  nextAliases: Record<string, string>,
-  oldAliases: Record<string, string>
-): string[] {
-  const changedUsernames: string[] = [];
-
-  // Added or changed
-  for (const [alias, username] of Object.entries(nextAliases)) {
-    if (!(alias in oldAliases) || oldAliases[alias] !== username) {
-      changedUsernames.push(username);
-      changedUsernames.push(oldAliases[alias]);
-    }
-  }
-
-  // Removed aliases
-  for (const [alias, username] of Object.entries(nextAliases)) {
-    if (!(alias in oldAliases)) {
-      changedUsernames.push(username);
-    }
-  }
-
-  return changedUsernames;
-}
-
-function authFileName2Username(filename: string): string {
-  return filename.substring(0, filename.length - 5);
-}
-
-function notConcurrent<T>(proc: () => PromiseLike<T>) {
-  let inFlight: Promise<T> | false = false;
-
-  return () => {
-    if (!inFlight) {
-      inFlight = (async () => {
-        try {
-          return await proc();
-        } finally {
-          inFlight = false;
-        }
-      })();
-    }
-    return inFlight;
-  };
 }

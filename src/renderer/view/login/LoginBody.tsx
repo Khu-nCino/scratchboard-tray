@@ -9,12 +9,12 @@ import {
 } from "@blueprintjs/core";
 import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
 import { connect } from "react-redux";
-import { loginOrg } from "renderer/api/sfdx";
+import { loginOrg } from "renderer/api/subprocess/sfdx";
 import { CustomDispatch, State } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
-import { CanceledExecutionError } from "renderer/api/util";
+import { CanceledExecutionError } from "renderer/api/subprocess/execute-promise-json";
 import { coerceInstanceUrl } from "renderer/api/url";
-import { manager } from "renderer/api/OrgManager";
+import { manager } from "renderer/api/core/OrgManager";
 
 const defaultInstanceUrl = "login.salesforce.com";
 

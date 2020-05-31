@@ -53,34 +53,6 @@ function statusChangeAction(status: UpdateStatus): StatusChangeAction {
   };
 }
 
-export function listenIpc(store: Store) {
-  ipcRenderer.on(IpcMainEvent.UPDATE_ERROR, (_event, error) => {
-    store.dispatch(statusChangeAction("initial"));
-    store.dispatch(createErrorToast("Error Updating", error));
-  });
-
-  ipcRenderer.on(IpcMainEvent.CHECKING_FOR_UPDATE, () => {
-    store.dispatch(statusChangeAction("checking"));
-  });
-
-  ipcRenderer.on(IpcMainEvent.UPDATE_AVAILABLE, () => {
-    store.dispatch(statusChangeAction("downloading"));
-  });
-
-  ipcRenderer.on(IpcMainEvent.UPDATE_NOT_AVAILABLE, () => {
-    store.dispatch(statusChangeAction("initial"));
-    store.dispatch(createToast("No updates available", "none"));
-  });
-
-  ipcRenderer.on(IpcMainEvent.UPDATE_DOWNLOADING, (_event, percent) => {
-    store.dispatch(updateDownloadingAction(percent));
-  });
-
-  ipcRenderer.on(IpcMainEvent.UPDATE_DOWNLOADED, (_event, version) => {
-    store.dispatch(updateDownloadedAction(version));
-  });
-}
-
 export type UpdateStatus =
   | "initial"
   | "checking"
@@ -121,4 +93,32 @@ export function updateReducer(
     default:
       return state;
   }
+}
+
+export function listenForIpcUpdates(store: Store) {
+  ipcRenderer.on(IpcMainEvent.UPDATE_ERROR, (_event, error) => {
+    store.dispatch(statusChangeAction("initial"));
+    store.dispatch(createErrorToast("Error Updating", error));
+  });
+
+  ipcRenderer.on(IpcMainEvent.CHECKING_FOR_UPDATE, () => {
+    store.dispatch(statusChangeAction("checking"));
+  });
+
+  ipcRenderer.on(IpcMainEvent.UPDATE_AVAILABLE, () => {
+    store.dispatch(statusChangeAction("downloading"));
+  });
+
+  ipcRenderer.on(IpcMainEvent.UPDATE_NOT_AVAILABLE, () => {
+    store.dispatch(statusChangeAction("initial"));
+    store.dispatch(createToast("No updates available", "none"));
+  });
+
+  ipcRenderer.on(IpcMainEvent.UPDATE_DOWNLOADING, (_event, percent) => {
+    store.dispatch(updateDownloadingAction(percent));
+  });
+
+  ipcRenderer.on(IpcMainEvent.UPDATE_DOWNLOADED, (_event, version) => {
+    store.dispatch(updateDownloadedAction(version));
+  });
 }

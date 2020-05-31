@@ -3,7 +3,7 @@ import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { State } from ".";
-import { validateSfdxPath } from "renderer/api/sfdx";
+import { validateSfdxPath } from "renderer/api/subprocess/sfdx";
 
 type ThunkReturn<R> = ThunkAction<R, State, undefined, SettingsAction>;
 

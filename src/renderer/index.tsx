@@ -10,12 +10,12 @@ import { FocusStyleManager } from "@blueprintjs/core";
 import { getCurrentPaths, setPaths } from "common/path-util";
 import { IpcMainEvent } from "common/IpcEvent";
 import { createStore, defaultState } from "./store";
-import { listenIpc } from "./store/updates";
+import { listenForIpcUpdates } from "./store/updates";
 import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { orgListChanged } from "./store/orgs";
 import { loadPersistedState, watchAndSave, watchStore } from "./persist";
 import App from "./view/App";
-import { manager } from "./api/OrgManager";
+import { manager } from "./api/core/OrgManager";
 import { createErrorToast } from "./store/messages";
 import { setIsVisible } from "./store/route";
 
@@ -60,7 +60,7 @@ manager.syncErrorEvent.addListener(async ({ name, detail }) => {
   store.dispatch(createErrorToast(name, detail));
 });
 
-listenIpc(store);
+listenForIpcUpdates(store);
 
 FocusStyleManager.onlyShowFocusOnTabs();
 

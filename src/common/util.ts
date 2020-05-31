@@ -22,3 +22,20 @@ export function binaryGroups<T>(xs: T[], func: (x: T) => boolean): [T[], T[]] {
 export function notUndefined<T>(x: T | undefined): x is T {
   return x !== undefined;
 }
+
+export function notConcurrent<T>(proc: () => PromiseLike<T>) {
+  let inFlight: Promise<T> | false = false;
+
+  return () => {
+    if (!inFlight) {
+      inFlight = (async () => {
+        try {
+          return await proc();
+        } finally {
+          inFlight = false;
+        }
+      })();
+    }
+    return inFlight;
+  };
+}

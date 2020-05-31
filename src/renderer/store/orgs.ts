@@ -7,10 +7,10 @@ import {
   BaseOrg,
   ScratchOrg,
   SharedOrg,
-} from "renderer/api/sfdx";
+} from "renderer/api/SalesforceOrg";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
-import { manager } from "renderer/api/OrgManager";
+import { manager } from "renderer/api/core/OrgManager";
 import { IpcRendererEvent } from "common/IpcEvent";
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
