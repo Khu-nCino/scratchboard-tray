@@ -53,14 +53,11 @@ function statusChangeAction(status: UpdateStatus): StatusChangeAction {
   };
 }
 
-export type UpdateStatus =
-  | "initial"
-  | "checking"
-  | "downloading"
-  | "downloaded";
+export type UpdateStatus = "initial" | "checking" | "downloading" | "downloaded";
 
 export interface UpdateState {
   status: UpdateStatus;
+  appVersion?: string;
   updateVersion?: string;
   downloadPercent?: number;
 }

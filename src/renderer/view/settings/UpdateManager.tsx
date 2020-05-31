@@ -5,7 +5,6 @@ import { Button, ProgressBar } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { UpdateStatus } from "renderer/store/updates";
 import { State } from "renderer/store";
-import appVersion from "renderer/app-version";
 
 interface OwnProps {
   className?: string;
@@ -58,7 +57,7 @@ function UpdateManager(props: Props) {
   return (
     <div className={props.className}>
       <div className="sbt-flex-container">
-        <span>Version {appVersion}</span>
+        <span>Version {props.appVersion}</span>
         <UpdateButton
           status={props.updateStatus}
           updateVersion={props.updateVersion}
@@ -79,6 +78,7 @@ function UpdateManager(props: Props) {
 function mapStateToProps(state: State) {
   return {
     updateStatus: state.updates.status,
+    appVersion: state.updates.appVersion,
     updateVersion: state.updates.updateVersion,
     downloadPercent: state.updates.downloadPercent,
   };

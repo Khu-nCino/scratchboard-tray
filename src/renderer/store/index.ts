@@ -3,6 +3,7 @@ import {
   combineReducers,
   applyMiddleware,
   AnyAction,
+  DeepPartial,
   compose,
 } from "redux";
 
@@ -46,10 +47,10 @@ const composeEnhancers =
       })
     : compose;
 
-export function createStore(initial: Partial<State> = defaultState) {
+export function createStore(initial: DeepPartial<State> = defaultState) {
   return createReduxStore(
     combineReducers<State>(reducers),
-    initial,
+    initial as State,
     composeEnhancers(
       applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>)
     )

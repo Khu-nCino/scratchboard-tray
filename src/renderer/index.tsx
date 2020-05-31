@@ -2,71 +2,88 @@ import "./index.scss";
 
 import path from "path";
 import { ipcRenderer } from "electron";
+import { ipcRenderer as ipc } from "electron-better-ipc";
 import React from "react";
 import ReactDom from "react-dom";
 import { Provider } from "react-redux";
 import { FocusStyleManager } from "@blueprintjs/core";
 
 import { getCurrentPaths, setPaths } from "common/path-util";
-import { IpcMainEvent } from "common/IpcEvent";
+import { getLogger } from "common/logger";
+import { IpcMainEvent, IpcRendererEvent } from "common/IpcEvent";
 import { createStore, defaultState } from "./store";
 import { listenForIpcUpdates } from "./store/updates";
 import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { orgListChanged } from "./store/orgs";
-import { loadPersistedState, watchAndSave, watchStore } from "./persist";
+import { PersistManager, watchStore } from "./persist";
 import App from "./view/App";
 import { manager } from "./api/core/OrgManager";
 import { createErrorToast } from "./store/messages";
 import { setIsVisible } from "./store/route";
 
-const initialState = loadPersistedState(defaultState);
-const store = createStore(initialState);
-watchAndSave(store);
+const logger = getLogger();
 
-const basePaths = getCurrentPaths();
+ipc
+  .callMain<void, string>(IpcRendererEvent.GET_APP_VERSION)
+  .then(initialApp)
+  .catch((error) => {
+    logger.error("Couldn't get appVersion, fatal error");
+    logger.error(error);
+  });
 
-watchStore(
-  store,
-  (state) => state.settings.sfdxPath,
-  (value) => setPaths([path.dirname(value), ...basePaths]),
-  true
-);
+function initialApp(appVersion: string) {
+  const persistManager = new PersistManager(appVersion);
 
-watchStore(
-  store,
-  (state) => state.settings.theme,
-  (value) => (document.body.className = value === "dark" ? "bp3-dark" : ""),
-  true
-);
+  const initialState = persistManager.loadPersistedState(defaultState);
+  const store = createStore(initialState);
+  persistManager.watchAndSave(store);
 
-store.dispatch(checkOpenAtLogin());
-store.dispatch(checkSfdxPathValidity());
+  const basePaths = getCurrentPaths();
 
-manager.checkOrgChanges();
-ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {
+  // For sfdx binary
+  watchStore(
+    store,
+    (state) => state.settings.sfdxPath,
+    (value) => setPaths([path.dirname(value), ...basePaths]),
+    true
+  );
+
+  // For dark/light them
+  watchStore(
+    store,
+    (state) => state.settings.theme,
+    (value) => (document.body.className = value === "dark" ? "bp3-dark" : ""),
+    true
+  );
+
+  store.dispatch(checkOpenAtLogin());
+  store.dispatch(checkSfdxPathValidity());
+
   manager.checkOrgChanges();
-  store.dispatch(setIsVisible(true));
-});
+  ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {
+    manager.checkOrgChanges();
+    store.dispatch(setIsVisible(true));
+  });
 
-ipcRenderer.on(IpcMainEvent.WINDOW_CLOSED, () => {
-  store.dispatch(setIsVisible(false));
-});
+  ipcRenderer.on(IpcMainEvent.WINDOW_CLOSED, () => {
+    store.dispatch(setIsVisible(false));
+  });
 
-manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
-  store.dispatch(orgListChanged(changed, removed));
-});
+  manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
+    store.dispatch(orgListChanged(changed, removed));
+  });
 
-manager.syncErrorEvent.addListener(async ({ name, detail }) => {
-  store.dispatch(createErrorToast(name, detail));
-});
+  manager.syncErrorEvent.addListener(async ({ name, detail }) => {
+    store.dispatch(createErrorToast(name, detail));
+  });
 
-listenForIpcUpdates(store);
+  listenForIpcUpdates(store);
+  FocusStyleManager.onlyShowFocusOnTabs();
 
-FocusStyleManager.onlyShowFocusOnTabs();
-
-ReactDom.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById("app")
-);
+  ReactDom.render(
+    <Provider store={store}>
+      <App />
+    </Provider>,
+    document.getElementById("app")
+  );
+}

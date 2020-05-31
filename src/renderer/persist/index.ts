@@ -1,49 +1,58 @@
-import { Store, CombinedState } from "redux";
+import { Store, CombinedState, DeepPartial } from "redux";
 import ElectronStore from "electron-store";
 import { State, defaultState } from "../store";
-import appVersion from "renderer/app-version";
 
 type AppState = CombinedState<State>;
 
-const electronStore = new ElectronStore({
-  projectName: "scratchboard-tray",
-  projectVersion: appVersion,
-} as ElectronStore.Options<any>);
+export class PersistManager {
+  private electronStore: ElectronStore;
 
-export function loadPersistedState(state: Partial<State>): Partial<State> {
-  return {
-    ...state,
-    settings: {
-      ...state.settings,
-      sfdxPath: electronStore.get("sfdxBinPath", state.settings?.sfdxPath),
-      theme: electronStore.get("theme", state.settings?.theme),
-      openAtLogin: false,
-    },
-    expanded: {
-      ...defaultState.expanded,
-      ...electronStore.get("expanded", {}),
-    }
-  };
-}
+  constructor(private appVersion: string) {
+    this.electronStore = new ElectronStore({
+      projectName: "scratchboard-tray",
+      projectVersion: appVersion,
+    } as ElectronStore.Options<any>);
+  }
 
-export function watchAndSave(store: Store<AppState>) {
-  watchStore(
-    store,
-    (state) => state.settings.sfdxPath,
-    (value) => electronStore.set("sfdxBinPath", value)
-  );
+  loadPersistedState(state: DeepPartial<State>): DeepPartial<State> {
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        sfdxPath: this.electronStore.get("sfdxBinPath", state.settings?.sfdxPath),
+        theme: this.electronStore.get("theme", state.settings?.theme),
+        openAtLogin: false,
+      },
+      expanded: {
+        ...defaultState.expanded,
+        ...this.electronStore.get("expanded", {}),
+      },
+      updates: {
+        ...defaultState.updates,
+        appVersion: this.appVersion,
+      }
+    };
+  }
 
-  watchStore(
-    store,
-    (state) => state.settings.theme,
-    (value) => electronStore.set("theme", value)
-  );
-
-  watchStore(
-    store,
-    (state) => state.expanded,
-    (value) => electronStore.set("expanded", value)
-  )
+  watchAndSave(store: Store<AppState>) {
+    watchStore(
+      store,
+      (state) => state.settings.sfdxPath,
+      (value) => this.electronStore.set("sfdxBinPath", value)
+    );
+  
+    watchStore(
+      store,
+      (state) => state.settings.theme,
+      (value) => this.electronStore.set("theme", value)
+    );
+  
+    watchStore(
+      store,
+      (state) => state.expanded,
+      (value) => this.electronStore.set("expanded", value)
+    );
+  } 
 }
 
 export function watchStore<S, V>(
@@ -64,8 +73,4 @@ export function watchStore<S, V>(
   if (callOnStart && currentValue !== undefined) {
     callback(currentValue);
   }
-}
-
-export function openSettingsFile() {
-  electronStore.openInEditor();
 }

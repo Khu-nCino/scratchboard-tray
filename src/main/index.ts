@@ -52,6 +52,8 @@ ipcMain.on(IpcRendererEvent.OPEN_EXTERNAL, (_event, url) => {
   shell.openExternal(url);
 });
 
+ipc.answerRenderer(IpcRendererEvent.GET_APP_VERSION, () => app.getVersion());
+
 ipc.answerRenderer(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER, () => {
   shell.openPath(app.getPath("userData"));
 });
