@@ -9,7 +9,10 @@
   "scripts": {
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder"
+    "dist": "yarn compile && electron-builder",
+    "dist:mac": "yarn compile && electron-builder -m",
+    "dist:win": "yarn compile && electron-builder -w",
+    "dist:linux": "yarn compile && electron-builder -l"
   },
   "devDependencies": {
     "@types/classnames": "^2.2.10",
@@ -69,6 +72,12 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "linux": {
+      "target": ["AppImage"]
     },
     "extraResources": [
       "./assets/**"
