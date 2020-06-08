@@ -11,7 +11,7 @@ const logger = getLogger();
 export class OrgManager {
   orgDataChangeEvent = new Emitter<{ changed: SalesforceOrg[]; removed: string[] }>();
   syncErrorEvent = new Emitter<{ name: string; detail: Error }>();
-  private cache = new OrgCache();
+  cache = new OrgCache();
 
   constructor() {
     this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event));

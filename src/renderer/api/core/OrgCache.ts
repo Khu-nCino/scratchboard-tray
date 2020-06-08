@@ -118,6 +118,24 @@ export class OrgCache {
     );
   }
 
+  // async getDevhubUsername(username: string): Promise<string> {
+
+  // }
+
+  async query<T>(username: string, query: string, tooling: boolean = false): Promise<T[]> {
+    const connection = await this.getConnection(username);
+
+    return new Promise((resolve, reject) => {
+      (tooling ? connection.tooling : connection).query<T>(query, {}, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.records);
+        }
+      });
+    });
+  }
+
   private async checkAliasChanges() {
     const aliases = await this.getAliases(true);
 
