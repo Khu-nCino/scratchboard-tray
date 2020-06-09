@@ -23,8 +23,8 @@ if (!isDevelopment) {
     }
   });
 } else {
-  app.on("ready", () => {
-    debugWindow = createDebugWindow();
+  app.on("ready", async () => {
+    debugWindow = await createDebugWindow();
 
     debugWindow.on("ready-to-show", () => {
       debugWindow?.show();

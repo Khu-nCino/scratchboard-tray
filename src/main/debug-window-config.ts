@@ -1,30 +1,54 @@
-import { BrowserWindow } from "electron";
+import path from "path";
+import os from "os";
+import { readdir } from "fs";
+import { promisify } from "util";
+import { BrowserWindow, session } from "electron";
+import { notUndefined } from "common/util";
 import { browserWindowConfig, indexUrl } from "./common-config";
-import { getLogger } from "common/logger";
 
-function setupExtensions() {
-  //requiring instead of importing because it's a dev dependance and wont be packaged
-  const {
-    default: installExtensions,
-  }: {
-    default: (names: string[], forceDownload?: boolean) => Promise<string>;
-  } = require("electron-devtools-installer");
+const REDUX = "lmhkpmbekcpmknklioeibfkpmmfibljd";
+const REACT = "fmkadmapgofadopljbjfkapdkoienihi";
+const extensions = [REDUX, REACT];
 
-  const logger = getLogger();
+const readDirPromise = promisify(readdir);
 
-  installExtensions(["REACT_DEVELOPER_TOOLS", "REDUX_DEVTOOLS"], true)
-    .then((message) => logger.debug(`Extension installed: ${message}`))
-    .catch((error) => logger.error(error));
+async function setupDevtools() {
+  const baseDirectory = path.join(
+    os.homedir(),
+    "Library/Application Support/Google/Chrome/Default/Extensions"
+  );
+  const extensionPaths = await Promise.all(
+    extensions
+      .map((extension) => path.join(baseDirectory, extension))
+      .map(async (extension) => {
+        const versions = await readDirPromise(extension);
+        if (versions.length > 0) {
+          return path.join(extension, versions[0]);
+        } else {
+          return undefined;
+        }
+      })
+  );
+
+  await Promise.all(
+    extensionPaths
+      .filter(notUndefined)
+      .map((version) => session.defaultSession.loadExtension(version))
+  );
 }
 
-export function createDebugWindow() {
-  setupExtensions();
+export async function createDebugWindow() {
+  try {
+    await setupDevtools();
+  } catch (error) {
+    console.error(error);
+  }
 
   const browserWindow = new BrowserWindow({
     ...browserWindowConfig,
     resizable: true,
   });
-  browserWindow.loadURL(indexUrl);
+  await browserWindow.loadURL(indexUrl);
   browserWindow.webContents.openDevTools();
 
   return browserWindow;

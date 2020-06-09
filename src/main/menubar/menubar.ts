@@ -125,8 +125,6 @@ export class Menubar extends EventEmitter {
    * @param trayPos - The bounds to show the window in.
    */
   async showWindow(trayPos?: Electron.Rectangle): Promise<void> {
-    this._isVisible = true;
-
     if (!this.tray) {
       throw new Error("Tray should have been instantiated by now");
     }
@@ -193,6 +191,7 @@ export class Menubar extends EventEmitter {
     // https://github.com/maxogden/menubar/issues/233
     this._browserWindow.setPosition(Math.round(x), Math.round(y));
     this._browserWindow.show();
+    this._isVisible = true;
     this.emit("after-show");
     return;
   }

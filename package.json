@@ -16,14 +16,12 @@
   },
   "devDependencies": {
     "@types/classnames": "^2.2.10",
-    "@types/electron-devtools-installer": "^2.2.0",
     "@types/node": "^12",
     "@types/react-dom": "^16.9.4",
     "@types/react-redux": "^7.1.5",
     "@types/react-transition-group": "^4.2.3",
     "electron": "^9.0.0",
     "electron-builder": "^22.3.3",
-    "electron-devtools-installer": "^3.0.0",
     "electron-notarize": "^0.3.0",
     "electron-webpack": "^2.7.4",
     "electron-webpack-ts": "^4.0.0",
@@ -74,10 +72,14 @@
       "category": "public.app-category.productivity"
     },
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     },
     "extraResources": [
       "./assets/**"
