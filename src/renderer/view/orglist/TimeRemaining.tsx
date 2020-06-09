@@ -18,13 +18,16 @@ function TimeRemaining(props: Props) {
 
   const timeLeft = props.date - Date.now();
   const daysRemaining = Math.max(0, Math.floor(timeLeft / oneDay));
-  const daysLabel = daysRemaining === 1 ? "Day" : "Days";
 
-  return (
-    <div className={props.className}>
-      {daysRemaining} {daysLabel} Remaining
-    </div>
-  );
+  if (daysRemaining > 1) {
+    return <div className={props.className}>{daysRemaining} days remaining</div>;
+  } else if (daysRemaining === 1) {
+    return <div className={props.className}>1 day remaining</div>;
+  } else if (timeLeft > 0) {
+    return <div className={props.className}>Less than a day remaining</div>;
+  } else {
+    return <div className={props.className}>Expired</div>;
+  }
 }
 
 function mapStateToProps(state: State) {

@@ -10,7 +10,7 @@ import {
 import thunk, { ThunkMiddleware, ThunkDispatch } from "redux-thunk";
 import { orgsReducer } from "./orgs";
 import { routeReducer } from "./route";
-import { settingsReducer } from "./settings";
+import { settingsReducer, defaultSettingsState } from "./settings";
 import { messagesReducer } from "./messages";
 import { updateReducer, defaultUpdateState } from "./updates";
 import { expandedReducer, defaultExpandedState } from "./expanded";
@@ -34,6 +34,7 @@ const reducers = {
 export const defaultState: Partial<State> = {
   expanded: defaultExpandedState,
   updates: defaultUpdateState,
+  settings: defaultSettingsState,
 };
 
 // redux devtools setup

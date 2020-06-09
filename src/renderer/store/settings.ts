@@ -124,14 +124,14 @@ interface SettingsState {
   readonly openAtLogin: boolean;
 }
 
-const defaultState: SettingsState = {
+export const defaultSettingsState: SettingsState = {
   sfdxPath: "",
   theme: "dark",
   openAtLogin: false,
 };
 
 export function settingsReducer(
-  state: SettingsState = defaultState,
+  state: SettingsState = defaultSettingsState,
   action: SettingsAction
 ): SettingsState {
   switch (action.type) {
