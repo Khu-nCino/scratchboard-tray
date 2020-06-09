@@ -1,9 +1,6 @@
 import { BrowserWindow, Tray } from "electron";
 import Positioner from "electron-positioner";
 import { EventEmitter } from "events";
-import fs from "fs";
-import path from "path";
-
 import { Options } from "./types";
 import { cleanOptions } from "./util/cleanOptions";
 import { getWindowPosition } from "./util/getWindowPosition";
@@ -18,10 +15,7 @@ export class Menubar extends EventEmitter {
   private _browserWindow?: BrowserWindow;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
   private _isVisible: boolean; // track visibility
-  private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
   private _options: Options;
-  // TODO https://github.com/jenslind/electron-positioner/issues/15
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _positioner: any;
   private _tray?: Tray;
 
@@ -32,7 +26,6 @@ export class Menubar extends EventEmitter {
     this._isVisible = false;
 
     if (app.isReady()) {
-      // See https://github.com/maxogden/menubar/pull/151
       process.nextTick(() => this.appReady().catch((err) => console.error("menubar: ", err)));
     } else {
       app.on("ready", () => {
@@ -53,7 +46,6 @@ export class Menubar extends EventEmitter {
    * The [electron-positioner](https://github.com/jenslind/electron-positioner)
    * instance.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get positioner(): any {
     if (!this._positioner) {
       throw new Error(
@@ -84,15 +76,6 @@ export class Menubar extends EventEmitter {
   }
 
   /**
-   * Retrieve a menubar option.
-   *
-   * @param key - The option key to retrieve, see {@link Options}.
-   */
-  getOption<K extends keyof Options>(key: K): Options[K] {
-    return this._options[key];
-  }
-
-  /**
    * Hide the menubar window.
    */
   hideWindow(): void {
@@ -110,16 +93,6 @@ export class Menubar extends EventEmitter {
   }
 
   /**
-   * Change an option after menubar is created.
-   *
-   * @param key - The option key to modify, see {@link Options}.
-   * @param value - The value to set.
-   */
-  setOption<K extends keyof Options>(key: K, value: Options[K]): void {
-    this._options[key] = value;
-  }
-
-  /**
    * Show the menubar window.
    *
    * @param trayPos - The bounds to show the window in.
@@ -133,46 +106,20 @@ export class Menubar extends EventEmitter {
       await this.createWindow();
     }
 
-    // Use guard for TypeScript, to avoid ! everywhere
     if (!this._browserWindow) {
       throw new Error("Window has been initialized just above. qed.");
     }
     this.emit("show");
 
-    if (trayPos && trayPos.x !== 0) {
-      // Cache the bounds
-      this._cachedBounds = trayPos;
-    } else if (this._cachedBounds) {
-      // Cached value will be used if showWindow is called without bounds data
-      trayPos = this._cachedBounds;
-    } else if (this.tray.getBounds) {
-      // Get the current tray bounds
-      trayPos = this.tray.getBounds();
-    }
+    const position = this.positioner.calculate(this._options.windowPosition, trayPos || this.tray.getBounds()) as {
+      x: number;
+      y: number;
+    };
 
-    // Default the window to the right if `trayPos` bounds are undefined or null.
-    let noBoundsPosition = null;
-    if (
-      (trayPos === undefined || trayPos.x === 0) &&
-      this._options.windowPosition &&
-      this._options.windowPosition.startsWith("tray")
-    ) {
-      noBoundsPosition = process.platform === "win32" ? "bottomRight" : "topRight";
-    }
-
-    const position = this.positioner.calculate(
-      noBoundsPosition || this._options.windowPosition,
-      trayPos
-    ) as { x: number; y: number };
-
-    // Not using `||` because x and y can be zero.
-    const x =
-      this._options.browserWindow.x !== undefined ? this._options.browserWindow.x : position.x;
-    let y =
-      this._options.browserWindow.y !== undefined ? this._options.browserWindow.y : position.y;
+    const x = this._options.browserWindow.x ?? position.x;
+    let y = this._options.browserWindow.y ?? position.y;
 
     // Multi-Taskbar: optimize vertical position
-    // https://github.com/maxogden/menubar/pull/217
     if (process.platform === "win32") {
       if (
         trayPos &&
@@ -188,7 +135,6 @@ export class Menubar extends EventEmitter {
     }
 
     // `.setPosition` crashed on non-integers
-    // https://github.com/maxogden/menubar/issues/233
     this._browserWindow.setPosition(Math.round(x), Math.round(y));
     this._browserWindow.show();
     this._isVisible = true;
@@ -207,25 +153,15 @@ export class Menubar extends EventEmitter {
       }
     });
 
-    let trayImage = this._options.icon || path.join(this._options.dir, "IconTemplate.png");
-    if (typeof trayImage === "string" && !fs.existsSync(trayImage)) {
-      trayImage = path.join(__dirname, "..", "assets", "IconTemplate.png"); // Default cat icon
-    }
+    let trayImage = this._options.icon;
+    this._tray = new Tray(trayImage);
 
-    const defaultClickEvent = this._options.showOnRightClick ? "right-click" : "click";
-
-    this._tray = this._options.tray || new Tray(trayImage);
-    // Type guards for TS not to complain
-    if (!this.tray) {
-      throw new Error("Tray has been initialized above");
+    if (process.platform === "darwin") {
+      this.tray.setIgnoreDoubleClickEvents(true);
+      this.tray.on("mouse-down", this.clicked.bind(this));
+    } else {
+      this.tray.on("click", this.clicked.bind(this));
     }
-    this.tray.on(
-      defaultClickEvent as Parameters<Tray["on"]>[0],
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      this.clicked.bind(this)
-    );
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.tray.on("double-click", this.clicked.bind(this));
     this.tray.setToolTip(this._options.tooltip);
 
     if (!this._options.windowPosition) {
@@ -247,8 +183,7 @@ export class Menubar extends EventEmitter {
    * @param bounds
    */
   private async clicked(
-    event?: Electron.KeyboardEvent,
-    bounds?: Electron.Rectangle
+    event?: Electron.KeyboardEvent
   ): Promise<void> {
     if (event && (event.shiftKey || event.ctrlKey || event.metaKey)) {
       return this.hideWindow();
@@ -263,8 +198,7 @@ export class Menubar extends EventEmitter {
       return this.hideWindow();
     }
 
-    this._cachedBounds = bounds || this._cachedBounds;
-    await this.showWindow(this._cachedBounds);
+    await this.showWindow();
   }
 
   private async createWindow(): Promise<void> {
@@ -303,11 +237,7 @@ export class Menubar extends EventEmitter {
 
     this._browserWindow.on("close", this.windowClear.bind(this));
 
-    // If the user explicity set options.index to false, we don't loadURL
-    // https://github.com/maxogden/menubar/issues/255
-    if (this._options.index !== false) {
-      await this._browserWindow.loadURL(this._options.index, this._options.loadUrlOptions);
-    }
+    await this._browserWindow.loadURL(this._options.index, this._options.loadUrlOptions);
     this.emit("after-create-window");
   }
 

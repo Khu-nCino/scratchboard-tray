@@ -1,4 +1,4 @@
-import { BrowserWindowConstructorOptions, LoadURLOptions, Tray } from "electron";
+import { BrowserWindowConstructorOptions, LoadURLOptions } from "electron";
 
 /**
  * Options for creating a menubar application
@@ -18,16 +18,12 @@ export interface Options {
    */
   browserWindow: BrowserWindowConstructorOptions;
   /**
-   * The app source directory.
-   */
-  dir: string;
-  /**
    * The png icon to use for the menubar. A good size to start with is 20x20.
    * To support retina, supply a 2x sized image (e.g. 40x40) with @2x added to
    * the end of the name, so icon.png and icon@2x.png and Electron will
    * automatically use your @2x version on retina screens.
    */
-  icon?: string | Electron.NativeImage;
+  icon: Electron.NativeImage;
   /**
    * The URL to load the menubar's browserWindow with. The url can be a remote
    * address (e.g. `http://`) or a path to a local HTML file using the
@@ -36,7 +32,7 @@ export interface Options {
    * @default `file:// + options.dir + index.html`
    * @see https://electronjs.org/docs/api/browser-window#winloadurlurl-options
    */
-  index: string | false;
+  index: string;
   /**
    * The options passed when loading the index URL in the menubar's
    * browserWindow. Everything browserWindow.loadUrl supports is supported;
@@ -61,17 +57,9 @@ export interface Options {
    */
   showOnAllWorkspaces?: boolean;
   /**
-   * Show the window on 'right-click' event instead of regular 'click'.
-   */
-  showOnRightClick?: boolean;
-  /**
    * Menubar tray icon tooltip text. Calls [`tray.setTooltip`](https://electronjs.org/docs/api/tray#traysettooltiptooltip).
    */
   tooltip: string;
-  /**
-   * An electron Tray instance. If provided, `options.icon` will be ignored.
-   */
-  tray?: Tray;
   /**
    * Sets the window position (x and y will still override this), check
    * electron-positioner docs for valid values.

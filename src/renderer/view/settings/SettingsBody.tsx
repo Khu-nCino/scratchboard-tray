@@ -50,7 +50,7 @@ function SettingsBody(props: Props) {
         <Button
           className="sbt-mb_small"
           onClick={() => {
-            ipc.callMain(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER);
+            ipc.callMain(IpcRendererEvent.SHOW_APP_DATA_IN_FOLDER);
           }}
         >
           Open AppData Folder

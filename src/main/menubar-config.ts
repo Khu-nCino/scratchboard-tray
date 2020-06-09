@@ -2,24 +2,19 @@ import { nativeImage, app } from "electron";
 import path from "path";
 import { IpcMainEvent } from "common/IpcEvent";
 import { menubar, Menubar } from "./menubar";
-import { indexUrl, assetsPath, browserWindowConfig } from "./common-config";
+import { indexUrl, assetsPath, browserWindowConfig, isDevelopment } from "./common-config";
 
 export function createMenubar(): Menubar {
   const mb = menubar({
     index: indexUrl,
     icon: loadTemplateIcon("cloudTemplate@2x.png"),
-    showDockIcon: false,
+    showDockIcon: isDevelopment,
+    showOnAllWorkspaces: true,
     preloadWindow: true,
     browserWindow: {
       ...browserWindowConfig,
       skipTaskbar: true,
     },
-  });
-
-  mb.on("ready", () => {
-    if (process.platform === "darwin") {
-      mb.tray.setIgnoreDoubleClickEvents(true);
-    }
   });
 
   mb.on("show", () => {
@@ -36,6 +31,8 @@ export function createMenubar(): Menubar {
       if (!wasOpenedAsHidden) {
         mb.showWindow();
       }
+    } else if (process.platform === "win32") {
+      mb.showWindow();
     }
   });
 

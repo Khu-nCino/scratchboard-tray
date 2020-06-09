@@ -1,14 +1,12 @@
 import { app, ipcMain, BrowserWindow, shell } from "electron";
 import { ipcMain as ipc } from "electron-better-ipc";
 import { IpcRendererEvent } from "common/IpcEvent";
-import { Menubar } from "./menubar";
 import { isDevelopment } from "./common-config";
 import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
 import { createDebugWindow } from "./debug-window-config";
 
-let mb: Menubar | undefined;
 let debugWindow: BrowserWindow | undefined;
 
 if (!app.requestSingleInstanceLock()) {
@@ -16,12 +14,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 if (!isDevelopment) {
-  mb = createMenubar();
-  mb.on("after-hide", () => {
-    if (process.platform === 'darwin') {
-      app.hide();
-    }
-  });
+  createMenubar();
 } else {
   app.on("ready", async () => {
     debugWindow = await createDebugWindow();
@@ -56,7 +49,7 @@ ipcMain.on(IpcRendererEvent.OPEN_EXTERNAL, (_event, url) => {
 
 ipc.answerRenderer(IpcRendererEvent.GET_APP_VERSION, () => app.getVersion());
 
-ipc.answerRenderer(IpcRendererEvent.SHOW_APPDATA_IN_FOLDER, () => {
+ipc.answerRenderer(IpcRendererEvent.SHOW_APP_DATA_IN_FOLDER, () => {
   shell.openPath(app.getPath("userData"));
 });
 
