@@ -7,7 +7,7 @@ import { CustomDispatch, State } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { CanceledExecutionError } from "renderer/api/subprocess/execute-promise-json";
 import { coerceInstanceUrl } from "renderer/api/url";
-import { manager } from "renderer/api/core/OrgManager";
+import { orgManager } from "renderer/api/core/OrgManager";
 
 const defaultInstanceUrl = "login.salesforce.com";
 
@@ -35,7 +35,7 @@ function LoginBody(props: Props) {
 
       try {
         await childProcess.promise;
-        await manager.checkOrgChanges();
+        await orgManager.checkOrgChanges();
         props.popRoute();
       } catch (error) {
         if (!(error instanceof CanceledExecutionError)) {

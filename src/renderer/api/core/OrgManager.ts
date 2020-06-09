@@ -2,18 +2,17 @@ import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/c
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
 import { binaryGroups, notUndefined } from "common/util";
-import { OrgCache } from "./OrgCache";
+import { OrgCache, orgCache } from "./OrgCache";
 import { SalesforceOrg } from "../SalesforceOrg";
 import { formatFrontDoorUrl } from "../url";
-import { isActive, readOrgGroupReverse, trimTo15 } from "./util";
+import { isActive, readOrgGroupReverse, trimTo15, formatQueryList } from "./util";
 
 const logger = getLogger();
 export class OrgManager {
   orgDataChangeEvent = new Emitter<{ changed: SalesforceOrg[]; removed: string[] }>();
   syncErrorEvent = new Emitter<{ name: string; detail: Error }>();
-  cache = new OrgCache();
 
-  constructor() {
+  constructor(private cache: OrgCache) {
     this.cache.syncErrorEvent.addListener((event) => this.syncErrorEvent.emit(event));
     this.cache.aliasChangeEvent.addListener(this.handleAliasChangeEvent.bind(this));
     this.cache.orgChangeEvent.addListener(this.handleOrgChangeEvent.bind(this));
@@ -178,9 +177,7 @@ export class OrgManager {
               return acc;
             }, {});
 
-            const formatedOrgIds = Object.keys(orgIdToUsername)
-              .map((orgId) => `'${orgId}'`)
-              .join(",");
+            const formatedOrgIds = formatQueryList(Object.keys(orgIdToUsername));
 
             connection.query(
               `SELECT ScratchOrg,ExpirationDate FROM ActiveScratchOrg WHERE ScratchOrg IN (${formatedOrgIds})`,
@@ -241,4 +238,4 @@ export class OrgManager {
   }
 }
 
-export const manager = new OrgManager();
+export const orgManager = new OrgManager(orgCache);

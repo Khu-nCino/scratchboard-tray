@@ -118,10 +118,10 @@ export function toggleOpenAtLogin(): ThunkReturn<void> {
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
-  sfdxPath: string;
-  isSfdxPathValid?: boolean;
-  theme: UITheme;
-  openAtLogin: boolean;
+  readonly sfdxPath: string;
+  readonly isSfdxPathValid?: boolean;
+  readonly theme: UITheme;
+  readonly openAtLogin: boolean;
 }
 
 const defaultState: SettingsState = {

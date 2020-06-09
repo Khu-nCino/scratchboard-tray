@@ -3,15 +3,22 @@ import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
 import { SalesforceOrg, BaseOrg, ScratchOrg, SharedOrg } from "renderer/api/SalesforceOrg";
+import { orgManager } from "renderer/api/core/OrgManager";
+import { packageManager, InstalledPackageVersion, InstallablePackageVersion } from "renderer/api/core/PackageManager";
+import { IpcRendererEvent } from "common/IpcEvent";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
-import { manager } from "renderer/api/core/OrgManager";
-import { IpcRendererEvent } from "common/IpcEvent";
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
 
 // Actions
-type OrgAction = OrgListChanges | AliasSetAction | SetPendingAction;
+type OrgAction =
+  | OrgListChanges
+  | AliasSetAction
+  | SetPendingAction
+  | SetPackageLoadStatusAction
+  | InstalledPackagesLoadedAction
+  | AvailableVersionsLoadedAction;
 
 interface OrgListChanges extends Action<"ORG_LIST_CHANGES"> {
   payload: {
@@ -34,6 +41,27 @@ interface SetPendingAction extends Action<"SET_PENDING_ACTION"> {
   };
 }
 
+interface SetPackageLoadStatusAction extends Action<"SET_PENDING_PACKAGE_LOAD"> {
+  payload: {
+    username: string;
+    status: PackageLoadStatus;
+  };
+}
+
+interface InstalledPackagesLoadedAction extends Action<"INSTALLED_PACKAGES_LOADED_ACTION"> {
+  payload: {
+    username: string;
+    installed: InstalledPackageVersion[];
+  };
+}
+
+interface AvailableVersionsLoadedAction extends Action<"AVAILABLE_VERSIONS_LOADED_ACTION"> {
+  payload: {
+    username: string;
+    available: InstallablePackageVersion[];
+  };
+}
+
 export function orgListChanged(changed: SalesforceOrg[], removed: string[]): OrgListChanges {
   return {
     type: "ORG_LIST_CHANGES",
@@ -48,7 +76,7 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
       dispatch(setPendingAction(username, true));
-      ipc.send(IpcRendererEvent.OPEN_EXTERNAL, await manager.getFrontDoor(username));
+      ipc.send(IpcRendererEvent.OPEN_EXTERNAL, await orgManager.getFrontDoor(username));
     } catch (error) {
       dispatch(createErrorToast("There was an error opening your org 😞", error));
     } finally {
@@ -62,7 +90,7 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
     try {
       dispatch(setPendingAction(username, true));
 
-      const url = await manager.getFrontDoor(username);
+      const url = await orgManager.getFrontDoor(username);
       clipboard.writeText(url, "clipboard");
       dispatch(createToast("The front door is copied to your clipboard.", "success"));
     } catch (error) {
@@ -78,7 +106,7 @@ export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
     try {
       dispatch(setPendingAction(username, true));
 
-      await manager.logoutOrg(username);
+      await orgManager.logoutOrg(username);
       dispatch(orgListChanged([], [username]));
 
       dispatch(createToast("Successfully logged out of org.", "success"));
@@ -95,7 +123,7 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
     try {
       dispatch(setPendingAction(username, true));
 
-      await manager.deleteScratchOrg(username);
+      await orgManager.deleteScratchOrg(username);
       dispatch(orgListChanged([], [username]));
 
       dispatch(createToast("Successfully deleted org.", "success"));
@@ -108,7 +136,7 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
 export function setAliasAction(username: string, newAlias: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
-      await manager.setAlias(username, newAlias);
+      await orgManager.setAlias(username, newAlias);
 
       dispatch({
         type: "ALIAS_SET_ACTION",
@@ -119,6 +147,26 @@ export function setAliasAction(username: string, newAlias: string): ThunkResult<
       });
     } catch (error) {
       dispatch(createErrorToast("There was an error setting your alias 😞", error));
+    }
+  };
+}
+
+export function checkPackageData(username: string): ThunkResult<Promise<void>> {
+  return async (dispatch) => {
+    try {
+      dispatch(setPackageLoadStatusAction(username, 'pending'));
+
+      const installed: InstalledPackageVersion[] = await packageManager.getInstalledPackageVersions(username);
+      dispatch(installedPackagesLoadedAction(username, installed));
+      
+      const namespaces = installed.map((data) => data.namespace);
+      const available: InstallablePackageVersion[] = await packageManager.getLatestAvailablePackageVersions(username, namespaces);
+      dispatch(availablePackagesLoadedAction(username, available));
+      
+    } catch (error) {
+      dispatch(createErrorToast("There was an error loading you package data 😞", error));
+    } finally {
+      dispatch(setPackageLoadStatusAction(username, 'finished'));
     }
   };
 }
@@ -134,27 +182,77 @@ function setPendingAction(username: string, pendingAction: boolean): SetPendingA
   };
 }
 
+function setPackageLoadStatusAction(
+  username: string,
+  status: PackageLoadStatus
+): SetPackageLoadStatusAction {
+  return {
+    type: "SET_PENDING_PACKAGE_LOAD",
+    payload: {
+      username,
+      status,
+    },
+  };
+}
+
+function installedPackagesLoadedAction(
+  username: string,
+  installed: InstalledPackageVersion[]
+): InstalledPackagesLoadedAction {
+  return {
+    type: "INSTALLED_PACKAGES_LOADED_ACTION",
+    payload: {
+      username,
+      installed,
+    },
+  };
+}
+
+function availablePackagesLoadedAction(
+  username: string,
+  available: InstallablePackageVersion[]
+): AvailableVersionsLoadedAction {
+  return {
+    type: "AVAILABLE_VERSIONS_LOADED_ACTION",
+    payload: {
+      username,
+      available,
+    },
+  };
+}
+
 // State
+
+type PackageLoadStatus = "initial" | "pending" | "finished";
+
 export interface OrgDataState {
-  pendingAction: boolean;
+  readonly pendingAction: boolean;
+  readonly pendingPackageStatus: PackageLoadStatus;
+}
+
+export interface OrgPackageData {
+  readonly installedVersion: ReadonlyArray<InstalledPackageVersion>;
+  readonly availableVersion: ReadonlyArray<AvailableVersionsLoadedAction>;
 }
 
 export interface OrgData<T extends BaseOrg> {
-  description: T;
-  state: OrgDataState;
+  readonly description: T;
+  readonly state: OrgDataState;
+  readonly packages: OrgPackageData;
 }
 
 export interface OrgsState {
-  orgList: OrgData<SalesforceOrg>[];
+  readonly orgList: OrgData<SalesforceOrg>[];
 }
 
 const defaultOrgsState: OrgsState = {
   orgList: [],
 };
 
-const defaultOrgDataState: OrgDataState = {
-  pendingAction: false,
-};
+const defaultOrgData = {
+  state: { pendingAction: false, pendingPackageStatus: "initial" },
+  packages: { installedVersion: [], availableVersion: [] },
+} as const;
 
 // Reducers
 export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgAction): OrgsState {
@@ -197,8 +295,9 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
       const netNew: OrgData<SalesforceOrg>[] = changed
         .filter((org) => !prevUsernameSet.has(org.username))
         .map((org) => ({
+          state: defaultOrgData.state,
+          packages: defaultOrgData.packages,
           description: org,
-          state: defaultOrgDataState,
         }));
 
       return {
@@ -248,6 +347,22 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
                 state: {
                   ...org.state,
                   pendingAction: action.payload.pendingAction,
+                },
+              }
+        ),
+      };
+    case "SET_PENDING_PACKAGE_LOAD":
+      return {
+        ...state,
+        orgList: state.orgList.map((org) =>
+          org.description.username !== action.payload.username ||
+          org.state.pendingPackageStatus === action.payload.status
+            ? org
+            : {
+                ...org,
+                state: {
+                  ...org.state,
+                  pendingPackageLoad: action.payload.status,
                 },
               }
         ),

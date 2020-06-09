@@ -18,7 +18,9 @@ if (!app.requestSingleInstanceLock()) {
 if (!isDevelopment) {
   mb = createMenubar();
   mb.on("after-hide", () => {
-    app.hide();
+    if (process.platform === 'darwin') {
+      app.hide();
+    }
   });
 } else {
   app.on("ready", () => {

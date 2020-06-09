@@ -39,3 +39,8 @@ export function notConcurrent<T>(proc: () => PromiseLike<T>) {
     return inFlight;
   };
 }
+
+export function shrink(strings: TemplateStringsArray, ...placeholders: any[]) {
+  const withSpace = strings.reduce((result, string, i) => result + placeholders[i - 1] + string);
+  return withSpace.trim().replace(/\s\s+/g, " ");
+}

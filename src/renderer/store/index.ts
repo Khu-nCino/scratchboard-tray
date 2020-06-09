@@ -12,7 +12,7 @@ import { orgsReducer } from "./orgs";
 import { routeReducer } from "./route";
 import { settingsReducer } from "./settings";
 import { messagesReducer } from "./messages";
-import { updateReducer } from "./updates";
+import { updateReducer, defaultUpdateState } from "./updates";
 import { expandedReducer, defaultExpandedState } from "./expanded";
 
 type Reducers = typeof reducers;
@@ -33,6 +33,7 @@ const reducers = {
 
 export const defaultState: Partial<State> = {
   expanded: defaultExpandedState,
+  updates: defaultUpdateState,
 };
 
 // redux devtools setup

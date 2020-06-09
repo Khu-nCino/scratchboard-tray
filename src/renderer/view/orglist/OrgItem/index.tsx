@@ -20,12 +20,6 @@ import DeleteConformation from "./DeleteConformation";
 import InputTextDialog from "renderer/view/InputTextDialog";
 import LogoutConformation from "./LogoutConformation";
 
-// TEMP
-import { PackageManager } from "renderer/api/core/PackageManager";
-import { manager } from "renderer/api/core/OrgManager";
-const packageManager = new PackageManager(manager.cache);
-// !TEMP
-
 interface OwnProps {
   org: OrgData<SalesforceOrg>;
 }
@@ -55,13 +49,7 @@ function OrgItem(props: Props) {
       onDelete={() => setPendingDelete(true)}
       onLogout={() => setPendingLogout(true)}
       onPackages={async () => {
-        const username = props.org.description.username;
-        const versions = await packageManager.getInstalledPackageVersions(username);
-        const namespaces = versions.map((version) => version.SubscriberPackage.NamespacePrefix);
-        console.log(namespaces);
-
-        const available = await packageManager.getLatestAvailablePackageVersions(username, namespaces);
-        console.log(available);
+        
       }}
     />
   );

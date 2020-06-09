@@ -56,6 +56,10 @@ export function trimTo15(orgId: string) {
   return orgId;
 }
 
+export function formatQueryList(items: string[]): string {
+  return items.map((item) => `'${item}'`).join();
+}
+
 export function isScratch(info: AuthInfo) {
   return info.getFields().devHubUsername;
 }

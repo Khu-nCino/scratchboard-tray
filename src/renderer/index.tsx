@@ -17,7 +17,7 @@ import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
 import { orgListChanged } from "./store/orgs";
 import { PersistManager, watchStore } from "./persist";
 import App from "./view/App";
-import { manager } from "./api/core/OrgManager";
+import { orgManager } from "./api/core/OrgManager";
 import { createErrorToast } from "./store/messages";
 import { setIsVisible } from "./store/route";
 
@@ -59,9 +59,9 @@ function initialApp(appVersion: string) {
   store.dispatch(checkOpenAtLogin());
   store.dispatch(checkSfdxPathValidity());
 
-  manager.checkOrgChanges();
+  orgManager.checkOrgChanges();
   ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {
-    manager.checkOrgChanges();
+    orgManager.checkOrgChanges();
     store.dispatch(setIsVisible(true));
   });
 
@@ -69,11 +69,11 @@ function initialApp(appVersion: string) {
     store.dispatch(setIsVisible(false));
   });
 
-  manager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
+  orgManager.orgDataChangeEvent.addListener(async ({ changed, removed }) => {
     store.dispatch(orgListChanged(changed, removed));
   });
 
-  manager.syncErrorEvent.addListener(async ({ name, detail }) => {
+  orgManager.syncErrorEvent.addListener(async ({ name, detail }) => {
     store.dispatch(createErrorToast(name, detail));
   });
 

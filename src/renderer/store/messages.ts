@@ -42,14 +42,14 @@ export function dismissToast(toastId: number): DismissToastAction {
 //State
 
 export interface Toast {
-  id: number;
-  message: string;
-  detail?: string;
-  intent: Intent;
+  readonly id: number;
+  readonly message: string;
+  readonly detail?: string;
+  readonly intent: Intent;
 }
 
 interface MessagesState {
-  toasts: Toast[];
+  readonly toasts: Toast[];
 }
 
 const defaultState: MessagesState = {

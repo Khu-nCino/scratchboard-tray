@@ -118,9 +118,13 @@ export class OrgCache {
     );
   }
 
-  // async getDevhubUsername(username: string): Promise<string> {
-
-  // }
+  async getDevHubUsername(username: string): Promise<string> {
+    const { devHubUsername } = (await this.getAuthInfo(username)).getFields();
+    if (devHubUsername === undefined) {
+      throw new Error(`No devHubUsername found for ${username}`);
+    }
+    return devHubUsername;
+  }
 
   async query<T>(username: string, query: string, tooling: boolean = false): Promise<T[]> {
     const connection = await this.getConnection(username);
@@ -136,6 +140,11 @@ export class OrgCache {
     });
   }
 
+  async queryDevHub<T>(username: string, query: string, tooling: boolean = false): Promise<T[]> {
+    const devHubUsername = await this.getDevHubUsername(username);
+    return this.query(devHubUsername, query, tooling);
+  }
+
   private async checkAliasChanges() {
     const aliases = await this.getAliases(true);
 
@@ -146,3 +155,5 @@ export class OrgCache {
     this.aliasChangeEvent.emit({ changed });
   }
 }
+
+export const orgCache = new OrgCache();

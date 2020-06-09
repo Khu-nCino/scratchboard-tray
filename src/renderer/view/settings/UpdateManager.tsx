@@ -48,6 +48,8 @@ function UpdateButton(props: { status: UpdateStatus; updateVersion?: string }) {
           Upgrade to Version {props.updateVersion}
         </Button>
       );
+    default:
+      return <Button disabled>Unknown Status</Button>;
   }
 }
 

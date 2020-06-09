@@ -1,5 +1,5 @@
 import { SalesforceOrg } from "./SalesforceOrg";
-import { manager } from "./core/OrgManager";
+import { orgManager } from "./core/OrgManager";
 
 export function coerceInstanceUrl(url: string): string {
   const trimmedUrl = url.trim();
@@ -35,7 +35,7 @@ export function urlToFrontDoorUrl(username: string, rawUrl: string): Promise<str
 
   const urlPath = `${correctedPathname}${url.search}${url.hash}`;
 
-  return manager.getFrontDoor(username, urlPath);
+  return orgManager.getFrontDoor(username, urlPath);
 }
 
 export function matchOrgByUrl(orgs: SalesforceOrg[], url: string): SalesforceOrg[] {

@@ -1,4 +1,6 @@
-import { OrgCache } from "./OrgCache";
+import { shrink } from "common/util";
+import { OrgCache, orgCache } from "./OrgCache";
+import { formatQueryList } from "./util";
 
 interface SubscriberPackage {
   Name: string;
@@ -19,10 +21,15 @@ interface InstalledSubscriberPackage {
   SubscriberPackageVersion: SubscriberPackageVersion;
 }
 
-interface InstallablePackageVersion {
-  namespace: string,
-  version: string,
-  password: string
+export interface PackageVersion {
+  readonly namespace: string;
+  readonly version: string;
+}
+
+export interface InstalledPackageVersion extends PackageVersion {}
+
+export interface InstallablePackageVersion extends PackageVersion {
+  readonly password: string;
 }
 
 const installedPackageVersionsQuery = shrink`
@@ -42,19 +49,24 @@ FROM
 export class PackageManager {
   constructor(private cache: OrgCache) {}
 
-  getInstalledPackageVersions(username: string) {
-    return this.cache.query<InstalledSubscriberPackage>(
+  async getInstalledPackageVersions(username: string): Promise<InstalledPackageVersion[]> {
+    const versions = await this.cache.query<InstalledSubscriberPackage>(
       username,
       installedPackageVersionsQuery,
       true
     );
+    return versions.map((version) => ({
+      namespace: version.SubscriberPackage.NamespacePrefix,
+      version: version.SubscriberPackageVersion.Name,
+    }));
   }
 
-  async getLatestAvailablePackageVersions(username: string, namespaces: string[]) {
-    const info = await this.cache.getAuthInfo(username);
-
-    return this.cache.query<InstallablePackageVersion>(
-      info.getFields().devHubUsername!,
+  getLatestAvailablePackageVersions(
+    username: string,
+    namespaces: string[]
+  ): Promise<InstallablePackageVersion[]> {
+    return this.cache.queryDevHub<InstallablePackageVersion>(
+      username,
       shrink`
         SELECT
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c namespace,
@@ -63,18 +75,15 @@ export class PackageManager {
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${namespaces.map((namespace) => `'${namespace}'`).join()})
+          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(namespaces)})
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
           AND PackageManager__Is_Patch__c = false
         GROUP BY PackageManager__Package__r.PackageManager__Namespace_Prefix__c
-      `,
-      false
+      `
     );
   }
 }
 
-function shrink(strings: TemplateStringsArray, ...placeholders: any[]) {
-  const withSpace = strings.reduce((result, string, i) => result + placeholders[i - 1] + string);
-  return withSpace.trim().replace(/\s\s+/g, " ");
-}
+// I'm not happy with this but don't want to take the time to fix it ;(
+export const packageManager = new PackageManager(orgCache);

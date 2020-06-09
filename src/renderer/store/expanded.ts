@@ -20,8 +20,8 @@ export function toggleExpansion(groupName: GroupName): ToggleExpansion {
 type GroupName = keyof ExpandedState;
 
 export interface ExpandedState {
-  sharedOrgs: boolean;
-  scratchOrgs: boolean;
+  readonly sharedOrgs: boolean;
+  readonly scratchOrgs: boolean;
 }
 
 export const defaultExpandedState: ExpandedState = {

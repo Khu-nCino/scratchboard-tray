@@ -61,9 +61,9 @@ export function setIsVisible(value: boolean): SetIsVisibleAction {
 export type RouteName = "orgs" | "settings" | "login" | "frontdoor";
 
 export interface RouteState {
-  activeRoute: RouteName;
-  navigationEnabled: boolean;
-  isVisible: boolean;
+  readonly activeRoute: RouteName;
+  readonly navigationEnabled: boolean;
+  readonly isVisible: boolean;
 }
 
 const defaultRouteState: RouteState = {

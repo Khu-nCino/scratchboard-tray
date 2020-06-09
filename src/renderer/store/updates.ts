@@ -53,18 +53,18 @@ function statusChangeAction(status: UpdateStatus): StatusChangeAction {
 export type UpdateStatus = "initial" | "checking" | "downloading" | "downloaded";
 
 export interface UpdateState {
-  status: UpdateStatus;
-  appVersion?: string;
-  updateVersion?: string;
-  downloadPercent?: number;
+  readonly status: UpdateStatus;
+  readonly appVersion?: string;
+  readonly updateVersion?: string;
+  readonly downloadPercent?: number;
 }
 
-const defaultState: UpdateState = {
+export const defaultUpdateState: UpdateState = {
   status: "initial",
 };
 
 export function updateReducer(
-  state: UpdateState = defaultState,
+  state: UpdateState = defaultUpdateState,
   action: UpdateAction
 ): UpdateState {
   switch (action.type) {
