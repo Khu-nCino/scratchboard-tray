@@ -1,7 +1,12 @@
 import { Aliases, AliasGroup, AuthInfo } from "@salesforce/core";
 
 export function readOrgGroup(aliases: Aliases): Record<string, string> {
-  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>(
+  const orgsGroup = aliases.getGroup(AliasGroup.ORGS);
+  if (orgsGroup === undefined) {
+    return {};
+  }
+
+  return Object.entries(orgsGroup).reduce<Record<string, string>>(
     (acc, [alias, username]) => {
       acc[alias] = `${username}`;
       return acc;
@@ -11,7 +16,12 @@ export function readOrgGroup(aliases: Aliases): Record<string, string> {
 }
 
 export function readOrgGroupReverse(aliases: Aliases): Record<string, string> {
-  return Object.entries(aliases.getGroup(AliasGroup.ORGS)!!).reduce<Record<string, string>>(
+  const orgsGroup = aliases.getGroup(AliasGroup.ORGS);
+  if (orgsGroup === undefined) {
+    return {};
+  }
+
+  return Object.entries(orgsGroup).reduce<Record<string, string>>(
     (acc, [alias, username]) => {
       acc[`${username}`] = alias;
       return acc;
