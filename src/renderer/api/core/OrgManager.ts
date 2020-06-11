@@ -47,11 +47,13 @@ export class OrgManager {
         if (missingExpirationDates.length > 0) {
           await this.populateExpirationDates(missingExpirationDates);
 
-          const [notExpured, expired] = binaryGroups(
-            missingExpirationDates,
-            (info) => Date.parse(info.getFields().expirationDate!!) > Date.now()
-          );
-          const expiredUsernames = expired.map((info) => info.getFields().username!!);
+          const [notExpured, expired] = binaryGroups(missingExpirationDates, (info) => {
+            const expirationDate = info.getFields().expirationDate;
+            return expirationDate !== undefined && Date.parse(expirationDate) > Date.now();
+          });
+          const expiredUsernames = expired
+            .map((info) => info.getFields().username)
+            .filter(notUndefined);
           this.cache.clearCaches(expiredUsernames, true);
 
           this.orgDataChangeEvent.emit({
@@ -72,17 +74,20 @@ export class OrgManager {
 
   async setAlias(username: string, newAlias?: string): Promise<void> {
     const aliases = await this.cache.getAliases();
-    const orgAliases = aliases.getGroup(AliasGroup.ORGS)!!;
+    const orgAliases = aliases.getGroup(AliasGroup.ORGS);
 
-    const [oldAlias] = Object.entries(orgAliases).find(([_, name]) => name === username) ?? [
-      undefined,
-    ];
+    if (orgAliases !== undefined) {
+      const oldAliasNames = Object.entries(orgAliases)
+        .filter(([_, name]) => name === username)
+        .map(([alias]) => alias);
+
+      if (oldAliasNames.length > 0) {
+        aliases.unsetAll(oldAliasNames);
+      }
+    }
 
     if (newAlias) {
       aliases.set(newAlias, username);
-    }
-    if (oldAlias) {
-      aliases.unset(oldAlias);
     }
     await aliases.write();
   }
