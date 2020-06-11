@@ -6,6 +6,7 @@ import { loginItemSettingsIpc } from "./login-settings-ipc";
 import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
 import { createDebugWindow } from "./debug-window-config";
+import { getLogDir } from "common/logger";
 
 let debugWindow: BrowserWindow | undefined;
 
@@ -54,5 +55,5 @@ ipc.answerRenderer(IpcRendererEvent.SHOW_APP_DATA_IN_FOLDER, () => {
 });
 
 ipc.answerRenderer(IpcRendererEvent.SHOW_LOGS_IN_FOLDER, () => {
-  shell.openPath(app.getPath("logs"));
+  shell.openPath(getLogDir());
 });
