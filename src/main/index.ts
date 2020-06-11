@@ -13,7 +13,7 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 
-if (!isDevelopment) {
+if (process.env.SB_DEV !== 'true' && (process.env.SB_DEV === 'false' || !isDevelopment)) {
   createMenubar();
 } else {
   app.on("ready", async () => {

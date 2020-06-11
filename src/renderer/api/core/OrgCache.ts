@@ -67,19 +67,29 @@ export class OrgCache {
   }
 
   checkOrgChanges = notConcurrent(async () => {
+    await this.checkAliasChanges();
+
+    let nextUsernames: string[] = [];
     try {
-      await this.checkAliasChanges();
-
-      const nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2Username);
-      const { added, removed } = arrayDiff(nextUsernames, this.currentUsernames);
-      this.currentUsernames = nextUsernames;
-
-      if (added.length > 0 || removed.length > 0) {
-        await this.orgChangeEvent.emit({ added, removed });
-      }
+      nextUsernames = (await AuthInfo.listAllAuthFiles()).map(authFileName2Username);
     } catch (error) {
-      logger.error(error.detail ?? error);
-      this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
+      if (error.name !== "NoAuthInfoFound") {
+        logger.error(error.detail ?? error);
+        this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
+        return;
+      }
+    }
+
+    const { added, removed } = arrayDiff(nextUsernames, this.currentUsernames);
+    this.currentUsernames = nextUsernames;
+
+    if (added.length > 0 || removed.length > 0) {
+      try {
+        await this.orgChangeEvent.emit({ added, removed });
+      } catch (error) {
+        logger.error(error.detail ?? error);
+        this.syncErrorEvent.emit({ name: "Data sync error", detail: error });
+      }
     }
   });
 
