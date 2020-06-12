@@ -2,7 +2,7 @@
   Scratchboard
 </h1>
 
-<h4 align="center">A tray based salesforce org manager built with <a href="http://electron.atom.io" target="_blank">Electron</a>, <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</a> and <a href="https://github.com/forcedotcom/sfdx-core">sfdx-core</a>.</h4>
+<h4 align="center">A tray app to make org management easier than ever, built with <a href="http://electron.atom.io" target="_blank">Electron</a>, <a href="https://blueprintjs.com/" target="_blank">BlueprintJS</a> and <a href="https://github.com/forcedotcom/sfdx-core">sfdx-core</a>.</h4>
 
 <p align="center">
   <a href="#motivation">Motivation</a> •
