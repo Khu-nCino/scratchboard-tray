@@ -2,7 +2,7 @@ import { app, BrowserWindowConstructorOptions } from "electron";
 import path from "path";
 import { format as formatUrl } from "url";
 
-export const isDevelopment =  process.env.NODE_ENV !== "production";
+export const isDevelopment = process.env.NODE_ENV !== "production";
 
 export const indexUrl = isDevelopment
   ? `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`

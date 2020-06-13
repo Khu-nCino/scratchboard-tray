@@ -1,6 +1,6 @@
 {
   "name": "scratchboard-tray",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "license": "MIT",
   "author": {
     "name": "Gabriel Keith"
@@ -10,7 +10,7 @@
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
     "dist": "yarn compile && electron-builder",
-    "dist:mac": "yarn compile && electron-builder -m",
+    "dist:mac": "yarn compile && electron-builder -m && node ./scripts/mac_rebuild.js",
     "dist:win": "yarn compile && electron-builder -w",
     "dist:linux": "yarn compile && electron-builder -l"
   },

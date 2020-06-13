@@ -44,9 +44,7 @@
 
 ## Download
 
-You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/download/v0.3.2/scratchboard-tray-0.3.2-mac.dmg).
-
-There can be a problem with the zip version for new installations but it's required for auto-update to function so it's included anyway. Because of this it's recommend you use the dmg version for new installations.
+You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/).
 
 ## Setup
 
