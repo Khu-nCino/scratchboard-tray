@@ -92,6 +92,22 @@ export class OrgCache {
       }
     }
   });
+  
+  async addData(authInfo: AuthInfo) {
+    const username = authInfo.getFields().username;
+    if (!username) {
+      logger.error("No username found on org");
+      return;
+    }
+
+    if (!this.currentUsernames.includes(username)) {
+      this.currentUsernames.push(username);
+    }
+
+    const resultAuth = await authInfo.save();
+    this.authInfoCache.set(username, Promise.resolve(resultAuth));
+    this.orgChangeEvent.emit({ added: [username], removed: [] });
+  }
 
   async deleteData(username: string): Promise<void> {
     const aliases = await this.getAliases(true);

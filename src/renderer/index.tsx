@@ -87,5 +87,3 @@ function initialApp(appVersion: string) {
     document.getElementById("app")
   );
 }
-
-import "./api/auth";

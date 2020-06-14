@@ -7,15 +7,17 @@ import { updateManagerIpc } from "./update-manager-ipc";
 import { createMenubar } from "./menubar-config";
 import { createDebugWindow } from "./debug-window-config";
 import { getLogDir } from "common/logger";
+import { Menubar } from "./menubar";
 
 let debugWindow: BrowserWindow | undefined;
+let menubar: Menubar | undefined;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 
 if (process.env.SB_DEV !== 'true' && (process.env.SB_DEV === 'false' || !isDevelopment)) {
-  createMenubar();
+  menubar = createMenubar();
 } else {
   app.on("ready", async () => {
     debugWindow = await createDebugWindow();
@@ -44,8 +46,9 @@ ipcMain.on(IpcRendererEvent.QUIT_APP, () => {
   app.quit();
 });
 
-ipcMain.on(IpcRendererEvent.OPEN_EXTERNAL, (_event, url) => {
-  shell.openExternal(url);
+ipcMain.on(IpcRendererEvent.REQUEST_FOCUS, () => {
+  menubar?.showWindow();
+  debugWindow?.show();
 });
 
 ipc.answerRenderer(IpcRendererEvent.GET_APP_VERSION, () => app.getVersion());

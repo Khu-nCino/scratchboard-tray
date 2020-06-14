@@ -1,4 +1,4 @@
-import { clipboard, ipcRenderer as ipc } from "electron";
+import { clipboard, ipcRenderer as ipc, shell } from "electron";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
@@ -76,7 +76,7 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
       dispatch(setPendingAction(username, true));
-      ipc.send(IpcRendererEvent.OPEN_EXTERNAL, await orgManager.getFrontDoor(username));
+      shell.openExternal(await orgManager.getFrontDoor(username));
     } catch (error) {
       dispatch(createErrorToast("There was an error opening your org 😞", error));
     } finally {

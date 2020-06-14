@@ -17,6 +17,10 @@ export class CachedResource<R> {
     );
   }
 
+  set(key: string, value: Promise<R>): void {
+    this.cache[key] = value;
+  }
+
   getCached(key: string): Promise<R> | undefined {
     return this.cache[key];
   }

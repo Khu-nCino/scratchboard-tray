@@ -1,48 +1,44 @@
+import { ipcRenderer } from "electron";
 import React, { useState } from "react";
-import { InputGroup, Button, FormGroup, NonIdealState, Spinner, Icon } from "@blueprintjs/core";
+import { InputGroup, Button, FormGroup, NonIdealState, Spinner } from "@blueprintjs/core";
 import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
 import { connect } from "react-redux";
-import { loginOrg } from "renderer/api/subprocess/sfdx";
-import { CustomDispatch, State } from "renderer/store";
+import { authManager } from "renderer/api/core/AuthManager";
+import { CustomDispatch } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { CanceledExecutionError } from "renderer/api/subprocess/execute-promise-json";
 import { coerceInstanceUrl } from "renderer/api/url";
-import { orgManager } from "renderer/api/core/OrgManager";
+import { IpcRendererEvent } from "common/IpcEvent";
 
 const defaultInstanceUrl = "login.salesforce.com";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement>;
 
-type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
-type Props = StateProps & DispatchProps;
+type Props = DispatchProps;
 
 function LoginBody(props: Props) {
   const [instanceUrl, setInstanceUrl] = useState(defaultInstanceUrl);
   const [alias, setAlias] = useState("");
-  const [cancelProcess, setCancelProcess] = useState<() => void | undefined>();
+  const [inProgress, setInProgress] = useState<boolean>();
 
   const isUrlValid = Boolean(instanceUrl);
 
   const handleLogin = async () => {
     if (isUrlValid) {
-      const childProcess = loginOrg(
-        coerceInstanceUrl(instanceUrl),
-        alias !== "" ? alias : undefined
-      );
-      props.setNavigationEnabled(false);
-      setCancelProcess(() => childProcess.cancel);
-
       try {
-        await childProcess.promise;
-        await orgManager.checkOrgChanges();
+        setInProgress(true);
+        props.setNavigationEnabled(false);
+        await authManager.webAuth(coerceInstanceUrl(instanceUrl));
+        ipcRenderer.send(IpcRendererEvent.REQUEST_FOCUS);
+
         props.popRoute();
       } catch (error) {
         if (!(error instanceof CanceledExecutionError)) {
           props.createErrorToast("Error authenticating", error);
         }
         props.setNavigationEnabled(true);
-        setCancelProcess(undefined);
+        setInProgress(false);
       }
     }
   };
@@ -53,20 +49,7 @@ function LoginBody(props: Props) {
     }
   };
 
-  if (!props.sfdxValid) {
-    return (
-      <NonIdealState
-        title="SFDX Config Required"
-        description={
-          <>
-            No SFDX binary found.
-            <br />
-            Try setting the path in the <Icon icon="cog" /> screen and coming back.
-          </>
-        }
-      />
-    );
-  } else if (cancelProcess !== undefined) {
+  if (inProgress !== undefined) {
     return (
       <NonIdealState
         title="Authenticating"
@@ -76,8 +59,8 @@ function LoginBody(props: Props) {
           <Button
             intent="danger"
             onClick={() => {
-              cancelProcess();
-              setCancelProcess(undefined);
+              authManager.closeServer();
+              setInProgress(false);
               props.setNavigationEnabled(true);
             }}
           >
@@ -122,12 +105,6 @@ function LoginBody(props: Props) {
   }
 }
 
-function mapStateToProps(state: State) {
-  return {
-    sfdxValid: state.settings.isSfdxPathValid,
-  };
-}
-
 function mapDispatchToProps(dispatch: CustomDispatch) {
   return {
     popRoute: () => dispatch(popRouteAction()),
@@ -137,4 +114,4 @@ function mapDispatchToProps(dispatch: CustomDispatch) {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoginBody);
+export default connect(undefined, mapDispatchToProps)(LoginBody);
