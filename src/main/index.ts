@@ -16,7 +16,7 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 
-if (process.env.SB_DEV !== 'true' && (process.env.SB_DEV === 'false' || !isDevelopment)) {
+if (process.env.SB_DEV === 'true' || (process.env.SB_DEV !== 'false' && !isDevelopment)) {
   menubar = createMenubar();
 } else {
   app.on("ready", async () => {

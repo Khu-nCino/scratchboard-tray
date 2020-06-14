@@ -1,11 +1,10 @@
-import { clipboard, ipcRenderer as ipc, shell } from "electron";
+import { clipboard, shell } from "electron";
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 
 import { SalesforceOrg, BaseOrg, ScratchOrg, SharedOrg } from "renderer/api/SalesforceOrg";
 import { orgManager } from "renderer/api/core/OrgManager";
 import { packageManager, InstalledPackageVersion, InstallablePackageVersion } from "renderer/api/core/PackageManager";
-import { IpcRendererEvent } from "common/IpcEvent";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 

@@ -1,20 +1,14 @@
-import { BrowserWindow, Tray } from "electron";
+import { BrowserWindow, Tray, screen } from "electron";
 import Positioner from "electron-positioner";
 import { EventEmitter } from "events";
 import { Options } from "./types";
 import { cleanOptions } from "./util/cleanOptions";
 import { getWindowPosition } from "./util/getWindowPosition";
 
-/**
- * The main Menubar class.
- *
- * @noInheritDoc
- */
 export class Menubar extends EventEmitter {
   private _app: Electron.App;
   private _browserWindow?: BrowserWindow;
-  private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
-  private _isVisible: boolean; // track visibility
+  private _isVisible: boolean;
   private _options: Options;
   private _positioner: any;
   private _tray?: Tray;
@@ -34,10 +28,6 @@ export class Menubar extends EventEmitter {
     }
   }
 
-  /**
-   * The Electron [App](https://electronjs.org/docs/api/app)
-   * instance.
-   */
   get app(): Electron.App {
     return this._app;
   }
@@ -56,9 +46,6 @@ export class Menubar extends EventEmitter {
     return this._positioner;
   }
 
-  /**
-   * The Electron [Tray](https://electronjs.org/docs/api/tray) instance.
-   */
   get tray(): Tray {
     if (!this._tray) {
       throw new Error("Please access `this.tray` after the `ready` event has fired.");
@@ -67,17 +54,10 @@ export class Menubar extends EventEmitter {
     return this._tray;
   }
 
-  /**
-   * The Electron [BrowserWindow](https://electronjs.org/docs/api/browser-window)
-   * instance, if it's present.
-   */
   get window(): BrowserWindow | undefined {
     return this._browserWindow;
   }
 
-  /**
-   * Hide the menubar window.
-   */
   hideWindow(): void {
     if (!this._browserWindow || !this._isVisible) {
       return;
@@ -86,18 +66,9 @@ export class Menubar extends EventEmitter {
     this._browserWindow.hide();
     this.emit("after-hide");
     this._isVisible = false;
-    if (this._blurTimeout) {
-      clearTimeout(this._blurTimeout);
-      this._blurTimeout = null;
-    }
   }
 
-  /**
-   * Show the menubar window.
-   *
-   * @param trayPos - The bounds to show the window in.
-   */
-  async showWindow(trayPos?: Electron.Rectangle): Promise<void> {
+  async showWindow(): Promise<void> {
     if (!this.tray) {
       throw new Error("Tray should have been instantiated by now");
     }
@@ -111,24 +82,17 @@ export class Menubar extends EventEmitter {
     }
     this.emit("show");
 
-    const position = this.positioner.calculate(this._options.windowPosition, trayPos || this.tray.getBounds()) as {
+    const trayBounds = this.tray.getBounds();
+    const position = this.positioner.calculate(
+      this._options.windowPosition,
+      trayBounds
+    ) as {
       x: number;
       y: number;
     };
 
     const x = this._options.browserWindow.x ?? position.x;
     let y = this._options.browserWindow.y ?? position.y;
-
-    // Multi-Taskbar: optimize vertical position
-    if (process.platform === "win32") {
-      if (
-        trayPos &&
-        this._options.windowPosition &&
-        this._options.windowPosition.startsWith("bottom")
-      ) {
-        y = trayPos.y + trayPos.height / 2 - this._browserWindow.getBounds().height / 2;
-      }
-    }
 
     if (process.platform === "darwin") {
       y += 6; // TODO find a better way to use the offset
@@ -160,7 +124,9 @@ export class Menubar extends EventEmitter {
       this.tray.setIgnoreDoubleClickEvents(true);
       this.tray.on("mouse-down", this.clicked.bind(this));
     } else {
-      this.tray.on("click", this.clicked.bind(this));
+      const clicked = this.clicked.bind(this);
+      this.tray.on("click", clicked);
+      this.tray.on("right-click", clicked);
     }
     this.tray.setToolTip(this._options.tooltip);
 
@@ -176,22 +142,9 @@ export class Menubar extends EventEmitter {
     this.emit("ready");
   }
 
-  /**
-   * Callback on tray icon click or double-click.
-   *
-   * @param e
-   * @param bounds
-   */
-  private async clicked(
-    event?: Electron.KeyboardEvent
-  ): Promise<void> {
+  private async clicked(event?: Electron.KeyboardEvent): Promise<void> {
     if (event && (event.shiftKey || event.ctrlKey || event.metaKey)) {
       return this.hideWindow();
-    }
-
-    // if blur was invoked clear timeout
-    if (this._blurTimeout) {
-      clearInterval(this._blurTimeout);
     }
 
     if (this._browserWindow && this._isVisible) {
@@ -223,12 +176,17 @@ export class Menubar extends EventEmitter {
         return;
       }
 
-      // hack to close if icon clicked when open
-      this._browserWindow.isAlwaysOnTop()
-        ? this.emit("focus-lost")
-        : (this._blurTimeout = setTimeout(() => {
-            this.hideWindow();
-          }, 100));
+      if (process.platform === 'win32') {
+        const mousePoint = screen.getCursorScreenPoint();
+        const trayBounds = this.tray.getBounds();
+
+        // Ignore blur when clicking on tray icon
+        if (!contains(trayBounds, mousePoint)) {
+          this.hideWindow();
+        }
+      } else {
+        this.hideWindow();
+      }
     });
 
     if (this._options.showOnAllWorkspaces !== false) {
@@ -245,4 +203,13 @@ export class Menubar extends EventEmitter {
     this._browserWindow = undefined;
     this.emit("after-close");
   }
+}
+
+function contains(rect: Electron.Rectangle, point: Electron.Point): boolean {
+  return (
+    point.x >= rect.x &&
+    point.x <= rect.x + rect.width &&
+    point.y >= rect.y &&
+    point.y <= rect.y + rect.height
+  );
 }
