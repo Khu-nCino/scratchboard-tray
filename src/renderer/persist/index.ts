@@ -19,7 +19,6 @@ export class PersistManager {
       ...state,
       settings: {
         ...state.settings,
-        sfdxPath: this.electronStore.get("sfdxBinPath", state.settings?.sfdxPath),
         theme: this.electronStore.get("theme", state.settings?.theme),
         openAtLogin: false,
       },
@@ -35,12 +34,6 @@ export class PersistManager {
   }
 
   watchAndSave(store: Store<AppState>) {
-    watchStore(
-      store,
-      (state) => state.settings.sfdxPath,
-      (value) => this.electronStore.set("sfdxBinPath", value)
-    );
-
     watchStore(
       store,
       (state) => state.settings.theme,

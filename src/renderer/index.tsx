@@ -1,6 +1,5 @@
 import "./index.scss";
 
-import path from "path";
 import { ipcRenderer } from "electron";
 import { ipcRenderer as ipc } from "electron-better-ipc";
 import React from "react";
@@ -8,12 +7,11 @@ import ReactDom from "react-dom";
 import { Provider } from "react-redux";
 import { FocusStyleManager } from "@blueprintjs/core";
 
-import { getCurrentPaths, setPaths } from "common/path-util";
 import { getLogger } from "common/logger";
 import { IpcMainEvent, IpcRendererEvent } from "common/IpcEvent";
 import { createStore, defaultState } from "./store";
 import { listenForIpcUpdates } from "./store/updates";
-import { checkSfdxPathValidity, checkOpenAtLogin } from "./store/settings";
+import { checkOpenAtLogin } from "./store/settings";
 import { orgListChanged } from "./store/orgs";
 import { PersistManager, watchStore } from "./persist";
 import App from "./view/App";
@@ -38,16 +36,6 @@ function initialApp(appVersion: string) {
   const store = createStore(initialState);
   persistManager.watchAndSave(store);
 
-  const basePaths = getCurrentPaths();
-
-  // For sfdx binary
-  watchStore(
-    store,
-    (state) => state.settings.sfdxPath,
-    (value) => setPaths([path.dirname(value), ...basePaths]),
-    true
-  );
-
   // For dark/light them
   watchStore(
     store,
@@ -57,7 +45,6 @@ function initialApp(appVersion: string) {
   );
 
   store.dispatch(checkOpenAtLogin());
-  store.dispatch(checkSfdxPathValidity());
 
   orgManager.checkOrgChanges();
   ipcRenderer.on(IpcMainEvent.WINDOW_OPENED, () => {

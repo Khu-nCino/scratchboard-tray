@@ -5,9 +5,8 @@ import { Switch, Button, FormGroup } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { ipcRenderer as ipc } from "electron-better-ipc";
 
-import FileInput from "./FileInput";
 import { State, CustomDispatch } from "renderer/store";
-import { toggleTheme, setSfdxPath, toggleOpenAtLogin } from "renderer/store/settings";
+import { toggleTheme, toggleOpenAtLogin } from "renderer/store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
 
@@ -29,13 +28,6 @@ function SettingsBody(props: Props) {
           labelElement="Run at Login"
           checked={props.openAtLogin}
           onChange={props.toggleOpenAtLogin}
-        />
-      </FormGroup>
-      <FormGroup label="SFDX Binary" className="sbt-mh_medium">
-        <FileInput
-          value={props.sfdxPath}
-          onChange={props.setSfdxPath}
-          isValid={!props.sfdxPath || (props.isSfdxPathValid ?? false)}
         />
       </FormGroup>
       <div className="sbt-mh_medium">
@@ -66,8 +58,6 @@ function SettingsBody(props: Props) {
 function mapStateToProps(state: State) {
   return {
     isDarkTheme: state.settings.theme === "dark",
-    sfdxPath: state.settings.sfdxPath,
-    isSfdxPathValid: state.settings.isSfdxPathValid,
     openAtLogin: state.settings.openAtLogin,
   };
 }
@@ -75,7 +65,6 @@ function mapStateToProps(state: State) {
 function mapDispatchToProps(dispatch: CustomDispatch) {
   return {
     toggleTheme: () => dispatch(toggleTheme()),
-    setSfdxPath: (path: string) => dispatch(setSfdxPath(path)),
     toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin()),
   };
 }

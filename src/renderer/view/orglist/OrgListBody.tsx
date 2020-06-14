@@ -45,7 +45,6 @@ function mapStateToProps(state: State) {
   return {
     scratchOrgList: selectScratchOrgs(state.orgs),
     sharedOrgList: selectSharedOrgs(state.orgs),
-    isSfdxPathValid: state.settings.isSfdxPathValid,
     standardExpanded: state.expanded.sharedOrgs,
     scratchExpanded: state.expanded.scratchOrgs,
   };

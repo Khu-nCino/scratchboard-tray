@@ -6,7 +6,6 @@ import { connect } from "react-redux";
 import { authManager } from "renderer/api/core/AuthManager";
 import { CustomDispatch } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
-import { CanceledExecutionError } from "renderer/api/subprocess/execute-promise-json";
 import { coerceInstanceUrl } from "renderer/api/url";
 import { IpcRendererEvent } from "common/IpcEvent";
 
@@ -34,9 +33,7 @@ function LoginBody(props: Props) {
 
         props.popRoute();
       } catch (error) {
-        if (!(error instanceof CanceledExecutionError)) {
-          props.createErrorToast("Error authenticating", error);
-        }
+        props.createErrorToast("Error authenticating", error);
         props.setNavigationEnabled(true);
         setInProgress(false);
       }
