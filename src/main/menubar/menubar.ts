@@ -127,6 +127,7 @@ export class Menubar extends EventEmitter {
       const clicked = this.clicked.bind(this);
       this.tray.on("click", clicked);
       this.tray.on("right-click", clicked);
+      this.tray.on("double-click", clicked);
     }
     this.tray.setToolTip(this._options.tooltip);
 

@@ -10,7 +10,7 @@ export class AuthManager {
   private baseOptions: OAuth2Options = {
     clientId: "PlatformCLI",
     clientSecret: "",
-    redirectUri: `http://localhost:${this.portNumber}/OauthRedirect`
+    redirectUri: `http://localhost:${this.portNumber}/OauthRedirect`,
   };
 
   private server?: http.Server;
@@ -21,17 +21,31 @@ export class AuthManager {
     return new Promise<AuthInfo>((resolve, reject) => {
       const oauth2 = new OAuth2WithVerifier({
         ...this.baseOptions,
-        loginUrl
+        loginUrl,
       });
-      const state = '1234'; // TODO generate random state
 
       this.server = http.createServer(async (request, response) => {
-        const url = new URL(request.url!!, this.baseOptions.redirectUri);
-        const authCode = url.searchParams.get("code");
-        const authState = url.searchParams.get("state");
+        this.closeServer();
 
-        if (authCode && authState === state) {
-          this.closeServer();
+        try {
+          const url = new URL(request.url!!, this.baseOptions.redirectUri);
+          if (request.method !== "GET") {
+            this.sendError(response, 405, "Unsupported http methods")
+            reject(new Error(`Invalid request method: ${request.method}`));
+            return;
+          }
+          if (!url.pathname.startsWith('/OauthRedirect')) {
+            this.sendError(response, 404, "Resource not found");
+            reject(new Error(`Invalided request uri: ${url.pathname}`));
+            return;
+          }
+
+          const authCode = url.searchParams.get("code");
+          if (!authCode) {
+            this.sendError(response, 500, "No authCode found");
+            reject(new Error("No auth code found"));
+            return;
+          }
 
           const authInfo = await AuthInfo.create({
             oauth2Options: { ...this.baseOptions, loginUrl, authCode },
@@ -39,21 +53,29 @@ export class AuthManager {
           });
 
           const { accessToken, instanceUrl } = authInfo.getFields();
-          if (accessToken && instanceUrl) {
-            const redirectUrl = formatFrontDoorUrl(instanceUrl, accessToken);
-            this.doRedirect(response, redirectUrl);
-
-            await this.cache.addData(authInfo);
-            resolve(authInfo);
-          } else {
-            // TODO error response
-            reject("")
+          if (!accessToken || !instanceUrl) {
+            this.sendError(response, 500, "Authentication error");
+            reject(new Error("No accessToken or instanceUrl"));
+            return;
           }
+
+          const redirectUrl = formatFrontDoorUrl(instanceUrl, accessToken);
+          this.doRedirect(response, redirectUrl);
+
+          await this.cache.addData(authInfo);
+          resolve(authInfo);
+        } catch (error) {
+          reject(error);
         }
       });
-      this.server.listen(this.portNumber, 'localhost', () => {
+
+      this.server.on("error", (error) => {
+        reject(error);
+        this.server?.close();
+      });
+
+      this.server.listen(this.portNumber, "localhost", () => {
         const authUrl = oauth2.getAuthorizationUrl({
-          state,
           prompt: "login",
           response_type: "code",
           scope: "refresh_token api web",
@@ -73,7 +95,7 @@ export class AuthManager {
   }
 
   private doRedirect(response: http.ServerResponse, url: string) {
-    const redirectCode = 307;
+    const redirectCode = 303;
 
     response.setHeader("Content-Type", "text/plain");
     const body = `${redirectCode} - Redirecting to ${url}`;
@@ -81,6 +103,12 @@ export class AuthManager {
     // redirect to frontdoor
     response.writeHead(redirectCode, { Location: url });
     response.end(body);
+  }
+
+  private sendError(response: http.ServerResponse, statusCode: number, message: string) {
+    response.statusMessage = message;
+    response.statusCode = statusCode;
+    response.end();
   }
 }
 

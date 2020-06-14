@@ -46,7 +46,7 @@ function LoginBody(props: Props) {
     }
   };
 
-  if (inProgress !== undefined) {
+  if (inProgress) {
     return (
       <NonIdealState
         title="Authenticating"
