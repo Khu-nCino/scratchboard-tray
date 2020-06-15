@@ -33,6 +33,7 @@ function LoginBody(props: Props) {
 
         props.popRoute();
       } catch (error) {
+        ipcRenderer.send(IpcRendererEvent.REQUEST_FOCUS);
         props.createErrorToast("Error authenticating", error);
         props.setNavigationEnabled(true);
         setInProgress(false);
