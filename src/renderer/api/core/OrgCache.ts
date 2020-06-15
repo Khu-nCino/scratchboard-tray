@@ -96,13 +96,13 @@ export class OrgCache {
   async addData(authInfo: AuthInfo) {
     const username = authInfo.getFields().username;
     if (!username) {
-      logger.error("No username found on org");
-      return;
+      throw new Error("No username found on authInfo");
+    }
+    if (this.currentUsernames.includes(username)) {
+      throw new Error(`Username: ${username} already registered. Please log out of the org first.`);
     }
 
-    if (!this.currentUsernames.includes(username)) {
-      this.currentUsernames.push(username);
-    }
+    this.currentUsernames.push(username);
 
     const resultAuth = await authInfo.save();
     this.authInfoCache.set(username, Promise.resolve(resultAuth));
