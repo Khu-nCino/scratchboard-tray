@@ -2,6 +2,7 @@
 ### Changes
 - Authenticate org action now uses core-sfdx.
 - Removed sfdx binary setting. No actions use the sfdx command anymore.
+- Added setting to hide secondary usernames.
 - Window is now focused again after authentication is finished.
 - Windows - App is now open as hidden if it was started with the "Run at Login" setting 
 ### Fixes
