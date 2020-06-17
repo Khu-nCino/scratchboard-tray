@@ -39,8 +39,8 @@
 * Dark/Light mode
 * Automatically Download and Install Updates
 * OS Support
-  - Macos
-  - Windows and Linux planned
+  - Macos and Windows
+  - Linux support planned
 
 ## Download
 
