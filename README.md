@@ -45,15 +45,3 @@
 ## Download
 
 You can download the latest version of Scratchboard [here](https://github.com/gabriel-keith/scratchboard-tray/releases/).
-
-## Setup
-
-#### Dependencies
-
-This project can mostly function without sfdx installed but
-[NodeJs](https://nodejs.org/en/) and [SFDX](https://developer.salesforce.com/tools/sfdxcli) are still required to use the login functionality.  
-Using [nvm](https://github.com/nvm-sh/nvm) to manage your node version is supported.
-
-#### SFDX Binary Path
-You may need to configure your SFDX binary path for Scratchboard to work.  
-If your on a unix based system you can use the `which sfdx` command to easily the path to your sfdx binary. 
