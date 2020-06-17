@@ -3,7 +3,8 @@ const path = require("path");
 const electron_notarize = require("electron-notarize");
 
 module.exports = async function(params) {
-  if (process.env.NOTARIZE !== 'true' || process.platform !== "darwin") {
+  console.log(params);
+  if (params.electronPlatformName !== 'darwin' || process.env.NOTARIZE !== 'true') {
     return;
   }
   let appId = "com.github.gabriel-keith.scratchboard-tray";
