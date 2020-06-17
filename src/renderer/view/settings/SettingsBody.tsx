@@ -6,7 +6,7 @@ import { IpcRendererEvent } from "common/IpcEvent";
 import { ipcRenderer as ipc } from "electron-better-ipc";
 
 import { State, CustomDispatch } from "renderer/store";
-import { toggleTheme, toggleOpenAtLogin } from "renderer/store/settings";
+import { toggleTheme, toggleOpenAtLogin, toggleShowSecondaryScratchUsernames } from "renderer/store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
 
@@ -22,13 +22,16 @@ function SettingsBody(props: Props) {
   return (
     <div style={{ overflowY: "auto" }}>
       <UpdateManager className="sbt-m_medium" />
-      <FormGroup label="Appearance & Behavior" className="sbt-mh_medium sbt-mt_medium">
+      <FormGroup label="Appearance & Behavior" className="sbt-mh_medium">
         <Switch labelElement="Dark Mode" checked={props.isDarkTheme} onChange={props.toggleTheme} />
         <Switch
           labelElement="Run at Login"
           checked={props.openAtLogin}
           onChange={props.toggleOpenAtLogin}
         />
+      </FormGroup>
+      <FormGroup label="Org List" className="sbt-mh_medium">
+        <Switch labelElement="Show Secondary Usernames" checked={props.showSecondaryScratchUsernames} onChange={props.toggleShowSecondaryScratchUsernames} />
       </FormGroup>
       <div className="sbt-mh_medium">
         <Button
@@ -59,6 +62,7 @@ function mapStateToProps(state: State) {
   return {
     isDarkTheme: state.settings.theme === "dark",
     openAtLogin: state.settings.openAtLogin,
+    showSecondaryScratchUsernames: state.settings.showSecondaryScratchUsernames,
   };
 }
 
@@ -66,6 +70,7 @@ function mapDispatchToProps(dispatch: CustomDispatch) {
   return {
     toggleTheme: () => dispatch(toggleTheme()),
     toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin()),
+    toggleShowSecondaryScratchUsernames: () => dispatch(toggleShowSecondaryScratchUsernames()),
   };
 }
 

@@ -4,7 +4,11 @@ import { ThunkAction } from "redux-thunk";
 
 import { SalesforceOrg, BaseOrg, ScratchOrg, SharedOrg } from "renderer/api/SalesforceOrg";
 import { orgManager } from "renderer/api/core/OrgManager";
-import { packageManager, InstalledPackageVersion, InstallablePackageVersion } from "renderer/api/core/PackageManager";
+import {
+  packageManager,
+  InstalledPackageVersion,
+  InstallablePackageVersion,
+} from "renderer/api/core/PackageManager";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 
@@ -153,19 +157,23 @@ export function setAliasAction(username: string, newAlias: string): ThunkResult<
 export function checkPackageData(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
     try {
-      dispatch(setPackageLoadStatusAction(username, 'pending'));
+      dispatch(setPackageLoadStatusAction(username, "pending"));
 
-      const installed: InstalledPackageVersion[] = await packageManager.getInstalledPackageVersions(username);
+      const installed: InstalledPackageVersion[] = await packageManager.getInstalledPackageVersions(
+        username
+      );
       dispatch(installedPackagesLoadedAction(username, installed));
-      
+
       const namespaces = installed.map((data) => data.namespace);
-      const available: InstallablePackageVersion[] = await packageManager.getLatestAvailablePackageVersions(username, namespaces);
+      const available: InstallablePackageVersion[] = await packageManager.getLatestAvailablePackageVersions(
+        username,
+        namespaces
+      );
       dispatch(availablePackagesLoadedAction(username, available));
-      
     } catch (error) {
       dispatch(createErrorToast("There was an error loading you package data 😞", error));
     } finally {
-      dispatch(setPackageLoadStatusAction(username, 'finished'));
+      dispatch(setPackageLoadStatusAction(username, "finished"));
     }
   };
 }
@@ -372,8 +380,16 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
 }
 
 // Selectors
-export function selectScratchOrgs(state: OrgsState): OrgData<ScratchOrg>[] {
-  return state.orgList.filter(isScratchOrg).sort(orgCompare);
+export function selectScratchOrgs(
+  state: OrgsState,
+  showSecondary: boolean = true
+): OrgData<ScratchOrg>[] {
+  let scratchOrgs = state.orgList.filter(isScratchOrg);
+  if (!showSecondary) {
+    scratchOrgs = scratchOrgs.filter((org) => !org.description.scratchAdminUsername);
+  }
+
+  return scratchOrgs.sort(orgCompare);
 }
 
 export function selectSharedOrgs(state: OrgsState): OrgData<SharedOrg>[] {

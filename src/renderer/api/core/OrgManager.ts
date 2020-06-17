@@ -135,6 +135,7 @@ export class OrgManager {
           orgId: fields.orgId!!,
           instanceUrl: fields.instanceUrl!!,
           expirationDate: fields.expirationDate!!,
+          scratchAdminUsername: fields.scratchAdminUsername,
         };
       } else {
         return {

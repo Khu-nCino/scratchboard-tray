@@ -20,6 +20,10 @@ export class PersistManager {
       settings: {
         ...state.settings,
         theme: this.electronStore.get("theme", state.settings?.theme),
+        showSecondaryScratchUsernames: this.electronStore.get(
+          "showSecondaryScratchUsernames",
+          state.settings?.showSecondaryScratchUsernames
+        ),
         openAtLogin: false,
       },
       expanded: {
@@ -44,6 +48,12 @@ export class PersistManager {
       store,
       (state) => state.expanded,
       (value) => this.electronStore.set("expanded", value)
+    );
+
+    watchStore(
+      store,
+      (state) => state.settings.showSecondaryScratchUsernames,
+      (value) => this.electronStore.set("showSecondaryScratchUsernames", value)
     );
   }
 }

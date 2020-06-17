@@ -14,6 +14,9 @@ interface SetThemeAction extends Action<"SET_THEME"> {
 
 interface ToggleThemeAction extends Action<"TOGGLE_THEME"> {}
 
+interface ToggleShowSecondaryScratchUsernames
+  extends Action<"TOGGLE_SHOW_SECONDARY_SCRATCH_USERNAMES"> {}
+
 interface SetLaunchAtLogin extends Action<"SET_OPEN_AT_LOGIN"> {
   payload: {
     value: boolean;
@@ -26,7 +29,8 @@ type SettingsAction =
   | SetThemeAction
   | ToggleThemeAction
   | SetLaunchAtLogin
-  | ToggleDisplayAllOrgs;
+  | ToggleDisplayAllOrgs
+  | ToggleShowSecondaryScratchUsernames;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
@@ -69,16 +73,24 @@ export function toggleOpenAtLogin(): ThunkReturn<void> {
   };
 }
 
+export function toggleShowSecondaryScratchUsernames(): ToggleShowSecondaryScratchUsernames {
+  return {
+    type: "TOGGLE_SHOW_SECONDARY_SCRATCH_USERNAMES",
+  };
+}
+
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
   readonly theme: UITheme;
   readonly openAtLogin: boolean;
+  readonly showSecondaryScratchUsernames: boolean;
 }
 
 export const defaultSettingsState: SettingsState = {
   theme: "dark",
   openAtLogin: false,
+  showSecondaryScratchUsernames: false,
 };
 
 export function settingsReducer(
@@ -95,6 +107,11 @@ export function settingsReducer(
       return {
         ...state,
         theme: state.theme === "dark" ? "light" : "dark",
+      };
+    case "TOGGLE_SHOW_SECONDARY_SCRATCH_USERNAMES":
+      return {
+        ...state,
+        showSecondaryScratchUsernames: !state.showSecondaryScratchUsernames,
       };
     case "SET_OPEN_AT_LOGIN":
       return {

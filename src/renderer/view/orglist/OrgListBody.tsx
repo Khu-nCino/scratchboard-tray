@@ -43,7 +43,7 @@ function OrgList(props: Props) {
 
 function mapStateToProps(state: State) {
   return {
-    scratchOrgList: selectScratchOrgs(state.orgs),
+    scratchOrgList: selectScratchOrgs(state.orgs, state.settings.showSecondaryScratchUsernames),
     sharedOrgList: selectSharedOrgs(state.orgs),
     standardExpanded: state.expanded.sharedOrgs,
     scratchExpanded: state.expanded.scratchOrgs,

@@ -3,6 +3,7 @@
 - Authenticate org action now uses core-sfdx.
 - Removed sfdx binary setting. No actions use the sfdx command anymore.
 - Window is now focused again after authentication is finished.
+- Windows - App is now open as hidden if it was started with the "Run at Login" setting 
 ### Fixes
 - Changed windows tray behavior so that double clicks and long click behave as expected.
 ### Dependencies

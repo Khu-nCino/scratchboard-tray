@@ -17,4 +17,5 @@ export interface ScratchOrg extends BaseOrg {
   isScratchOrg: true;
   devHubUsername: string;
   expirationDate: string;
+  scratchAdminUsername?: string;
 }
