@@ -32,7 +32,10 @@ export function createMenubar(): Menubar {
         mb.showWindow();
       }
     } else if (process.platform === "win32") {
-      mb.showWindow();
+      const argsSet = new Set<string>(process.argv);
+      if (!argsSet.has("--hidden")) {
+        mb.showWindow();
+      }
     }
   });
 
