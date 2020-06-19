@@ -1,11 +1,11 @@
 import { nativeImage, app } from "electron";
 import path from "path";
 import { IpcMainEvent } from "common/IpcEvent";
-import { menubar, Menubar } from "./menubar";
+import { Menubar } from "./menubar";
 import { indexUrl, assetsPath, browserWindowConfig, isDevelopment } from "./common-config";
 
 export function createMenubar(): Menubar {
-  const mb = menubar({
+  const mb = new Menubar(app, {
     index: indexUrl,
     icon: loadTemplateIcon("cloudTemplate@2x.png"),
     showDockIcon: isDevelopment,
