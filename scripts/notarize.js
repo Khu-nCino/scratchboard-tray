@@ -3,7 +3,6 @@ const path = require("path");
 const electron_notarize = require("electron-notarize");
 
 module.exports = async function(params) {
-  console.log(params);
   if (params.electronPlatformName !== 'darwin' || process.env.NOTARIZE !== 'true') {
     return;
   }
