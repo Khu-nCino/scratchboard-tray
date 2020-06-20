@@ -1,9 +1,9 @@
-## [0.4.1]
+## [0.4.1] - 2020-6-20
 ##Fixes
 - Used sfdx-core method to delete auth files. This will deleted secondary usernames, org files and sandbox files too.
 - Fixed issue compiling on linux.
 
-## [0.4.0]
+## [0.4.0] - 2020-6-16
 ### Changes
 - Authenticate org action now uses core-sfdx.
 - Removed sfdx binary setting. No actions use the sfdx command anymore.
