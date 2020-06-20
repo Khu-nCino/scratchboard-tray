@@ -1,10 +1,9 @@
-import path from "path";
-import { AuthInfo, Aliases, Connection, Org, Global, fs } from "@salesforce/core";
+import { AuthInfo, Aliases, Connection, Org } from "@salesforce/core";
 import { arrayDiff, notUndefined, notConcurrent } from "common/util";
 import { CachedResource } from "common/CachedResource";
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
-import { readOrgGroup, compareAliases, authFileName2Username, readOrgGroupReverse } from "./util";
+import { readOrgGroup, compareAliases, authFileName2Username } from "./util";
 
 export type OrgListChangeListener = (added: string[], removed: string[]) => void;
 export type AliasChangeListener = () => void;
@@ -92,7 +91,7 @@ export class OrgCache {
       }
     }
   });
-  
+
   async addData(authInfo: AuthInfo) {
     const username = authInfo.getFields().username;
     if (!username) {
@@ -109,18 +108,15 @@ export class OrgCache {
     this.orgChangeEvent.emit({ added: [username], removed: [] });
   }
 
-  async deleteData(username: string): Promise<void> {
-    const aliases = await this.getAliases(true);
-    const reverseOrgGroup = readOrgGroupReverse(aliases);
-    const alias: string | undefined = reverseOrgGroup[username];
-    if (alias) {
-      aliases.unset(alias);
-      await aliases.write();
-      this.currentAliases = readOrgGroup(aliases);
-    }
-
-    this.clearCache(username);
-    await fs.unlink(path.join(Global.DIR, `${username}.json`));
+  async removeOrg(username: string): Promise<void> {
+    const org = await this.getOrg(username);
+    const usernames = (await org.readUserAuthFiles())
+      .map((auth) => auth.getUsername())
+      .filter(notUndefined);
+    await org.remove(true);
+    
+    this.clearCaches(usernames);
+    this.orgChangeEvent.emit({ added: [], removed: usernames });
   }
 
   clearCaches(usernames: string[], preventReload: boolean = false): boolean {

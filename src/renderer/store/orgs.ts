@@ -110,7 +110,6 @@ export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
       dispatch(setPendingAction(username, true));
 
       await orgManager.logoutOrg(username);
-      dispatch(orgListChanged([], [username]));
 
       dispatch(createToast("Successfully logged out of org.", "success"));
     } catch (error) {
@@ -127,7 +126,6 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
       dispatch(setPendingAction(username, true));
 
       await orgManager.deleteScratchOrg(username);
-      dispatch(orgListChanged([], [username]));
 
       dispatch(createToast("Successfully deleted org.", "success"));
     } catch (error) {

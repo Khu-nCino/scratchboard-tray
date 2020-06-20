@@ -103,7 +103,7 @@ export class OrgManager {
   }
 
   logoutOrg(username: string): Promise<void> {
-    return this.cache.deleteData(username);
+    return this.cache.removeOrg(username);
   }
 
   async deleteScratchOrg(username: string): Promise<void> {
@@ -112,10 +112,13 @@ export class OrgManager {
     if (devHubUsername === undefined) {
       throw new Error(`Can't delete scratchOrg no devhub for ${username}`);
     }
+    if (orgId === undefined) {
+      throw new Error(`Can't delete scratchOrg no orgId for ${username}`);
+    }
 
     const devHubConn = await this.cache.getConnection(devHubUsername);
-    await devHubConn.sobject("ActiveScratchOrg").delete(await this.queryOrgId(devHubConn, orgId!));
-    await this.cache.deleteData(username);
+    await devHubConn.sobject("ActiveScratchOrg").delete(await this.queryOrgId(devHubConn, orgId));
+    await this.cache.removeOrg(username);
   }
 
   async formatDescriptions(authInfos: AuthInfo[]): Promise<SalesforceOrg[]> {

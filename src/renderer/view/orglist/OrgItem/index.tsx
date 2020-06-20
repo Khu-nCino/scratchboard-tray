@@ -40,7 +40,13 @@ function OrgItem(props: Props) {
 
   const actionsMenu = (
     <ActionMenu
-      isScratchOrg={description.isScratchOrg}
+      removeAction={
+        description.isScratchOrg
+          ? description.scratchAdminUsername
+            ? "delete"
+            : undefined
+          : "logout"
+      }
       onCopyFrontdoor={props.copyFrontdoor}
       onSetAlias={() => {
         setAliasValue(description.alias ?? "");
@@ -48,9 +54,7 @@ function OrgItem(props: Props) {
       }}
       onDelete={() => setPendingDelete(true)}
       onLogout={() => setPendingLogout(true)}
-      onPackages={async () => {
-        
-      }}
+      onPackages={async () => {}}
     />
   );
 
