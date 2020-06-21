@@ -43,8 +43,8 @@ function OrgItem(props: Props) {
       removeAction={
         description.isScratchOrg
           ? description.scratchAdminUsername
-            ? "delete"
-            : undefined
+            ? undefined
+            : "delete"
           : "logout"
       }
       onCopyFrontdoor={props.copyFrontdoor}
