@@ -1,12 +1,12 @@
 import { ipcRenderer } from "electron";
 import React from "react";
 import { connect } from "react-redux";
-import { Switch, Button, FormGroup } from "@blueprintjs/core";
+import { Switch, Button, FormGroup, InputGroup } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { ipcRenderer as ipc } from "electron-better-ipc";
 
 import { State, CustomDispatch } from "renderer/store";
-import { toggleTheme, toggleOpenAtLogin, toggleShowSecondaryScratchUsernames } from "renderer/store/settings";
+import { toggleTheme, toggleOpenAtLogin, toggleShowSecondaryScratchUsernames, setPackageAuthorityUsername } from "renderer/store/settings";
 import "./SettingsBody.scss";
 import UpdateManager from "./UpdateManager";
 
@@ -29,9 +29,12 @@ function SettingsBody(props: Props) {
           checked={props.openAtLogin}
           onChange={props.toggleOpenAtLogin}
         />
-      </FormGroup>
-      <FormGroup label="Org List" className="sbt-mh_medium">
         <Switch labelElement="Show Secondary Usernames" checked={props.showSecondaryScratchUsernames} onChange={props.toggleShowSecondaryScratchUsernames} />
+      </FormGroup>
+      <FormGroup label="Package Authority Username" className="sbt-mh_medium">
+        <InputGroup value={props.packageAuthorityUsername} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          props.setPackageAuthorityUsername(event.target.value);
+        }} />
       </FormGroup>
       <div className="sbt-mh_medium">
         <Button
@@ -63,6 +66,7 @@ function mapStateToProps(state: State) {
     isDarkTheme: state.settings.theme === "dark",
     openAtLogin: state.settings.openAtLogin,
     showSecondaryScratchUsernames: state.settings.showSecondaryScratchUsernames,
+    packageAuthorityUsername: state.settings.packageAuthorityUsername,
   };
 }
 
@@ -71,6 +75,7 @@ function mapDispatchToProps(dispatch: CustomDispatch) {
     toggleTheme: () => dispatch(toggleTheme()),
     toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin()),
     toggleShowSecondaryScratchUsernames: () => dispatch(toggleShowSecondaryScratchUsernames()),
+    setPackageAuthorityUsername: (username: string) => dispatch(setPackageAuthorityUsername(username)),
   };
 }
 

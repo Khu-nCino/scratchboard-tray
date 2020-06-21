@@ -237,7 +237,7 @@ export interface OrgDataState {
 
 export interface OrgPackageData {
   readonly installedVersion: ReadonlyArray<InstalledPackageVersion>;
-  readonly availableVersion: ReadonlyArray<AvailableVersionsLoadedAction>;
+  readonly availableVersion: ReadonlyArray<InstallablePackageVersion>;
 }
 
 export interface OrgData<T extends BaseOrg> {

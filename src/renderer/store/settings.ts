@@ -25,12 +25,19 @@ interface SetLaunchAtLogin extends Action<"SET_OPEN_AT_LOGIN"> {
 
 interface ToggleDisplayAllOrgs extends Action<"TOGGLE_DISPLAY_ALL_ORGS"> {}
 
+interface SetPackageAuthorityUsername extends Action<"SET_PACKAGE_AUTHORITY_USERNAME"> {
+  payload: {
+    username: string;
+  };
+}
+
 type SettingsAction =
   | SetThemeAction
   | ToggleThemeAction
   | SetLaunchAtLogin
   | ToggleDisplayAllOrgs
-  | ToggleShowSecondaryScratchUsernames;
+  | ToggleShowSecondaryScratchUsernames
+  | SetPackageAuthorityUsername;
 
 export function setTheme(theme: UITheme): SetThemeAction {
   return {
@@ -79,18 +86,29 @@ export function toggleShowSecondaryScratchUsernames(): ToggleShowSecondaryScratc
   };
 }
 
+export function setPackageAuthorityUsername(username: string): SetPackageAuthorityUsername {
+  return {
+    type: "SET_PACKAGE_AUTHORITY_USERNAME",
+    payload: {
+      username,
+    },
+  };
+}
+
 export type UITheme = "light" | "dark";
 
 interface SettingsState {
   readonly theme: UITheme;
   readonly openAtLogin: boolean;
   readonly showSecondaryScratchUsernames: boolean;
+  readonly packageAuthorityUsername: string;
 }
 
 export const defaultSettingsState: SettingsState = {
   theme: "dark",
   openAtLogin: false,
   showSecondaryScratchUsernames: false,
+  packageAuthorityUsername: "",
 };
 
 export function settingsReducer(
@@ -117,6 +135,11 @@ export function settingsReducer(
       return {
         ...state,
         openAtLogin: action.payload.value,
+      };
+    case "SET_PACKAGE_AUTHORITY_USERNAME":
+      return {
+        ...state,
+        packageAuthorityUsername: action.payload.username,
       };
     default: {
       return state;

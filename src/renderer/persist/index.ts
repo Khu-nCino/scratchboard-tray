@@ -24,6 +24,10 @@ export class PersistManager {
           "showSecondaryScratchUsernames",
           state.settings?.showSecondaryScratchUsernames
         ),
+        packageAuthorityUsername: this.electronStore.get(
+          "packageAuthorityUsername",
+          state.settings?.packageAuthorityUsername
+        ),
         openAtLogin: false,
       },
       expanded: {
@@ -54,6 +58,12 @@ export class PersistManager {
       store,
       (state) => state.settings.showSecondaryScratchUsernames,
       (value) => this.electronStore.set("showSecondaryScratchUsernames", value)
+    );
+
+    watchStore(
+      store,
+      (state) => state.settings.packageAuthorityUsername,
+      (value) => this.electronStore.set("packageAuthorityUsername", value)
     );
   }
 }
