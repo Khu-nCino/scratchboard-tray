@@ -19,6 +19,7 @@ import ActionMenu from "./ActionMenu";
 import DeleteConformation from "./DeleteConformation";
 import InputTextDialog from "renderer/view/InputTextDialog";
 import LogoutConformation from "./LogoutConformation";
+import { pushRouteAction } from "renderer/store/route";
 
 interface OwnProps {
   org: OrgData<SalesforceOrg>;
@@ -43,8 +44,8 @@ function OrgItem(props: Props) {
       removeAction={
         description.isScratchOrg
           ? description.scratchAdminUsername
-            ? "delete"
-            : undefined
+            ? undefined
+            : "delete"
           : "logout"
       }
       onCopyFrontdoor={props.copyFrontdoor}
@@ -54,7 +55,7 @@ function OrgItem(props: Props) {
       }}
       onDelete={() => setPendingDelete(true)}
       onLogout={() => setPendingLogout(true)}
-      onPackages={async () => {}}
+      onPackages={props.pushPackageRoute}
     />
   );
 
@@ -126,6 +127,7 @@ function mapDispatchToProps(dispatch: CustomDispatch, ownProps: OwnProps) {
     deleteOrg: () => dispatch(deleteOrgAction(username)),
     logoutOrg: () => dispatch(logoutOrgAction(username)),
     setAlias: (newAlias: string) => dispatch(setAliasAction(username, newAlias)),
+    pushPackageRoute: () => dispatch(pushRouteAction("package", username)),
   };
 }
 

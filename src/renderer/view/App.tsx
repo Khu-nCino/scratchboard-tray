@@ -8,6 +8,7 @@ import OrgListTitle from "./orglist/OrgListTitleBar";
 import TitleBar from "./TitleBar";
 import SettingsBody from "./settings/SettingsBody";
 import FrontDoorBody from "./frontdoor/FrontDoorBody";
+import { PackageBody } from "./package/PackageBody";
 import ToastManager from "./ToastManager";
 import LoginBody from "./login/LoginBody";
 import { selectActiveRoute } from "renderer/store/route";
@@ -47,6 +48,12 @@ function App(props: Props) {
               <FrontDoorBody />
             </div>
           ),
+          package: (
+            <div className="sbt-screen">
+              <TitleBar title="Packages" />
+              <PackageBody  />
+            </div>
+          )
         }}
       />
       <ToastManager />

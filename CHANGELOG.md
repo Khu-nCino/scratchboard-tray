@@ -1,5 +1,5 @@
 ## [0.4.1] - 2020-6-20
-##Fixes
+## Fixes
 - Used sfdx-core method to delete auth files. This will deleted secondary usernames, org files and sandbox files too.
 - Fixed issue compiling on linux.
 

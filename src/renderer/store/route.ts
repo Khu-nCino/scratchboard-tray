@@ -9,6 +9,7 @@ type RouteActions =
 interface PushRouteAction extends Action<"PUSH_ROUTE_ACTION"> {
   payload: {
     name: RouteName;
+    detailUsername?: string;
   };
 }
 
@@ -26,11 +27,12 @@ interface SetIsVisibleAction extends Action<"SET_IS_VISIBLE_ACTION"> {
   };
 }
 
-export function pushRouteAction(name: RouteName): PushRouteAction {
+export function pushRouteAction(name: RouteName, detailUsername?: string): PushRouteAction {
   return {
     type: "PUSH_ROUTE_ACTION",
     payload: {
       name,
+      detailUsername,
     },
   };
 }
@@ -58,12 +60,13 @@ export function setIsVisible(value: boolean): SetIsVisibleAction {
 }
 
 // State
-export type RouteName = "orgs" | "settings" | "login" | "frontdoor";
+export type RouteName = "orgs" | "settings" | "login" | "frontdoor" | "package";
 
 export interface RouteState {
   readonly activeRoute: RouteName;
   readonly navigationEnabled: boolean;
   readonly isVisible: boolean;
+  readonly detailUsername?: string;
 }
 
 const defaultRouteState: RouteState = {
@@ -78,7 +81,7 @@ export function routeReducer(
 ): RouteState {
   switch (action.type) {
     case "PUSH_ROUTE_ACTION": {
-      return { ...state, activeRoute: action.payload.name };
+      return { ...state, activeRoute: action.payload.name, detailUsername: action.payload.detailUsername };
     }
     case "POP_ROUTE_ACTION": {
       return { ...state, navigationEnabled: true, activeRoute: defaultRouteState.activeRoute };
