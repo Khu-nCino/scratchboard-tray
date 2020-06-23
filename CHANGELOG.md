@@ -1,3 +1,6 @@
+## Fixes
+- Windows login setting doesn't display actual value.
+
 ## [0.4.2] - 2020-6-21
 ## Fixes
 - Regression in ability to delete scratch orgs.
