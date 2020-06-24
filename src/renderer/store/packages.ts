@@ -1,8 +1,11 @@
 import { Action } from "redux";
+import { ThunkAction } from "redux-thunk";
+import { State } from ".";
+import { packageManager } from "renderer/api/core/PackageManager";
 
 // Actions
-
 type PackagesAction = SetPackageAuthorityUsernameAction;
+type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction>;
 
 interface SetPackageAuthorityUsernameAction extends Action<"SET_PACKAGE_AUTHORITY_USERNAME"> {
   payload: {
@@ -18,6 +21,12 @@ export function setPackageAuthorityUsernameAction(
     payload: {
       username,
     },
+  };
+}
+
+function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
+  return async (dispatch) => {
+    const installedPackages = await packageManager.listSubscriberPackageVersions(username);
   };
 }
 

@@ -1,47 +1,23 @@
-import { shrink } from "common/util";
+import { shrink as strip } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
 import { formatQueryList } from "./util";
-
-interface SubscriberPackage {
-  Name: string;
-  NamespacePrefix: string;
-}
-
-interface SubscriberPackageVersion {
-  Name: string;
-  MajorVersion: number;
-  MinorVersion: number;
-  PatchVersion: number;
-  BuildNumber: number;
-}
-
-interface InstalledSubscriberPackage {
-  Id: string;
-  SubscriberPackage: SubscriberPackage;
-  SubscriberPackageVersion: SubscriberPackageVersion;
-}
 
 export interface PackageVersion {
   readonly namespace: string;
   readonly version: string;
 }
 
-export interface InstalledPackageVersion extends PackageVersion {}
+export interface SubscriberPackageVersion extends PackageVersion {}
 
-export interface InstallablePackageVersion extends PackageVersion {
+export interface AuthorityPackageVersion extends PackageVersion {
   readonly password: string;
+  readonly buildDate: string;
 }
 
-const installedPackageVersionsQuery = shrink`
+const installedPackageVersionsQuery = strip`
 SELECT
-  Id,
-  SubscriberPackage.Name,
   SubscriberPackage.NamespacePrefix,
-  SubscriberPackageVersion.Name,
-  SubscriberPackageVersion.MajorVersion,
-  SubscriberPackageVersion.MinorVersion,
-  SubscriberPackageVersion.PatchVersion,
-  SubscriberPackageVersion.BuildNumber
+  SubscriberPackageVersion.Name
 FROM
   InstalledSubscriberPackage
 `;
@@ -49,8 +25,17 @@ FROM
 export class PackageManager {
   constructor(private cache: OrgCache) {}
 
-  async getInstalledPackageVersions(username: string): Promise<InstalledPackageVersion[]> {
-    const versions = await this.cache.query<InstalledSubscriberPackage>(
+  async listSubscriberPackageVersions(username: string): Promise<SubscriberPackageVersion[]> {
+    interface RawInstalledSubscriberPackage {
+      readonly SubscriberPackage: {
+        readonly NamespacePrefix: string;
+      };
+      readonly SubscriberPackageVersion: {
+        readonly Name: string;
+      };
+    }
+
+    const versions = await this.cache.query<RawInstalledSubscriberPackage>(
       username,
       installedPackageVersionsQuery,
       true
@@ -62,20 +47,23 @@ export class PackageManager {
   }
 
   getLatestAvailablePackageVersions(
-    username: string,
+    authorityUsername: string,
     namespaces: string[]
-  ): Promise<InstallablePackageVersion[]> {
-    return this.cache.queryDevHub<InstallablePackageVersion>(
-      username,
-      shrink`
+  ): Promise<AuthorityPackageVersion[]> {
+    return this.cache.query<AuthorityPackageVersion>(
+      authorityUsername,
+      strip`
         SELECT
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c namespace,
           MAX(PackageManager__Sorting_Version_Number__c) version,
-          MAX(PackageManager__Password__c) password
+          MAX(PackageManager__Password__c) password,
+          MAX(PackageManager__Build_Date__c) buildDate
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(namespaces)})
+          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(
+            namespaces
+          )})
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
           AND PackageManager__Is_Patch__c = false

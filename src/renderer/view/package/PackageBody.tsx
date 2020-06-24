@@ -15,7 +15,7 @@ function mapStateToProps(state: State) {
   const detailUsername = state.route.detailUsername;
 
   return {
-    authorityUsername: state.settings.packageAuthorityUsername,
+    authorityUsername: state.packages.authorityUsername,
     org: state.orgs.orgList.find((org) => org.description.username === detailUsername),
   }
 }
