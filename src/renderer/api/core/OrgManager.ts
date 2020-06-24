@@ -1,4 +1,4 @@
-import { AliasGroup, Org, AuthInfo, Connection, AuthFields } from "@salesforce/core";
+import { Org, AuthInfo, Connection, AuthFields } from "@salesforce/core";
 import { Emitter } from "common/Emitter";
 import { getLogger } from "common/logger";
 import { binaryGroups, notUndefined } from "common/util";
@@ -72,24 +72,8 @@ export class OrgManager {
     return this.cache.checkOrgChanges();
   }
 
-  async setAlias(username: string, newAlias?: string): Promise<void> {
-    const aliases = await this.cache.getAliases();
-    const orgAliases = aliases.getGroup(AliasGroup.ORGS);
-
-    if (orgAliases !== undefined) {
-      const oldAliasNames = Object.entries(orgAliases)
-        .filter(([_, name]) => name === username)
-        .map(([alias]) => alias);
-
-      if (oldAliasNames.length > 0) {
-        aliases.unsetAll(oldAliasNames);
-      }
-    }
-
-    if (newAlias) {
-      aliases.set(newAlias, username);
-    }
-    await aliases.write();
+  setAlias(username: string, newAlias?: string): Promise<void> {
+    return this.cache.setAlias(username, newAlias);
   }
 
   async getFrontDoor(username: string, startUrl?: string): Promise<string> {

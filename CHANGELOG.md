@@ -1,5 +1,7 @@
 ## Fixes
 - Windows login setting doesn't display actual value.
+- Initial aliases not being set with authenticate action
+- Overflow styling.
 
 ## [0.4.2] - 2020-6-21
 ## Fixes

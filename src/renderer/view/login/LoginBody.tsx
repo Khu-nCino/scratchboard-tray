@@ -28,7 +28,7 @@ function LoginBody(props: Props) {
       try {
         setInProgress(true);
         props.setNavigationEnabled(false);
-        await authManager.webAuth(coerceInstanceUrl(instanceUrl));
+        await authManager.webAuth(coerceInstanceUrl(instanceUrl), alias || undefined);
         ipcRenderer.send(IpcRendererEvent.REQUEST_FOCUS);
 
         props.popRoute();
