@@ -1,15 +1,39 @@
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
 import { State } from ".";
-import { packageManager } from "renderer/api/core/PackageManager";
+import { OrgListChanges } from "./orgs";
+import {
+  packageManager,
+  SubscriberPackageVersion,
+  AuthorityPackageVersion,
+} from "renderer/api/core/PackageManager";
 
 // Actions
-type PackagesAction = SetPackageAuthorityUsernameAction;
+type PackagesAction =
+  | SetPackageAuthorityUsernameAction
+  | SetInstalledPackageVersionsAction
+  | SetOrgActionStatusAction
+  | OrgListChanges;
 type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction>;
 
 interface SetPackageAuthorityUsernameAction extends Action<"SET_PACKAGE_AUTHORITY_USERNAME"> {
   payload: {
     username: string;
+  };
+}
+
+interface SetOrgActionStatusAction extends Action<"SET_ORG_ACTION_STATUS"> {
+  payload: {
+    username: string;
+    status: OrgActionStatus;
+  };
+}
+
+interface SetInstalledPackageVersionsAction extends Action<"SET_INSTALLED_PACKAGE_VERSIONS"> {
+  payload: {
+    username: string;
+    versions: SubscriberPackageVersion[];
+    timestamp: number;
   };
 }
 
@@ -24,21 +48,61 @@ export function setPackageAuthorityUsernameAction(
   };
 }
 
-function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
+function setOrgActionStatusAction(
+  username: string,
+  status: OrgActionStatus
+): SetOrgActionStatusAction {
+  return {
+    type: "SET_ORG_ACTION_STATUS",
+    payload: {
+      username,
+      status,
+    },
+  };
+}
+
+function setInstalledPackageVersionsAction(
+  username: string,
+  versions: SubscriberPackageVersion[],
+  timestamp: number
+): SetInstalledPackageVersionsAction {
+  return {
+    type: "SET_INSTALLED_PACKAGE_VERSIONS",
+    payload: {
+      username,
+      versions,
+      timestamp,
+    },
+  };
+}
+
+export function checkInstalledPackagesAction(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
-    const installedPackages = await packageManager.listSubscriberPackageVersions(username);
+    dispatch(setOrgActionStatusAction(username, "pending"));
+
+    try {
+      const installedPackages = await packageManager.listSubscriberPackageVersions(username);
+      dispatch(setInstalledPackageVersionsAction(username, installedPackages, Date.now()));
+    } finally {
+      dispatch(setOrgActionStatusAction(username, "ideal"));
+    }
   };
 }
 
 // State
-interface OrgPackageState {
-  installedVersions: Record<string, string>; // <namespace prefix, version>
+export type OrgActionStatus = "ideal" | "pending";
+
+export interface OrgPackageState {
+  readonly actionStatus: OrgActionStatus;
+  readonly lastInstalledVersionsCheck?: number;
+  readonly installedVersions: SubscriberPackageVersion[]; // <namespace prefix, version>
 }
 
 interface PackageInfo {
-  readonly [version: string]: {
-    readonly password: string;
-  };
+  readonly latestVersionName: string;
+  readonly latestVersionCheck: number;
+
+  readonly versions: Record<string, AuthorityPackageVersion>;
 }
 
 export interface PackagesState {
@@ -47,6 +111,11 @@ export interface PackagesState {
   readonly orgInfo: Record<string, OrgPackageState>; // <username, packageState>
   readonly packageInfo: Record<string, PackageInfo>; // <namespace prefix, >
 }
+
+const defaultOrgPackageState: OrgPackageState = {
+  actionStatus: "ideal",
+  installedVersions: [],
+};
 
 export const defaultPackagesState: PackagesState = {
   authorityUsername: "",
@@ -64,7 +133,36 @@ export function packagesReducer(
         ...state,
         authorityUsername: action.payload.username,
       };
+    // case "ORG_LIST_CHANGES":
+
+    case "SET_ORG_ACTION_STATUS":
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [action.payload.username]: {
+            ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
+            actionStatus: action.payload.status,
+          },
+        },
+      };
+    case "SET_INSTALLED_PACKAGE_VERSIONS":
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [action.payload.username]: {
+            ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
+            lastInstalledVersionsCheck: action.payload.timestamp,
+            installedVersions: action.payload.versions,
+          }
+        },
+      };
     default:
       return state;
   }
+}
+
+export function selectOrgInfo(state: State, username: string): OrgPackageState {
+  return state.packages.orgInfo[username] ?? defaultOrgPackageState;
 }

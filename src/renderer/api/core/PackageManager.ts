@@ -10,6 +10,7 @@ export interface PackageVersion {
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
+  readonly sortingVersion: string;
   readonly password: string;
   readonly buildDate: string;
 }
@@ -55,7 +56,8 @@ export class PackageManager {
       strip`
         SELECT
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c namespace,
-          MAX(PackageManager__Sorting_Version_Number__c) version,
+          MAX(PackageManager__Sorting_Version_Number__c) sortingVersion,
+          MAX(Name) version,
           MAX(PackageManager__Password__c) password,
           MAX(PackageManager__Build_Date__c) buildDate
         FROM

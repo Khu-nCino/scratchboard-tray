@@ -16,10 +16,7 @@ import { updateReducer, defaultUpdateState } from "./updates";
 import { expandedReducer, defaultExpandedState } from "./expanded";
 import { packagesReducer, defaultPackagesState } from './packages';
 
-type Reducers = typeof reducers;
-export type State = {
-  [P in keyof Reducers]: ReturnType<Reducers[P]>;
-};
+export type State = ReturnType<typeof rootReducer>;
 
 export type CustomDispatch = ThunkDispatch<State, undefined, AnyAction>;
 
@@ -51,9 +48,11 @@ const composeEnhancers =
       })
     : compose;
 
+const rootReducer = combineReducers(reducers);
+
 export function createStore(initial: DeepPartial<State> = defaultState) {
   return createReduxStore(
-    combineReducers<State>(reducers),
+    rootReducer,
     initial as State,
     composeEnhancers(applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>))
   );

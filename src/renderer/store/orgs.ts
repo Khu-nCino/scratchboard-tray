@@ -12,7 +12,7 @@ type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesActio
 // Actions
 type OrgAction = OrgListChanges | AliasSetAction | SetPendingAction;
 
-interface OrgListChanges extends Action<"ORG_LIST_CHANGES"> {
+export interface OrgListChanges extends Action<"ORG_LIST_CHANGES"> {
   payload: {
     changed: SalesforceOrg[];
     removed: string[];
