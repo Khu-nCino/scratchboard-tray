@@ -14,6 +14,7 @@ import { settingsReducer, defaultSettingsState } from "./settings";
 import { messagesReducer } from "./messages";
 import { updateReducer, defaultUpdateState } from "./updates";
 import { expandedReducer, defaultExpandedState } from "./expanded";
+import { packagesReducer, defaultPackagesState } from './packages';
 
 type Reducers = typeof reducers;
 export type State = {
@@ -29,12 +30,14 @@ const reducers = {
   messages: messagesReducer,
   updates: updateReducer,
   expanded: expandedReducer,
+  packages: packagesReducer,
 };
 
 export const defaultState: Partial<State> = {
   expanded: defaultExpandedState,
   updates: defaultUpdateState,
   settings: defaultSettingsState,
+  packages: defaultPackagesState,
 };
 
 // redux devtools setup

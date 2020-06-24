@@ -24,10 +24,6 @@ export class PersistManager {
           "showSecondaryScratchUsernames",
           state.settings?.showSecondaryScratchUsernames
         ),
-        packageAuthorityUsername: this.electronStore.get(
-          "packageAuthorityUsername",
-          state.settings?.packageAuthorityUsername
-        ),
         openAtLogin: false,
       },
       expanded: {
@@ -37,6 +33,13 @@ export class PersistManager {
       updates: {
         ...defaultState.updates,
         appVersion: this.appVersion,
+      },
+      packages: {
+        ...state.packages,
+        authorityUsername: this.electronStore.get(
+          "packageAuthorityUsername",
+          state.packages?.authorityUsername
+        ),
       },
     };
   }
@@ -62,7 +65,7 @@ export class PersistManager {
 
     watchStore(
       store,
-      (state) => state.settings.packageAuthorityUsername,
+      (state) => state.packages.authorityUsername,
       (value) => this.electronStore.set("packageAuthorityUsername", value)
     );
   }

@@ -56,7 +56,10 @@ const defaultState: MessagesState = {
   toasts: [],
 };
 
-export function messagesReducer(state = defaultState, action: MessagesAction) {
+export function messagesReducer(
+  state: MessagesState = defaultState,
+  action: MessagesAction
+): MessagesState {
   switch (action.type) {
     case "CREATE_TOAST":
       return {

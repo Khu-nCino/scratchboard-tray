@@ -4,24 +4,13 @@ import { ThunkAction } from "redux-thunk";
 
 import { SalesforceOrg, BaseOrg, ScratchOrg, SharedOrg } from "renderer/api/SalesforceOrg";
 import { orgManager } from "renderer/api/core/OrgManager";
-import {
-  packageManager,
-  InstalledPackageVersion,
-  InstallablePackageVersion,
-} from "renderer/api/core/PackageManager";
 import { MessagesAction, createToast, createErrorToast } from "./messages";
 import { State } from ".";
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
 
 // Actions
-type OrgAction =
-  | OrgListChanges
-  | AliasSetAction
-  | SetPendingAction
-  | SetPackageLoadStatusAction
-  | InstalledPackagesLoadedAction
-  | AvailableVersionsLoadedAction;
+type OrgAction = OrgListChanges | AliasSetAction | SetPendingAction;
 
 interface OrgListChanges extends Action<"ORG_LIST_CHANGES"> {
   payload: {
@@ -41,27 +30,6 @@ interface SetPendingAction extends Action<"SET_PENDING_ACTION"> {
   payload: {
     username: string;
     pendingAction: boolean;
-  };
-}
-
-interface SetPackageLoadStatusAction extends Action<"SET_PENDING_PACKAGE_LOAD"> {
-  payload: {
-    username: string;
-    status: PackageLoadStatus;
-  };
-}
-
-interface InstalledPackagesLoadedAction extends Action<"INSTALLED_PACKAGES_LOADED_ACTION"> {
-  payload: {
-    username: string;
-    installed: InstalledPackageVersion[];
-  };
-}
-
-interface AvailableVersionsLoadedAction extends Action<"AVAILABLE_VERSIONS_LOADED_ACTION"> {
-  payload: {
-    username: string;
-    available: InstallablePackageVersion[];
   };
 }
 
@@ -152,30 +120,6 @@ export function setAliasAction(username: string, newAlias: string): ThunkResult<
   };
 }
 
-export function checkPackageData(username: string): ThunkResult<Promise<void>> {
-  return async (dispatch) => {
-    try {
-      dispatch(setPackageLoadStatusAction(username, "pending"));
-
-      const installed: InstalledPackageVersion[] = await packageManager.getInstalledPackageVersions(
-        username
-      );
-      dispatch(installedPackagesLoadedAction(username, installed));
-
-      const namespaces = installed.map((data) => data.namespace);
-      const available: InstallablePackageVersion[] = await packageManager.getLatestAvailablePackageVersions(
-        username,
-        namespaces
-      );
-      dispatch(availablePackagesLoadedAction(username, available));
-    } catch (error) {
-      dispatch(createErrorToast("There was an error loading you package data 😞", error));
-    } finally {
-      dispatch(setPackageLoadStatusAction(username, "finished"));
-    }
-  };
-}
-
 // Local Actions
 function setPendingAction(username: string, pendingAction: boolean): SetPendingAction {
   return {
@@ -187,63 +131,15 @@ function setPendingAction(username: string, pendingAction: boolean): SetPendingA
   };
 }
 
-function setPackageLoadStatusAction(
-  username: string,
-  status: PackageLoadStatus
-): SetPackageLoadStatusAction {
-  return {
-    type: "SET_PENDING_PACKAGE_LOAD",
-    payload: {
-      username,
-      status,
-    },
-  };
-}
-
-function installedPackagesLoadedAction(
-  username: string,
-  installed: InstalledPackageVersion[]
-): InstalledPackagesLoadedAction {
-  return {
-    type: "INSTALLED_PACKAGES_LOADED_ACTION",
-    payload: {
-      username,
-      installed,
-    },
-  };
-}
-
-function availablePackagesLoadedAction(
-  username: string,
-  available: InstallablePackageVersion[]
-): AvailableVersionsLoadedAction {
-  return {
-    type: "AVAILABLE_VERSIONS_LOADED_ACTION",
-    payload: {
-      username,
-      available,
-    },
-  };
-}
-
 // State
-
-type PackageLoadStatus = "initial" | "pending" | "finished";
 
 export interface OrgDataState {
   readonly pendingAction: boolean;
-  readonly pendingPackageStatus: PackageLoadStatus;
-}
-
-export interface OrgPackageData {
-  readonly installedVersion: ReadonlyArray<InstalledPackageVersion>;
-  readonly availableVersion: ReadonlyArray<InstallablePackageVersion>;
 }
 
 export interface OrgData<T extends BaseOrg> {
   readonly description: T;
   readonly state: OrgDataState;
-  readonly packages: OrgPackageData;
 }
 
 export interface OrgsState {
@@ -256,7 +152,7 @@ const defaultOrgsState: OrgsState = {
 
 const defaultOrgData = {
   state: { pendingAction: false, pendingPackageStatus: "initial" },
-  packages: { installedVersion: [], availableVersion: [] },
+  packages: { installed: [] },
 } as const;
 
 // Reducers
@@ -352,22 +248,6 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
                 state: {
                   ...org.state,
                   pendingAction: action.payload.pendingAction,
-                },
-              }
-        ),
-      };
-    case "SET_PENDING_PACKAGE_LOAD":
-      return {
-        ...state,
-        orgList: state.orgList.map((org) =>
-          org.description.username !== action.payload.username ||
-          org.state.pendingPackageStatus === action.payload.status
-            ? org
-            : {
-                ...org,
-                state: {
-                  ...org.state,
-                  pendingPackageLoad: action.payload.status,
                 },
               }
         ),

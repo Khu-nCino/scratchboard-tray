@@ -32,7 +32,7 @@ export const defaultExpandedState: ExpandedState = {
 export function expandedReducer(
   state: ExpandedState = defaultExpandedState,
   action: ExpandedAction
-) {
+): ExpandedState {
   switch (action.type) {
     case "TOGGLE_EXPANSION": {
       const { groupName } = action.payload;

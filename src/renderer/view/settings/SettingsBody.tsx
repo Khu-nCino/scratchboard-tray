@@ -6,9 +6,10 @@ import { IpcRendererEvent } from "common/IpcEvent";
 import { ipcRenderer as ipc } from "electron-better-ipc";
 
 import { State, CustomDispatch } from "renderer/store";
-import { toggleTheme, toggleOpenAtLogin, toggleShowSecondaryScratchUsernames, setPackageAuthorityUsername } from "renderer/store/settings";
-import "./SettingsBody.scss";
+import { toggleTheme, toggleOpenAtLogin, toggleShowSecondaryScratchUsernames } from "renderer/store/settings";
+import { setPackageAuthorityUsernameAction } from "renderer/store/packages";
 import UpdateManager from "./UpdateManager";
+import "./SettingsBody.scss";
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
@@ -66,7 +67,7 @@ function mapStateToProps(state: State) {
     isDarkTheme: state.settings.theme === "dark",
     openAtLogin: state.settings.openAtLogin,
     showSecondaryScratchUsernames: state.settings.showSecondaryScratchUsernames,
-    packageAuthorityUsername: state.settings.packageAuthorityUsername,
+    packageAuthorityUsername: state.packages.authorityUsername,
   };
 }
 
@@ -75,7 +76,7 @@ function mapDispatchToProps(dispatch: CustomDispatch) {
     toggleTheme: () => dispatch(toggleTheme()),
     toggleOpenAtLogin: () => dispatch(toggleOpenAtLogin()),
     toggleShowSecondaryScratchUsernames: () => dispatch(toggleShowSecondaryScratchUsernames()),
-    setPackageAuthorityUsername: (username: string) => dispatch(setPackageAuthorityUsername(username)),
+    setPackageAuthorityUsername: (username: string) => dispatch(setPackageAuthorityUsernameAction(username)),
   };
 }
 
