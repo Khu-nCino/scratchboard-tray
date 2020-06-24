@@ -1,4 +1,4 @@
-import { AuthInfo, Aliases, Connection, Org } from "@salesforce/core";
+import { AuthInfo, Aliases, Connection, Org, AliasGroup } from "@salesforce/core";
 import { arrayDiff, notUndefined, notConcurrent } from "common/util";
 import { CachedResource } from "common/CachedResource";
 import { Emitter } from "common/Emitter";
@@ -63,6 +63,26 @@ export class OrgCache {
     return this.aliases === undefined || reload
       ? (this.aliases = Aliases.create(Aliases.getDefaultOptions()))
       : this.aliases;
+  }
+
+  async setAlias(username: string, newAlias?: string): Promise<void> {
+    const aliases = await this.getAliases();
+    const orgAliases = aliases.getGroup(AliasGroup.ORGS);
+
+    if (orgAliases !== undefined) {
+      const oldAliasNames = Object.entries(orgAliases)
+        .filter(([_, name]) => name === username)
+        .map(([alias]) => alias);
+
+      if (oldAliasNames.length > 0) {
+        aliases.unsetAll(oldAliasNames);
+      }
+    }
+
+    if (newAlias) {
+      aliases.set(newAlias, username);
+    }
+    await aliases.write();
   }
 
   checkOrgChanges = notConcurrent(async () => {

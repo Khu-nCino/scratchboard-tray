@@ -82,7 +82,10 @@ body {
 }
 
 .sbt-org-list--item {
-  height: $large;
+  min-height: $large;
+  h4 {
+    word-break: break-all;
+  }
 }
 
 .sbt-collapse-group--header {

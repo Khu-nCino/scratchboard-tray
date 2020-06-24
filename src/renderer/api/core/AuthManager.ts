@@ -17,7 +17,7 @@ export class AuthManager {
 
   constructor(private cache: OrgCache) {}
 
-  webAuth(loginUrl: string) {
+  webAuth(loginUrl: string, initialAlias?: string) {
     return new Promise<AuthInfo>((resolve, reject) => {
       const oauth2 = new OAuth2WithVerifier({
         ...this.baseOptions,
@@ -52,16 +52,19 @@ export class AuthManager {
             oauth2,
           });
 
-          const { accessToken, instanceUrl } = authInfo.getFields();
-          if (!accessToken || !instanceUrl) {
+          const { accessToken, instanceUrl, username } = authInfo.getFields();
+          if (!accessToken || !instanceUrl || !username) {
             this.sendError(response, 500, "Authentication error");
-            reject(new Error("No accessToken or instanceUrl"));
+            reject(new Error("No accessToken, instanceUrl or username"));
             return;
           }
 
           const redirectUrl = formatFrontDoorUrl(instanceUrl, accessToken);
           this.doRedirect(response, redirectUrl);
 
+          if (initialAlias !== undefined) {
+            await this.cache.setAlias(username, initialAlias);
+          }
           await this.cache.addData(authInfo);
           resolve(authInfo);
         } catch (error) {
