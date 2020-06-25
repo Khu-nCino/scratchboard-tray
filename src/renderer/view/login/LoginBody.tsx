@@ -1,10 +1,9 @@
 import { ipcRenderer } from "electron";
 import React, { useState } from "react";
 import { InputGroup, Button, FormGroup, NonIdealState, Spinner } from "@blueprintjs/core";
-import { popRouteAction, setNavigationEnabledAction } from "renderer/store/route";
-import { connect } from "react-redux";
+import { popRoute, setNavigationEnabled } from "renderer/store/route";
+import { connect, ConnectedProps } from "react-redux";
 import { authManager } from "renderer/api/core/AuthManager";
-import { CustomDispatch } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 import { coerceInstanceUrl } from "renderer/api/url";
 import { IpcRendererEvent } from "common/IpcEvent";
@@ -13,10 +12,16 @@ const defaultInstanceUrl = "login.salesforce.com";
 
 type ChangeEvent = React.ChangeEvent<HTMLInputElement>;
 
-type DispatchProps = ReturnType<typeof mapDispatchToProps>;
-type Props = DispatchProps;
+const mapDispatchToProps = {
+  popRoute,
+  setNavigationEnabled,
+  createErrorToast,
+};
 
-function LoginBody(props: Props) {
+const connector = connect(undefined, mapDispatchToProps);
+type Props = ConnectedProps<typeof connector>;
+
+export const LoginBody = connector((props: Props) => {
   const [instanceUrl, setInstanceUrl] = useState(defaultInstanceUrl);
   const [alias, setAlias] = useState("");
   const [inProgress, setInProgress] = useState<boolean>();
@@ -101,15 +106,4 @@ function LoginBody(props: Props) {
       </div>
     );
   }
-}
-
-function mapDispatchToProps(dispatch: CustomDispatch) {
-  return {
-    popRoute: () => dispatch(popRouteAction()),
-    setNavigationEnabled: (value: boolean) => dispatch(setNavigationEnabledAction(value)),
-    createErrorToast: (message: string, detail: string) =>
-      dispatch(createErrorToast(message, detail)),
-  };
-}
-
-export default connect(undefined, mapDispatchToProps)(LoginBody);
+});

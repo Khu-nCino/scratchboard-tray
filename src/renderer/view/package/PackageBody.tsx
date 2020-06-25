@@ -2,7 +2,7 @@ import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { NonIdealState, Spinner, Button } from "@blueprintjs/core";
 import { State } from "renderer/store";
-import { checkInstalledPackagesAction, selectOrgInfo } from "renderer/store/packages";
+import { checkInstalledPackages, selectOrgInfo } from "renderer/store/packages";
 
 function mapStateToProps(state: State) {
   const detailUsername = state.route.detailUsername;
@@ -22,7 +22,7 @@ function mapStateToProps(state: State) {
 }
 
 const mapDispatchToProps = {
-  checkInstalledPackagesAction,
+  checkInstalledPackages,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -34,7 +34,7 @@ function PackageBodyFun(props: PropsFromRedux) {
   }
 
   return <div>
-    <Button onClick={() => props.checkInstalledPackagesAction(props.detailUsername)}>Reload</Button>
+    <Button onClick={() => props.checkInstalledPackages(props.detailUsername)}>Reload</Button>
     <div>authorityUsername: {props.authorityUsername}</div>
     {props.installedVersions.map((version) => <div key={version.namespace}>
       Namespace: {version.namespace}, Version: {version.version}

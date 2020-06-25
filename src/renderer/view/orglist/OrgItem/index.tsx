@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Button, ButtonGroup, Popover, Position } from "@blueprintjs/core";
 
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { AnyAction } from "redux";
 
-import TimeRemaining from "../TimeRemaining";
+import { TimeRemaining } from "../TimeRemaining";
 
 import { SalesforceOrg } from "renderer/api/SalesforceOrg";
+import { State } from "renderer/store";
 import {
   openOrgAction,
   deleteOrgAction,
@@ -14,22 +17,36 @@ import {
   logoutOrgAction,
   OrgData,
 } from "renderer/store/orgs";
-import { CustomDispatch } from "renderer/store";
-import ActionMenu from "./ActionMenu";
-import DeleteConformation from "./DeleteConformation";
-import InputTextDialog from "renderer/view/InputTextDialog";
-import LogoutConformation from "./LogoutConformation";
-import { pushRouteAction } from "renderer/store/route";
+import { ActionMenu } from "./ActionMenu";
+import { DeleteConformation } from "./DeleteConformation";
+import { InputTextDialog } from "renderer/view/InputTextDialog";
+import { LogoutConformation } from "./LogoutConformation";
+import { pushRoute } from "renderer/store/route";
 
 interface OwnProps {
   org: OrgData<SalesforceOrg>;
 }
 
-type DispatchProps = ReturnType<typeof mapDispatchToProps>;
+function mapDispatchToProps(
+  dispatch: ThunkDispatch<State, undefined, AnyAction>,
+  ownProps: OwnProps
+) {
+  const { username } = ownProps.org.description;
 
-type Props = OwnProps & DispatchProps;
+  return {
+    openOrg: () => dispatch(openOrgAction(username)),
+    copyFrontdoor: () => dispatch(copyFrontDoor(username)),
+    deleteOrg: () => dispatch(deleteOrgAction(username)),
+    logoutOrg: () => dispatch(logoutOrgAction(username)),
+    setAlias: (newAlias: string) => dispatch(setAliasAction(username, newAlias)),
+    pushPackageRoute: () => dispatch(pushRoute("package", username)),
+  };
+}
 
-function OrgItem(props: Props) {
+const connector = connect(undefined, mapDispatchToProps);
+type Props = OwnProps & ConnectedProps<typeof connector>;
+
+export const OrgItem = connector((props: Props) => {
   const { description, state } = props.org;
 
   const [pendingDelete, setPendingDelete] = useState(false);
@@ -116,19 +133,4 @@ function OrgItem(props: Props) {
       {dialogs}
     </div>
   );
-}
-
-function mapDispatchToProps(dispatch: CustomDispatch, ownProps: OwnProps) {
-  const username = ownProps.org.description.username;
-
-  return {
-    openOrg: () => dispatch(openOrgAction(username)),
-    copyFrontdoor: () => dispatch(copyFrontDoor(username)),
-    deleteOrg: () => dispatch(deleteOrgAction(username)),
-    logoutOrg: () => dispatch(logoutOrgAction(username)),
-    setAlias: (newAlias: string) => dispatch(setAliasAction(username, newAlias)),
-    pushPackageRoute: () => dispatch(pushRouteAction("package", username)),
-  };
-}
-
-export default connect(undefined, mapDispatchToProps)(OrgItem);
+});

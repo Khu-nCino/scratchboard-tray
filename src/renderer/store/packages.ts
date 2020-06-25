@@ -37,7 +37,7 @@ interface SetInstalledPackageVersionsAction extends Action<"SET_INSTALLED_PACKAG
   };
 }
 
-export function setPackageAuthorityUsernameAction(
+export function setPackageAuthorityUsername(
   username: string
 ): SetPackageAuthorityUsernameAction {
   return {
@@ -48,7 +48,7 @@ export function setPackageAuthorityUsernameAction(
   };
 }
 
-function setOrgActionStatusAction(
+function setOrgActionStatus(
   username: string,
   status: OrgActionStatus
 ): SetOrgActionStatusAction {
@@ -61,7 +61,7 @@ function setOrgActionStatusAction(
   };
 }
 
-function setInstalledPackageVersionsAction(
+function setInstalledPackageVersions(
   username: string,
   versions: SubscriberPackageVersion[],
   timestamp: number
@@ -76,15 +76,15 @@ function setInstalledPackageVersionsAction(
   };
 }
 
-export function checkInstalledPackagesAction(username: string): ThunkResult<Promise<void>> {
+export function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
   return async (dispatch) => {
-    dispatch(setOrgActionStatusAction(username, "pending"));
+    dispatch(setOrgActionStatus(username, "pending"));
 
     try {
       const installedPackages = await packageManager.listSubscriberPackageVersions(username);
-      dispatch(setInstalledPackageVersionsAction(username, installedPackages, Date.now()));
+      dispatch(setInstalledPackageVersions(username, installedPackages, Date.now()));
     } finally {
-      dispatch(setOrgActionStatusAction(username, "ideal"));
+      dispatch(setOrgActionStatus(username, "ideal"));
     }
   };
 }
