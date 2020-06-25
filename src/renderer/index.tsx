@@ -14,7 +14,7 @@ import { listenForIpcUpdates } from "./store/updates";
 import { checkOpenAtLogin } from "./store/settings";
 import { orgListChanged } from "./store/orgs";
 import { PersistManager, watchStore } from "./persist";
-import App from "./view/App";
+import { App } from "./view/App";
 import { orgManager } from "./api/core/OrgManager";
 import { createErrorToast } from "./store/messages";
 import { setIsVisible } from "./store/route";

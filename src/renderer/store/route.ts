@@ -26,7 +26,7 @@ interface SetIsVisibleAction extends Action<"SET_IS_VISIBLE_ACTION"> {
   };
 }
 
-export function pushRouteAction(name: RouteName): PushRouteAction {
+export function pushRoute(name: RouteName): PushRouteAction {
   return {
     type: "PUSH_ROUTE_ACTION",
     payload: {
@@ -35,11 +35,11 @@ export function pushRouteAction(name: RouteName): PushRouteAction {
   };
 }
 
-export function popRouteAction(): PopRouteAction {
+export function popRoute(): PopRouteAction {
   return { type: "POP_ROUTE_ACTION" };
 }
 
-export function setNavigationEnabledAction(value: boolean): SetNavigationEnabledAction {
+export function setNavigationEnabled(value: boolean): SetNavigationEnabledAction {
   return {
     type: "SET_NAVIGATION_ENABLED_ACTION",
     payload: {

@@ -379,10 +379,10 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
 
 // Selectors
 export function selectScratchOrgs(
-  state: OrgsState,
+  state: State,
   showSecondary: boolean = true
 ): OrgData<ScratchOrg>[] {
-  let scratchOrgs = state.orgList.filter(isScratchOrg);
+  let scratchOrgs = state.orgs.orgList.filter(isScratchOrg);
   if (!showSecondary) {
     scratchOrgs = scratchOrgs.filter((org) => !org.description.scratchAdminUsername);
   }
@@ -390,12 +390,12 @@ export function selectScratchOrgs(
   return scratchOrgs.sort(orgCompare);
 }
 
-export function selectSharedOrgs(state: OrgsState): OrgData<SharedOrg>[] {
-  return state.orgList.filter(isSharedOrg).sort(orgCompare);
+export function selectSharedOrgs(state: State): OrgData<SharedOrg>[] {
+  return state.orgs.orgList.filter(isSharedOrg).sort(orgCompare);
 }
 
-export function selectOrgDescriptions(state: OrgsState): SalesforceOrg[] {
-  return state.orgList.map(({ description }) => description);
+export function selectOrgDescriptions(state: State): SalesforceOrg[] {
+  return state.orgs.orgList.map(({ description }) => description);
 }
 
 function isScratchOrg(org: OrgData<SalesforceOrg>): org is OrgData<ScratchOrg> {

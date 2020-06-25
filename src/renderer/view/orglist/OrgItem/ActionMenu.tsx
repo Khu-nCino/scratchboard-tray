@@ -1,20 +1,24 @@
 import React from "react";
 import { Menu, MenuItem } from "@blueprintjs/core";
 
-export default function ActionMenu(props: {
+interface Props {
   removeAction?: "logout" | "delete";
   onCopyFrontdoor: () => void;
   onSetAlias: () => void;
   onDelete: () => void;
   onLogout: () => void;
   onPackages: () => void;
-}) {
-  return (
-    <Menu>
-      <MenuItem text="Copy Front Door" onClick={props.onCopyFrontdoor} />
-      <MenuItem text="Set Alias" onClick={props.onSetAlias} />
-      {props.removeAction === 'delete' && <MenuItem text="Delete" intent="danger" onClick={props.onDelete} />}
-      {props.removeAction === 'logout' && <MenuItem text="Logout" intent="danger" onClick={props.onLogout} />}
-    </Menu>
-  );
 }
+
+export const ActionMenu = (props: Props) => (
+  <Menu>
+    <MenuItem text="Copy Front Door" onClick={props.onCopyFrontdoor} />
+    <MenuItem text="Set Alias" onClick={props.onSetAlias} />
+    {props.removeAction === "delete" && (
+      <MenuItem text="Delete" intent="danger" onClick={props.onDelete} />
+    )}
+    {props.removeAction === "logout" && (
+      <MenuItem text="Logout" intent="danger" onClick={props.onLogout} />
+    )}
+  </Menu>
+);

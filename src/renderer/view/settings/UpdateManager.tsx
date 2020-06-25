@@ -1,59 +1,32 @@
-import { ipcRenderer } from "electron";
 import React from "react";
-import { connect } from "react-redux";
-import { Button, ProgressBar } from "@blueprintjs/core";
-import { IpcRendererEvent } from "common/IpcEvent";
-import { UpdateStatus } from "renderer/store/updates";
+import { connect, ConnectedProps } from "react-redux";
+import { ProgressBar } from "@blueprintjs/core";
 import { State } from "renderer/store";
+import { UpdateButton } from "./UpdateButton";
 
-interface OwnProps {
+function mapStateToProps(state: State) {
+  const {
+    status,
+    appVersion,
+    updateVersion,
+    downloadPercent
+  } = state.updates;
+
+  return {
+    updateStatus: status,
+    appVersion,
+    updateVersion,
+    downloadPercent,
+  };
+}
+
+const connector = connect(mapStateToProps);
+
+interface Props extends ConnectedProps<typeof connector> {
   className?: string;
 }
 
-type StateProps = ReturnType<typeof mapStateToProps>;
-
-type Props = OwnProps & StateProps;
-
-function checkUpdates() {
-  ipcRenderer.send(IpcRendererEvent.CHECK_FOR_UPDATES_REQUEST);
-}
-
-function quitAndInstall() {
-  ipcRenderer.send(IpcRendererEvent.QUIT_AND_INSTALL_UPDATE_REQUEST);
-}
-
-function UpdateButton(props: { status: UpdateStatus; updateVersion?: string }) {
-  switch (props.status) {
-    case "initial":
-      return (
-        <Button className="sbt-flex-item--right" onClick={checkUpdates}>
-          Check for Updates
-        </Button>
-      );
-    case "checking":
-      return (
-        <Button className="sbt-flex-item--right" disabled>
-          Check for Updates
-        </Button>
-      );
-    case "downloading":
-      return (
-        <Button className="sbt-flex-item--right" disabled>
-          Downloading...
-        </Button>
-      );
-    case "downloaded":
-      return (
-        <Button className="sbt-flex-item--right" onClick={quitAndInstall}>
-          Upgrade to Version {props.updateVersion}
-        </Button>
-      );
-    default:
-      return <Button disabled>Unknown Status</Button>;
-  }
-}
-
-function UpdateManager(props: Props) {
+export const UpdateManager = connector((props: Props) => {
   const downloadedStatus = props.updateStatus === "downloaded";
 
   return (
@@ -72,15 +45,4 @@ function UpdateManager(props: Props) {
       )}
     </div>
   );
-}
-
-function mapStateToProps(state: State) {
-  return {
-    updateStatus: state.updates.status,
-    appVersion: state.updates.appVersion,
-    updateVersion: state.updates.updateVersion,
-    downloadPercent: state.updates.downloadPercent,
-  };
-}
-
-export default connect(mapStateToProps)(UpdateManager);
+});

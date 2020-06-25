@@ -9,13 +9,25 @@ import {
   Button,
   Classes,
 } from "@blueprintjs/core";
-import { Dispatch } from "redux";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import { dismissToast, createToast } from "renderer/store/messages";
 import { State } from "renderer/store";
 import { Toast as ToastRecord } from "renderer/store/messages";
 
-type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
+function mapStateToProps(state: State) {
+  const { toasts } = state.messages;
+  return {
+    toasts,
+  };
+}
+
+const mapDispatchToProps = {
+  dismissToast,
+  createToast,
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type Props = ConnectedProps<typeof connector>;
 
 const intentIcons: Record<Intent, IconName | undefined> = {
   success: "tick",
@@ -25,7 +37,7 @@ const intentIcons: Record<Intent, IconName | undefined> = {
   primary: undefined,
 };
 
-function ToastManager(props: Props) {
+export const ToastManager = connector((props: Props) => {
   const [dialogToast, setDialogToast] = useState<ToastRecord | undefined>();
   const closeDialog = () => setDialogToast(undefined);
 
@@ -83,19 +95,4 @@ function ToastManager(props: Props) {
       </Toaster>
     </>
   );
-}
-
-function mapStateToProps(state: State) {
-  return {
-    toasts: state.messages.toasts,
-  };
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    dismissToast: (toastId: number) => dispatch(dismissToast(toastId)),
-    createToast: (message: string, intent: Intent) => dispatch(createToast(message, intent)),
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ToastManager);
+});

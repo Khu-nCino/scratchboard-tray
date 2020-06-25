@@ -7,7 +7,7 @@ import {
   compose,
 } from "redux";
 
-import thunk, { ThunkMiddleware, ThunkDispatch } from "redux-thunk";
+import thunk, { ThunkMiddleware } from "redux-thunk";
 import { orgsReducer } from "./orgs";
 import { routeReducer } from "./route";
 import { settingsReducer, defaultSettingsState } from "./settings";
@@ -19,8 +19,6 @@ type Reducers = typeof reducers;
 export type State = {
   [P in keyof Reducers]: ReturnType<Reducers[P]>;
 };
-
-export type CustomDispatch = ThunkDispatch<State, undefined, AnyAction>;
 
 const reducers = {
   orgs: orgsReducer,

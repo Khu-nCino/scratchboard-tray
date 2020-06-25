@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import cn from "classnames";
 import { Icon, Collapse, Button, IconName, Tooltip } from "@blueprintjs/core";
 
-interface OwnProps {
+interface Props {
   title: string;
   isOpen: boolean;
   onToggleOpen: () => void;
@@ -12,9 +12,7 @@ interface OwnProps {
   children: React.ReactNode;
 }
 
-type Props = OwnProps;
-
-function CollapseGroup(props: Props) {
+export function CollapseGroup(props: Props) {
   const [auxTooltipOpen, setAuxTooltipOpen] = useState(false);
 
   const disabled = !React.Children.count(props.children);
@@ -62,5 +60,3 @@ function CollapseGroup(props: Props) {
     </div>
   );
 }
-
-export default CollapseGroup;

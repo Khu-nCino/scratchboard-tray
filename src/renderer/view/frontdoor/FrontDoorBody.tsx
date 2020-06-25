@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import {
   InputGroup,
   FormGroup,
@@ -10,13 +10,25 @@ import {
   Intent,
 } from "@blueprintjs/core";
 import { urlToFrontDoorUrl, coerceInstanceUrl, matchOrgByUrl } from "renderer/api/url";
-import { State, CustomDispatch } from "renderer/store";
+import { State } from "renderer/store";
 import { createErrorToast, createToast } from "renderer/store/messages";
 import { SalesforceOrg } from "renderer/api/SalesforceOrg";
 
-type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
+function mapStateToProps(state: State) {
+  return {
+    orgList: state.orgs.orgList.map((org) => org.description),
+  };
+}
 
-function FrontDoorBody(props: Props) {
+const mapDispatchToProps = {
+  createErrorToast,
+  createToast,
+}
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type Props = ConnectedProps<typeof connector>;
+
+export const FrontDoorBody = connector((props: Props) => {
   const [inputUrl, setInputUrl] = useState("");
   const [outputUrl, setOutputUrl] = useState("");
   const [orgOptions, setOrgsOptions] = useState<SalesforceOrg[]>([]);
@@ -47,7 +59,7 @@ function FrontDoorBody(props: Props) {
         );
         await navigator.clipboard.writeText(frontDoorUrl);
         setOutputUrl(frontDoorUrl);
-        props.createToast("The url is copied to you clipboard.");
+        props.createToast("The url is copied to you clipboard.", "success");
       } catch (err) {
         props.createErrorToast("Error converting url", err);
       } finally {
@@ -120,20 +132,4 @@ function FrontDoorBody(props: Props) {
       </Button>
     </div>
   );
-}
-
-function mapStateToProps(state: State) {
-  return {
-    orgList: state.orgs.orgList.map((org) => org.description),
-  };
-}
-
-function mapDispatchToProps(dispatch: CustomDispatch) {
-  return {
-    createErrorToast: (message: string, detail?: string | Error) =>
-      dispatch(createErrorToast(message, detail)),
-    createToast: (message: string) => dispatch(createToast(message, "success")),
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(FrontDoorBody);
+});

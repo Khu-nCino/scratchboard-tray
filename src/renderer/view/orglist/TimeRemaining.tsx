@@ -1,17 +1,23 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import { State } from "renderer/store";
 
 const oneDay = 1000 * 60 * 60 * 24;
 
-type OwnProps = {
+function mapStateToProps(state: State) {
+  return {
+    isVisible: state.route.isVisible, // use to trigger a rerender
+  };
+}
+
+const connector = connect(mapStateToProps);
+
+interface Props extends ConnectedProps<typeof connector> {
   className?: string;
   date: number;
 };
 
-type Props = OwnProps & ReturnType<typeof mapStateToProps>;
-
-function TimeRemaining(props: Props) {
+export const TimeRemaining = connector((props: Props) => {
   if (Number.isNaN(props.date)) {
     return <div className={props.className + " bp3-skeleton"}>99 Days Remaining</div>;
   }
@@ -28,12 +34,4 @@ function TimeRemaining(props: Props) {
   } else {
     return <div className={props.className}>Expired</div>;
   }
-}
-
-function mapStateToProps(state: State) {
-  return {
-    isVisible: state.route.isVisible, // use to trigger a rerender
-  };
-}
-
-export default connect(mapStateToProps)(TimeRemaining);
+});
