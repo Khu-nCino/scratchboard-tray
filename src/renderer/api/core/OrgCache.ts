@@ -85,6 +85,11 @@ export class OrgCache {
     await aliases.write();
   }
 
+  async resolveAlias(aliasOrUsername: string): Promise<string> {
+    const aliases = await this.getAliases();
+    return aliases.get(aliasOrUsername)?.toString() ?? aliasOrUsername;
+  }
+
   checkOrgChanges = notConcurrent(async () => {
     await this.checkAliasChanges();
 
@@ -168,8 +173,8 @@ export class OrgCache {
     return devHubUsername;
   }
 
-  async query<T>(username: string, query: string, tooling: boolean = false): Promise<T[]> {
-    const connection = await this.getConnection(username);
+  async query<T>(usernameOrAlias: string, query: string, tooling: boolean = false): Promise<T[]> {
+    const connection = await this.getConnection(await this.resolveAlias(usernameOrAlias));
 
     return new Promise((resolve, reject) => {
       (tooling ? connection.tooling : connection).query<T>(query, {}, (error, results) => {

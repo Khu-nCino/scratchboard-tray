@@ -4,13 +4,12 @@ import { formatQueryList } from "./util";
 
 export interface PackageVersion {
   readonly namespace: string;
-  readonly version: string;
+  readonly versionName: string;
 }
 
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
-  readonly sortingVersion: string;
   readonly password: string;
   readonly buildDate: string;
 }
@@ -43,23 +42,20 @@ export class PackageManager {
     );
     return versions.map((version) => ({
       namespace: version.SubscriberPackage.NamespacePrefix,
-      version: version.SubscriberPackageVersion.Name,
+      versionName: version.SubscriberPackageVersion.Name,
     }));
   }
 
-  getLatestAvailablePackageVersions(
+  async getLatestAvailablePackageVersions(
     authorityUsername: string,
     namespaces: string[]
   ): Promise<AuthorityPackageVersion[]> {
-    return this.cache.query<AuthorityPackageVersion>(
+    const latestVersions = await this.cache.query<{ namespace: string; sortingVersion: string }>(
       authorityUsername,
       strip`
         SELECT
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c namespace,
-          MAX(PackageManager__Sorting_Version_Number__c) sortingVersion,
-          MAX(Name) version,
-          MAX(PackageManager__Password__c) password,
-          MAX(PackageManager__Build_Date__c) buildDate
+          MAX(PackageManager__Sorting_Version_Number__c) sortingVersion
         FROM
           PackageManager__Package_Version__c
         WHERE
@@ -72,6 +68,46 @@ export class PackageManager {
         GROUP BY PackageManager__Package__r.PackageManager__Namespace_Prefix__c
       `
     );
+
+    const versionSelector = latestVersions
+      .map(
+        (version) => strip`(
+          PackageManager__Package__r.PackageManager__Namespace_Prefix__c = '${version.namespace}'
+          AND PackageManager__Sorting_Version_Number__c = '${version.sortingVersion}'
+        )`
+      )
+      .join(" OR ");
+
+    interface RawAuthorityPackageVersion {
+      Name: string;
+      PackageManager__Build_Date__c: string;
+      PackageManager__Password__c: string;
+      PackageManager__Package__r: {
+        PackageManager__Namespace_Prefix__c: string;
+      };
+    }
+
+    const latestVersionsDetails = await this.cache.query<RawAuthorityPackageVersion>(
+      authorityUsername,
+      strip`
+        SELECT
+          PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
+          Name,
+          PackageManager__Build_Date__c,
+          PackageManager__Password__c
+        FROM
+          PackageManager__Package_Version__c
+        WHERE
+          ${versionSelector}
+      `
+    );
+
+    return latestVersionsDetails.map((version) => ({
+      namespace: version.PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
+      versionName: version.Name,
+      buildDate: version.PackageManager__Build_Date__c,
+      password: version.PackageManager__Password__c,
+    }));
   }
 }
 
