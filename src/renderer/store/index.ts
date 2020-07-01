@@ -14,7 +14,7 @@ import { settingsReducer, defaultSettingsState } from "./settings";
 import { messagesReducer } from "./messages";
 import { updateReducer, defaultUpdateState } from "./updates";
 import { expandedReducer, defaultExpandedState } from "./expanded";
-import { packagesReducer, defaultPackagesState } from './packages';
+import { packagesReducer, defaultPackagesState } from "./packages";
 
 export type State = ReturnType<typeof rootReducer>;
 

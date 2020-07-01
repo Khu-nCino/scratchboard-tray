@@ -1,0 +1,22 @@
+
+@import "../../style/size";
+
+.sbt-package-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  grid-template-rows: $medium;
+  grid-auto-rows: 1fr;
+  row-gap: $x-small;
+
+  margin: 10px 0 0 30px;
+
+  .sbt-header-item {
+    margin: 0;
+  }
+}
+
+.sbt-package-upgrade-checkbox, .sbt-package-upgrade-checkbox > * {
+  margin: 0 !important;
+  padding: 0 !important;
+  align-self: center;
+}

@@ -13,7 +13,7 @@ type PackagesAction =
   | SetPackageAuthorityUsernameAction
   | SetInstalledPackageVersionsAction
   | SetLatestPackageVersionsAction
-  | SetOrgActionStatusAction
+  | SetPackageActionStatusAction
   | OrgListChanges;
 type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction>;
 
@@ -23,7 +23,7 @@ interface SetPackageAuthorityUsernameAction extends Action<"SET_PACKAGE_AUTHORIT
   };
 }
 
-interface SetOrgActionStatusAction extends Action<"SET_ORG_ACTION_STATUS"> {
+interface SetPackageActionStatusAction extends Action<"SET_PACKAGE_ACTION_STATUS"> {
   payload: {
     username: string;
     status: OrgActionStatus;
@@ -54,9 +54,9 @@ export function setPackageAuthorityUsername(username: string): SetPackageAuthori
   };
 }
 
-function setOrgActionStatus(username: string, status: OrgActionStatus): SetOrgActionStatusAction {
+function setPackageActionStatus(username: string, status: OrgActionStatus): SetPackageActionStatusAction {
   return {
-    type: "SET_ORG_ACTION_STATUS",
+    type: "SET_PACKAGE_ACTION_STATUS",
     payload: {
       username,
       status,
@@ -93,37 +93,42 @@ function setLatestPackageVersions(
 }
 
 export function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
-  return async (dispatch) => {
-    dispatch(setOrgActionStatus(username, "pending"));
+  return async (dispatch, getState) => {
+    const { authorityUsername } = getState().packages;
+
+    dispatch(setPackageActionStatus(username, "pending_subscriber"));
 
     try {
       const installedPackages = await packageManager.listSubscriberPackageVersions(username);
       dispatch(setInstalledPackageVersions(username, installedPackages, Date.now()));
+      dispatch(setPackageActionStatus(username, "pending_authority"));
 
       const namespaces = installedPackages.map((installedPackage) => installedPackage.namespace);
-      await dispatch(checkLatestPackages(namespaces));
+      const latestPackageVersions = await packageManager.getLatestAvailablePackageVersions(
+        authorityUsername,
+        namespaces
+      );
+
+      dispatch(setPackageActionStatus(username, "pending_details"));
+      const latestPackageDetails = await packageManager.getAuthorityPackageDetails(
+        authorityUsername,
+        latestPackageVersions
+      );
+
+      dispatch(setLatestPackageVersions(latestPackageDetails, Date.now()));
     } finally {
-      dispatch(setOrgActionStatus(username, "ideal"));
+      dispatch(setPackageActionStatus(username, "ideal"));
     }
   };
 }
 
-export function checkLatestPackages(
-  namespaces: string[]
-): ThunkResult<Promise<void>> {
-  return async (dispatch, getState) => {
-    const state = getState();
-    const latestPackageVersions = await packageManager.getLatestAvailablePackageVersions(
-      state.packages.authorityUsername,
-      namespaces
-    );
-
-    dispatch(setLatestPackageVersions(latestPackageVersions, Date.now()));
-  };
-}
-
 // State
-export type OrgActionStatus = "ideal" | "pending";
+export type OrgActionStatus =
+  | "initial"
+  | "ideal"
+  | "pending_subscriber"
+  | "pending_authority"
+  | "pending_details";
 
 export interface OrgPackageState {
   readonly actionStatus: OrgActionStatus;
@@ -146,7 +151,7 @@ export interface PackagesState {
 }
 
 const defaultOrgPackageState: OrgPackageState = {
-  actionStatus: "ideal",
+  actionStatus: "initial",
   installedVersions: [],
 };
 
@@ -168,7 +173,7 @@ export function packagesReducer(
       };
     // case "ORG_LIST_CHANGES":
 
-    case "SET_ORG_ACTION_STATUS":
+    case "SET_PACKAGE_ACTION_STATUS":
       return {
         ...state,
         orgInfo: {
@@ -218,7 +223,10 @@ export function selectOrgInfo(state: State, username: string): OrgPackageState {
   return state.packages.orgInfo[username] ?? defaultOrgPackageState;
 }
 
-export function selectLatestPackageVersions(state: State, namespaces: string[]): Record<string, SubscriberPackageVersion> {
+export function selectLatestPackageVersions(
+  state: State,
+  namespaces: string[]
+): Record<string, SubscriberPackageVersion> {
   return namespaces.reduce<Record<string, SubscriberPackageVersion>>((acc, namespace) => {
     const packageInfo = state.packages.packageInfo[namespace];
     const packageVersion = packageInfo?.versions[packageInfo.latestVersionName];

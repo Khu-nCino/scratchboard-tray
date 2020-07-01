@@ -7,6 +7,11 @@ export interface PackageVersion {
   readonly versionName: string;
 }
 
+export interface SortingPackageVersion {
+  readonly namespace: string;
+  readonly sortingVersion: string;
+}
+
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
@@ -46,11 +51,11 @@ export class PackageManager {
     }));
   }
 
-  async getLatestAvailablePackageVersions(
+  getLatestAvailablePackageVersions(
     authorityUsername: string,
     namespaces: string[]
-  ): Promise<AuthorityPackageVersion[]> {
-    const latestVersions = await this.cache.query<{ namespace: string; sortingVersion: string }>(
+  ): Promise<SortingPackageVersion[]> {
+    return this.cache.query<SortingPackageVersion>(
       authorityUsername,
       strip`
         SELECT
@@ -59,17 +64,17 @@ export class PackageManager {
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(
-            namespaces
-          )})
+          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(namespaces)})
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
           AND PackageManager__Is_Patch__c = false
         GROUP BY PackageManager__Package__r.PackageManager__Namespace_Prefix__c
       `
     );
+  }
 
-    const versionSelector = latestVersions
+  async getAuthorityPackageDetails(authorityUsername: string, versions: SortingPackageVersion[]): Promise<AuthorityPackageVersion[]> {
+    const versionSelector = versions
       .map(
         (version) => strip`(
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c = '${version.namespace}'
