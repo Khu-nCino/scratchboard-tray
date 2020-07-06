@@ -99,10 +99,11 @@ export class OrgManager {
     if (orgId === undefined) {
       throw new Error(`Can't delete scratchOrg no orgId for ${username}`);
     }
-
     const devHubConn = await this.cache.getConnection(devHubUsername);
-    await devHubConn.sobject("ActiveScratchOrg").delete(await this.queryOrgId(devHubConn, orgId));
+    const remoteOrgId = await this.queryOrgId(devHubConn, orgId);
+
     await this.cache.removeOrg(username);
+    await devHubConn.sobject("ActiveScratchOrg").delete(remoteOrgId);
   }
 
   async formatDescriptions(authInfos: AuthInfo[]): Promise<SalesforceOrg[]> {
