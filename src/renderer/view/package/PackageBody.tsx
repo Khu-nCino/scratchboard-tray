@@ -7,6 +7,8 @@ import {
   selectOrgInfo,
   selectLatestPackageVersions,
   OrgActionStatus,
+  togglePendingPackageUpgrade,
+  toggleAllPendingPackageUpgrade,
 } from "renderer/store/packages";
 import "./PackageBody.scss";
 
@@ -18,23 +20,32 @@ function mapStateToProps(state: State) {
   }
 
   const orgInfo = selectOrgInfo(state, detailUsername);
-  const namespaces = orgInfo?.installedVersions.map((org) => org.namespace) ?? [];
-  const latestVersions = selectLatestPackageVersions(state, namespaces);
+  const { actionStatus, packages } = orgInfo;
+
+  const latestVersions = selectLatestPackageVersions(state, Object.keys(packages));
+  const installedPackages = Object.entries(packages).map(([namespace, info]) => {
+    const latestVersion = latestVersions[namespace]?.versionName;
+    return {
+    ...info,
+    namespace,
+    latestVersion,
+    upgradeAvailable: latestVersions !== undefined && info.installedVersion !== latestVersion,
+  }});
 
   const { authorityUsername } = state.packages;
-  const { actionStatus, installedVersions } = orgInfo;
 
   return {
     detailUsername,
     authorityUsername,
     actionStatus,
-    installedVersions,
-    latestVersions,
+    installedPackages,
   };
 }
 
 const mapDispatchToProps = {
   checkInstalledPackages,
+  togglePendingPackageUpgrade,
+  toggleAllPendingPackageUpgrade,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -43,11 +54,11 @@ type Props = ConnectedProps<typeof connector>;
 function getLoadingMessage(status: OrgActionStatus) {
   switch (status) {
     case "pending_subscriber":
-      return "Retrieving installed packages";
+      return "Retrieving installed packages (1/3)";
     case "pending_authority":
-      return "Retrieving latest package versions";
+      return "Retrieving latest package versions (2/3)";
     case "pending_details":
-      return "Retrieving package details";
+      return "Retrieving package details (3/3)";
     default:
       return "Invalid state";
   }
@@ -61,8 +72,12 @@ export const PackageBody = connector((props: Props) => {
   }, [props.actionStatus]);
 
   if (props.actionStatus.startsWith("pending")) {
-    return <NonIdealState icon={<Spinner />} title={getLoadingMessage(props.actionStatus)} />;
+    return <NonIdealState icon={<Spinner />} title={getLoadingMessage(props.actionStatus)} description="This may take a while." />;
   }
+
+  const upgradeableInstalledPackages = props.installedPackages.filter(({ upgradeAvailable }) => upgradeAvailable);
+  let allChecked = upgradeableInstalledPackages.every(({ pendingUpgrade }) => pendingUpgrade);
+  let anyChecked = upgradeableInstalledPackages.some(({ pendingUpgrade }) => pendingUpgrade);
 
   return (
     <div>
@@ -70,21 +85,33 @@ export const PackageBody = connector((props: Props) => {
         <h4 className="sbt-header-item">Namespace</h4>
         <h4 className="sbt-header-item">Current</h4>
         <h4 className="sbt-header-item">Latest</h4>
-        <Checkbox className="sbt-header-item sbt-package-upgrade-checkbox" />
-        {props.installedVersions.flatMap((version) => [
-          <span key={`namespace-${version.namespace}`}>{version.namespace}</span>,
-          <span key={`currentVersion-${version.namespace}`}>{version.versionName}</span>,
-          <span key={`latestVersion-${version.namespace}`}>
-            {props.latestVersions[version.namespace]?.versionName}
-          </span>,
-          <Checkbox key={`check-${version.namespace}`} className="sbt-package-upgrade-checkbox" />,
-        ])}
+        <Checkbox
+          className="sbt-header-item sbt-package-upgrade-checkbox"
+          indeterminate={anyChecked && !allChecked}
+          checked={allChecked}
+          onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
+        />
+        {props.installedPackages.flatMap(
+          ({ namespace, installedVersion, pendingUpgrade, upgradeAvailable, latestVersion }) => {
+            return [
+              <span key={`namespace-${namespace}`} style={{gridColumn: 0}}>{namespace}</span>,
+              <span key={`currentVersion-${namespace}`}>{installedVersion}</span>,
+              <span key={`latestVersion-${namespace}`}>
+                {latestVersion}
+              </span>,
+              upgradeAvailable && <Checkbox
+                key={`check-${namespace}`}
+                checked={pendingUpgrade && upgradeAvailable}
+                onChange={() => {
+                  props.togglePendingPackageUpgrade(props.detailUsername, namespace);
+                }}
+                className="sbt-package-upgrade-checkbox"
+              />,
+            ];
+          }
+        )}
       </div>
-      <Button
-        intent="primary"
-        style={{ float: "right" }}
-        className="sbt-m_medium"
-      >
+      <Button intent="primary" style={{ float: "right" }} className="sbt-m_medium">
         Upgrade
       </Button>
     </div>

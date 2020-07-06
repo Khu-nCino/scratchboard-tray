@@ -14,7 +14,10 @@ type PackagesAction =
   | SetInstalledPackageVersionsAction
   | SetLatestPackageVersionsAction
   | SetPackageActionStatusAction
-  | OrgListChanges;
+  | OrgListChanges
+  | TogglePendingPackageUpgrade
+  | ToggleAllPendingPackageUpgrade;
+
 type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction>;
 
 interface SetPackageAuthorityUsernameAction extends Action<"SET_PACKAGE_AUTHORITY_USERNAME"> {
@@ -45,6 +48,19 @@ interface SetLatestPackageVersionsAction extends Action<"SET_LATEST_PACKAGE_VERS
   };
 }
 
+interface TogglePendingPackageUpgrade extends Action<"TOGGLE_PENDING_PACKAGE_UPGRADE"> {
+  payload: {
+    username: string;
+    namespace: string;
+  };
+}
+
+interface ToggleAllPendingPackageUpgrade extends Action<"TOGGLE_ALL_PENDING_PACKAGE_UPGRADE"> {
+  payload: {
+    username: string;
+  };
+}
+
 export function setPackageAuthorityUsername(username: string): SetPackageAuthorityUsernameAction {
   return {
     type: "SET_PACKAGE_AUTHORITY_USERNAME",
@@ -54,7 +70,10 @@ export function setPackageAuthorityUsername(username: string): SetPackageAuthori
   };
 }
 
-function setPackageActionStatus(username: string, status: OrgActionStatus): SetPackageActionStatusAction {
+function setPackageActionStatus(
+  username: string,
+  status: OrgActionStatus
+): SetPackageActionStatusAction {
   return {
     type: "SET_PACKAGE_ACTION_STATUS",
     payload: {
@@ -88,6 +107,28 @@ function setLatestPackageVersions(
     payload: {
       versions,
       timestamp,
+    },
+  };
+}
+
+export function togglePendingPackageUpgrade(
+  username: string,
+  namespace: string
+): TogglePendingPackageUpgrade {
+  return {
+    type: "TOGGLE_PENDING_PACKAGE_UPGRADE",
+    payload: {
+      username,
+      namespace,
+    },
+  };
+}
+
+export function toggleAllPendingPackageUpgrade(username: string): ToggleAllPendingPackageUpgrade {
+  return {
+    type: "TOGGLE_ALL_PENDING_PACKAGE_UPGRADE",
+    payload: {
+      username,
     },
   };
 }
@@ -130,10 +171,15 @@ export type OrgActionStatus =
   | "pending_authority"
   | "pending_details";
 
+interface OrgPackage {
+  installedVersion: string;
+  pendingUpgrade: boolean;
+}
+
 export interface OrgPackageState {
   readonly actionStatus: OrgActionStatus;
   readonly lastInstalledVersionsCheck?: number;
-  readonly installedVersions: SubscriberPackageVersion[]; // <namespace prefix, version>
+  readonly packages: Record<string, OrgPackage>;
 }
 
 interface PackageInfo {
@@ -152,7 +198,7 @@ export interface PackagesState {
 
 const defaultOrgPackageState: OrgPackageState = {
   actionStatus: "initial",
-  installedVersions: [],
+  packages: {},
 };
 
 export const defaultPackagesState: PackagesState = {
@@ -192,10 +238,71 @@ export function packagesReducer(
           [action.payload.username]: {
             ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
             lastInstalledVersionsCheck: action.payload.timestamp,
-            installedVersions: action.payload.versions,
+            packages: action.payload.versions.reduce<Record<string, OrgPackage>>((acc, version) => {
+              acc[version.namespace] = { installedVersion: version.versionName, pendingUpgrade: true };
+              return acc;
+            }, {}),
           },
         },
       };
+    case "TOGGLE_PENDING_PACKAGE_UPGRADE": {
+      const { username, namespace } = action.payload;
+
+      const currentOrgInfo = state.orgInfo[username];
+      const currentPackageInfo = currentOrgInfo?.packages[namespace];
+      if (currentPackageInfo === undefined) {
+        return state;
+      }
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...currentOrgInfo,
+            packages: {
+              ...currentOrgInfo.packages,
+              [namespace]: {
+                ...currentPackageInfo,
+                pendingUpgrade: !currentPackageInfo.pendingUpgrade,
+              },
+            },
+          },
+        },
+      };
+    }
+    case "TOGGLE_ALL_PENDING_PACKAGE_UPGRADE": {
+      const { username } = action.payload;
+      const currentOrgInfo = state.orgInfo[username];
+      if (currentOrgInfo === undefined) {
+        return state;
+      }
+
+      const installedPackageList = Object.entries(currentOrgInfo.packages);
+      const nextValue = !installedPackageList
+        .filter(([namespace,]) => isUpgradeAvailable(state, username, namespace))
+        .every(([,{ pendingUpgrade }]) => pendingUpgrade);
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...currentOrgInfo,
+            packages: Object.entries(currentOrgInfo.packages).reduce<Record<string, OrgPackage>>((acc, [namespace, currentPackage]) => {
+              acc[namespace] =
+                nextValue === currentPackage.pendingUpgrade
+                  ? currentPackage
+                  : {
+                      ...currentPackage,
+                      pendingUpgrade: nextValue,
+                    };
+              return acc;
+            }, {}),
+          },
+        },
+      };
+    }
     case "SET_LATEST_PACKAGE_VERSIONS":
       return {
         ...state,
@@ -236,4 +343,12 @@ export function selectLatestPackageVersions(
 
     return acc;
   }, {});
+}
+
+export function isUpgradeAvailable(state: PackagesState, username: string, namespace: string): boolean {
+  const { orgInfo, packageInfo } = state;
+  const installedVersion = orgInfo[username]?.packages[namespace]?.installedVersion;
+  const latestVersion = packageInfo[namespace]?.latestVersionName;
+
+  return installedVersion !== undefined && latestVersion !== undefined && installedVersion !== latestVersion;
 }
