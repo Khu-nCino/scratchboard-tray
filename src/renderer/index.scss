@@ -1,11 +1,9 @@
 @use "sass:color";
-@import "~@blueprintjs/core/lib/scss/variables";
-@import "~@blueprintjs/core/lib/css/blueprint.css";
-@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@use "~@blueprintjs/core/lib/scss/variables" as bp;
 
-@import "./style/size";
-@import "./style/transitions";
-@import "./style/margin";
+@use "./style/size";
+@use "./style/transitions";
+@use "./style/margin";
 
 html,
 body {
@@ -20,10 +18,10 @@ body {
 
 #app-content {
   height: 100%;
-  background-color: $pt-app-background-color;
+  background-color: bp.$pt-app-background-color;
 
   .bp3-dark & {
-    background-color: $pt-dark-app-background-color;
+    background-color: bp.$pt-dark-app-background-color;
   }
 }
 
@@ -50,28 +48,28 @@ body {
   display: flex;
   width: 100%;
 
-  border-bottom: 1px solid darken($pt-app-background-color, 10%);
-  background-color: lighten($pt-app-background-color, 2%);
+  border-bottom: 1px solid darken(bp.$pt-app-background-color, 10%);
+  background-color: lighten(bp.$pt-app-background-color, 2%);
 
   .bp3-dark & {
-    border-bottom: 1px solid darken($pt-dark-app-background-color, 10%);
+    border-bottom: 1px solid darken(bp.$pt-dark-app-background-color, 10%);
     background-color: #30404d;
   }
 
   .sbt-titlebar-title {
-    margin: $medium $x-small $medium $medium;
+    margin: size.$medium size.$x-small size.$medium size.$medium;
   }
   .sbt-titlebar-button {
-    margin: auto $medium auto auto;
+    margin: auto size.$medium auto auto;
   }
 }
 
 //OrgList
 .sbt-hover-highlight:hover {
-  background-color: darken($pt-app-background-color, 4%);
+  background-color: darken(bp.$pt-app-background-color, 4%);
 
   .bp3-dark & {
-    background-color: darken($pt-dark-app-background-color, 3%);
+    background-color: darken(bp.$pt-dark-app-background-color, 3%);
   }
 }
 
@@ -82,7 +80,7 @@ body {
 }
 
 .sbt-org-list--item {
-  min-height: $large;
+  min-height: size.$large;
   h4 {
     word-break: break-all;
   }
@@ -96,25 +94,25 @@ body {
   user-select: none;
 
   &:hover {
-    color: $pt-link-color;
+    color: bp.$pt-link-color;
   }
 
   .bp3-dark &:hover {
-    color: $pt-dark-link-color;
+    color: bp.$pt-dark-link-color;
   }
 
   &.sbt-disabled {
-    color: $pt-text-color-disabled;
+    color: bp.$pt-text-color-disabled;
     cursor: default;
   }
 
   .bp3-dark &.sbt-disabled {
-    color: $pt-dark-text-color-disabled;
+    color: bp.$pt-dark-text-color-disabled;
   }
 
   .sbt-chevron {
-    margin-left: $x-small;
-    margin-right: $x-small;
+    margin-left: size.$x-small;
+    margin-right: size.$x-small;
     transform: rotate(0);
     transition: transform linear 0.2s;
   }
@@ -125,6 +123,6 @@ body {
 
   .sbt-auxiliary-button {
     margin-left: auto;
-    margin-right: $x-small;
+    margin-right: size.$x-small;
   }
 }

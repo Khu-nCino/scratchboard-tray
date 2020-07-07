@@ -97,6 +97,7 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
 
       dispatch(createToast("Successfully deleted org.", "success"));
     } catch (error) {
+      dispatch(setPendingAction(username, false));
       dispatch(createErrorToast("There was an error deleting your org 😞", error));
     }
   };

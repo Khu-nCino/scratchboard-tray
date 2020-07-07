@@ -1,4 +1,4 @@
-@import "./size";
+@use "./size";
 
 $directions: (
   "t": (
@@ -23,7 +23,7 @@ $directions: (
   ),
 );
 
-@each $sizeName, $sizeValue in $sizes {
+@each $sizeName, $sizeValue in size.$sizes {
   .sbt-m_#{$sizeName} {
     margin-top: $sizeValue;
     margin-right: $sizeValue;
@@ -33,7 +33,7 @@ $directions: (
 }
 
 @each $directionName, $directionValues in $directions {
-  @each $sizeName, $sizeValue in $sizes {
+  @each $sizeName, $sizeValue in size.$sizes {
     .sbt-m#{$directionName}_#{$sizeName} {
       @each $d in $directionValues {
         margin-#{$d}: $sizeValue;
