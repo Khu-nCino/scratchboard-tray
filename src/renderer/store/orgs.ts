@@ -278,6 +278,10 @@ export function selectOrgDescriptions(state: State): SalesforceOrg[] {
   return state.orgs.orgList.map(({ description }) => description);
 }
 
+export function selectOrg(state: OrgsState, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
+  return state.orgList.find((org) => org.description.username === aliasOrUsername || org.description.alias === aliasOrUsername);
+}
+
 function isScratchOrg(org: OrgData<SalesforceOrg>): org is OrgData<ScratchOrg> {
   return org.description.isScratchOrg;
 }

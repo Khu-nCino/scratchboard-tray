@@ -14,6 +14,7 @@ import {
 import { setPackageAuthorityUsername } from "renderer/store/packages";
 import { UpdateManager } from "./UpdateManager";
 import "./SettingsBody.scss";
+import { selectOrg } from "renderer/store/orgs";
 
 function quitApp() {
   ipcRenderer.send(IpcRendererEvent.QUIT_APP);
@@ -25,6 +26,9 @@ function mapStateToProps(state: State) {
     openAtLogin: state.settings.openAtLogin,
     showSecondaryScratchUsernames: state.settings.showSecondaryScratchUsernames,
     packageAuthorityUsername: state.packages.authorityUsername,
+    authorityOrgFound:
+      selectOrg(state.orgs, state.packages.authorityUsername) !== undefined ||
+      state.packages.authorityUsername === "",
   };
 }
 
@@ -54,10 +58,20 @@ export const SettingsBody = connector((props: Props) => (
         onChange={props.toggleShowSecondaryScratchUsernames}
       />
     </FormGroup>
-    <FormGroup label="Package Authority Username" className="sbt-mh_medium">
-        <InputGroup value={props.packageAuthorityUsername} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+    <FormGroup
+      label="Package Authority Username or Alias"
+      helperText={props.authorityOrgFound ? "" : "No org found for that username or alias"}
+      intent={props.authorityOrgFound ? "none" : "warning"}
+      className="sbt-mh_medium"
+    >
+      <InputGroup
+        value={props.packageAuthorityUsername}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           props.setPackageAuthorityUsername(event.target.value);
-        }} />
+        }}
+        intent={props.authorityOrgFound ? "none" : "warning"}
+        placeholder="Username or Alias"
+      />
     </FormGroup>
     <div className="sbt-mh_medium">
       <Button
