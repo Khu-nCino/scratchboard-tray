@@ -1,7 +1,9 @@
-## Fixes
+## [0.4.3] - 2020-7-8
 - Windows login setting doesn't display actual value.
-- Initial aliases not being set with authenticate action
+- Initial aliases not being set with authenticate action.
 - Overflow styling.
+- Delete action will stop blocking org after an error has occurred.
+- Updated example url for link converter.
 
 ## [0.4.2] - 2020-6-21
 ## Fixes
