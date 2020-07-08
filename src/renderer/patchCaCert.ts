@@ -20,7 +20,7 @@ if (process.platform === "darwin") {
           const context = origCreateSecureContext(options);
 
           certs.forEach((cert) => {
-            context.context.addCACert(cert.trim());
+            context.context.addCACert(cert);
           });
 
           return context;
