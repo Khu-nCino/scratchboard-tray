@@ -21,6 +21,8 @@ import { orgManager } from "./api/core/OrgManager";
 import { createErrorToast } from "./store/messages";
 import { setIsVisible } from "./store/route";
 
+import "./patchCaCert";
+
 const logger = getLogger();
 
 ipc
