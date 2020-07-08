@@ -94,7 +94,7 @@ export const FrontDoorBody = connector((props: Props) => {
     <div className="sbt-m_medium">
       <FormGroup label="URL Input" helperText={helperText} intent={intent}>
         <InputGroup
-          placeholder="Example: www.salesforce.com"
+          placeholder="Example: myorg.lightning.force.com/myurl"
           fill
           readOnly={isLoading}
           value={inputUrl}
