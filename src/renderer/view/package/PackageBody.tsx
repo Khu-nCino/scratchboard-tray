@@ -26,11 +26,12 @@ function mapStateToProps(state: State) {
   const installedPackages = Object.entries(packages).map(([namespace, info]) => {
     const latestVersion = latestVersions[namespace]?.versionName;
     return {
-    ...info,
-    namespace,
-    latestVersion,
-    upgradeAvailable: latestVersions !== undefined && info.installedVersion !== latestVersion,
-  }});
+      ...info,
+      namespace,
+      latestVersion,
+      upgradeAvailable: latestVersions !== undefined && info.installedVersion !== latestVersion,
+    };
+  });
 
   const { authorityUsername } = state.packages;
 
@@ -72,10 +73,18 @@ export const PackageBody = connector((props: Props) => {
   }, [props.actionStatus]);
 
   if (props.actionStatus.startsWith("pending")) {
-    return <NonIdealState icon={<Spinner />} title={getLoadingMessage(props.actionStatus)} description="This may take a while." />;
+    return (
+      <NonIdealState
+        icon={<Spinner />}
+        title={getLoadingMessage(props.actionStatus)}
+        description="This may take a while."
+      />
+    );
   }
 
-  const upgradeableInstalledPackages = props.installedPackages.filter(({ upgradeAvailable }) => upgradeAvailable);
+  const upgradeableInstalledPackages = props.installedPackages.filter(
+    ({ upgradeAvailable }) => upgradeAvailable
+  );
   let allChecked = upgradeableInstalledPackages.every(({ pendingUpgrade }) => pendingUpgrade);
   let anyChecked = upgradeableInstalledPackages.some(({ pendingUpgrade }) => pendingUpgrade);
 
@@ -94,19 +103,21 @@ export const PackageBody = connector((props: Props) => {
         {props.installedPackages.flatMap(
           ({ namespace, installedVersion, pendingUpgrade, upgradeAvailable, latestVersion }) => {
             return [
-              <span key={`namespace-${namespace}`} style={{gridColumn: 0}}>{namespace}</span>,
-              <span key={`currentVersion-${namespace}`}>{installedVersion}</span>,
-              <span key={`latestVersion-${namespace}`}>
-                {latestVersion}
+              <span key={`namespace-${namespace}`} style={{ gridColumn: 1 }}>
+                {namespace}
               </span>,
-              upgradeAvailable && <Checkbox
-                key={`check-${namespace}`}
-                checked={pendingUpgrade && upgradeAvailable}
-                onChange={() => {
-                  props.togglePendingPackageUpgrade(props.detailUsername, namespace);
-                }}
-                className="sbt-package-upgrade-checkbox"
-              />,
+              <span key={`currentVersion-${namespace}`}>{installedVersion}</span>,
+              <span key={`latestVersion-${namespace}`}>{latestVersion}</span>,
+              upgradeAvailable && (
+                <Checkbox
+                  key={`check-${namespace}`}
+                  checked={pendingUpgrade && upgradeAvailable}
+                  onChange={() => {
+                    props.togglePendingPackageUpgrade(props.detailUsername, namespace);
+                  }}
+                  className="sbt-package-upgrade-checkbox"
+                />
+              ),
             ];
           }
         )}
