@@ -1,28 +1,33 @@
 import tls from "tls";
 import fs from "fs";
 import process from "process";
+import { promisify } from "util";
 
 if (process.platform === "darwin") {
-  const origCreateSecureContext = tls.createSecureContext;
-  tls.createSecureContext = (options) => {
-    const context = origCreateSecureContext(options);
+  const readFile = promisify(fs.readFile);
 
-    const pem = fs
-      .readFileSync("/Library/Application Support/Netskope/STAgent/data/nscacert.pem", {
-        encoding: "ascii",
-      })
-      .replace(/\r\n/g, "\n");
+  readFile("/Library/Application Support/Netskope/STAgent/data/nscacert.pem", { encoding: "ascii" })
+    .then((data) =>
+      data
+        .replace(/\r\n/g, "\n")
+        .match(/-----BEGIN CERTIFICATE-----\n[\s\S]+?\n-----END CERTIFICATE-----/g)
+        ?.map((cert) => cert.trim())
+    )
+    .then((certs) => {
+      if (certs !== undefined && certs.length > 0) {
+        const origCreateSecureContext = tls.createSecureContext;
+        tls.createSecureContext = (options) => {
+          const context = origCreateSecureContext(options);
 
-    const certs = pem.match(/-----BEGIN CERTIFICATE-----\n[\s\S]+?\n-----END CERTIFICATE-----/g);
+          certs.forEach((cert) => {
+            context.context.addCACert(cert.trim());
+          });
 
-    if (!certs) {
-      throw new Error(`Could not parse certificate ./rootCA.crt`);
-    }
-
-    certs.forEach((cert) => {
-      context.context.addCACert(cert.trim());
+          return context;
+        };
+      }
+    })
+    .catch((reason) => {
+      console.log(reason);
     });
-
-    return context;
-  };
 }
