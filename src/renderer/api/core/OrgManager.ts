@@ -102,8 +102,8 @@ export class OrgManager {
     const devHubConn = await this.cache.getConnection(devHubUsername);
     const remoteOrgId = await this.queryOrgId(devHubConn, orgId);
 
-    await this.cache.removeOrg(username);
     await devHubConn.sobject("ActiveScratchOrg").delete(remoteOrgId);
+    await this.cache.removeOrg(username);
   }
 
   async formatDescriptions(authInfos: AuthInfo[]): Promise<SalesforceOrg[]> {
