@@ -4,6 +4,7 @@
 - Overflow styling.
 - Delete action will stop blocking org after an error has occurred.
 - Updated example url for link converter.
+- Quick and dirty Netskope fix.
 
 ## [0.4.2] - 2020-6-21
 ## Fixes
