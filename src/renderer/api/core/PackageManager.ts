@@ -64,7 +64,9 @@ export class PackageManager {
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(namespaces)})
+          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(
+            namespaces
+          )})
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
           AND PackageManager__Is_Patch__c = false
@@ -73,12 +75,19 @@ export class PackageManager {
     );
   }
 
-  async getAuthorityPackageDetails(authorityUsername: string, versions: SortingPackageVersion[]): Promise<AuthorityPackageVersion[]> {
+  async getAuthorityPackageDetails(
+    authorityUsername: string,
+    versions: (SortingPackageVersion | SubscriberPackageVersion)[]
+  ): Promise<AuthorityPackageVersion[]> {
     const versionSelector = versions
       .map(
         (version) => strip`(
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c = '${version.namespace}'
-          AND PackageManager__Sorting_Version_Number__c = '${version.sortingVersion}'
+          AND ${
+            "sortingVersion" in version
+              ? `PackageManager__Sorting_Version_Number__c = '${version.sortingVersion}'`
+              : `Name = '${version.versionName}'`
+          }
         )`
       )
       .join(" OR ");

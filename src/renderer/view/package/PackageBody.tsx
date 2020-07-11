@@ -4,13 +4,13 @@ import { NonIdealState, Spinner, Button, Checkbox } from "@blueprintjs/core";
 import { State } from "renderer/store";
 import {
   checkInstalledPackages,
-  selectOrgInfo,
-  selectLatestPackageVersions,
   OrgActionStatus,
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
+  selectOrgPackageDetails,
 } from "renderer/store/packages";
 import "./PackageBody.scss";
+import { selectOrg } from "renderer/store/orgs";
 
 function mapStateToProps(state: State) {
   const { detailUsername } = state.route;
@@ -19,27 +19,12 @@ function mapStateToProps(state: State) {
     throw new Error("Detail username can't be undefined on the Packages route.");
   }
 
-  const orgInfo = selectOrgInfo(state, detailUsername);
-  const { actionStatus, packages } = orgInfo;
-
-  const latestVersions = selectLatestPackageVersions(state, Object.keys(packages));
-  const installedPackages = Object.entries(packages).map(([namespace, info]) => {
-    const latestVersion = latestVersions[namespace]?.versionName;
-    return {
-      ...info,
-      namespace,
-      latestVersion,
-      upgradeAvailable: latestVersions !== undefined && info.installedVersion !== latestVersion,
-    };
-  });
-
-  const { authorityUsername } = state.packages;
+  const orgPackageDetails = selectOrgPackageDetails(state.packages, detailUsername);
 
   return {
     detailUsername,
-    authorityUsername,
-    actionStatus,
-    installedPackages,
+    authorityExists: selectOrg(state.orgs, state.packages.authorityUsername) !== undefined,
+    orgPackageDetails,
   };
 }
 
@@ -67,22 +52,26 @@ function getLoadingMessage(status: OrgActionStatus) {
 
 export const PackageBody = connector((props: Props) => {
   useEffect(() => {
-    if (props.actionStatus === "initial") {
+    if (props.authorityExists && props.orgPackageDetails.actionStatus === "initial") {
       props.checkInstalledPackages(props.detailUsername);
     }
-  }, [props.actionStatus]);
+  }, [props.orgPackageDetails.actionStatus]);
 
-  if (props.actionStatus.startsWith("pending")) {
+  if (!props.authorityExists) {
+    return <NonIdealState icon="error" title="Package authority not found. Please check the settings page." />
+  }
+
+  if (props.orgPackageDetails.actionStatus.startsWith("pending")) {
     return (
       <NonIdealState
         icon={<Spinner />}
-        title={getLoadingMessage(props.actionStatus)}
+        title={getLoadingMessage(props.orgPackageDetails.actionStatus)}
         description="This may take a while."
       />
     );
   }
 
-  const upgradeableInstalledPackages = props.installedPackages.filter(
+  const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
     ({ upgradeAvailable }) => upgradeAvailable
   );
   let allChecked = upgradeableInstalledPackages.every(({ pendingUpgrade }) => pendingUpgrade);
@@ -100,14 +89,14 @@ export const PackageBody = connector((props: Props) => {
           checked={allChecked}
           onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
         />
-        {props.installedPackages.flatMap(
-          ({ namespace, installedVersion, pendingUpgrade, upgradeAvailable, latestVersion }) => {
+        {Object.entries(props.orgPackageDetails.packages).flatMap(
+          ([namespace, { installedVersionInfo, pendingUpgrade, upgradeAvailable, latestVersionInfo }]) => {
             return [
               <span key={`namespace-${namespace}`} style={{ gridColumn: 1 }}>
                 {namespace}
               </span>,
-              <span key={`currentVersion-${namespace}`}>{installedVersion}</span>,
-              <span key={`latestVersion-${namespace}`}>{latestVersion}</span>,
+              <Button small minimal key={`currentVersion-${namespace}`}>{installedVersionInfo.versionName}</Button>,
+              <Button small minimal key={`latestVersion-${namespace}`}>{latestVersionInfo.versionName}</Button>,
               upgradeAvailable && (
                 <Checkbox
                   key={`check-${namespace}`}

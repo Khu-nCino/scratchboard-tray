@@ -7,6 +7,7 @@ import {
   SubscriberPackageVersion,
   AuthorityPackageVersion,
 } from "renderer/api/core/PackageManager";
+import { createErrorToast, MessagesAction } from "./messages";
 
 // Actions
 type PackagesAction =
@@ -18,7 +19,7 @@ type PackagesAction =
   | TogglePendingPackageUpgrade
   | ToggleAllPendingPackageUpgrade;
 
-type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction>;
+type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction | MessagesAction>;
 
 interface SetPackageAuthorityUsernameAction extends Action<"SET_PACKAGE_AUTHORITY_USERNAME"> {
   payload: {
@@ -153,10 +154,12 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
       dispatch(setPackageActionStatus(username, "pending_details"));
       const latestPackageDetails = await packageManager.getAuthorityPackageDetails(
         authorityUsername,
-        latestPackageVersions
+        [...installedPackages, ...latestPackageVersions]
       );
 
       dispatch(setLatestPackageVersions(latestPackageDetails, Date.now()));
+    } catch (error) {
+      dispatch(createErrorToast("There was an error fetching you package data 🤔", error));
     } finally {
       dispatch(setPackageActionStatus(username, "ideal"));
     }
@@ -217,8 +220,6 @@ export function packagesReducer(
         ...state,
         authorityUsername: action.payload.username,
       };
-    // case "ORG_LIST_CHANGES":
-
     case "SET_PACKAGE_ACTION_STATUS":
       return {
         ...state,
@@ -239,7 +240,10 @@ export function packagesReducer(
             ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
             lastInstalledVersionsCheck: action.payload.timestamp,
             packages: action.payload.versions.reduce<Record<string, OrgPackage>>((acc, version) => {
-              acc[version.namespace] = { installedVersion: version.versionName, pendingUpgrade: true };
+              acc[version.namespace] = {
+                installedVersion: version.versionName,
+                pendingUpgrade: true,
+              };
               return acc;
             }, {}),
           },
@@ -280,8 +284,8 @@ export function packagesReducer(
 
       const installedPackageList = Object.entries(currentOrgInfo.packages);
       const nextValue = !installedPackageList
-        .filter(([namespace,]) => isUpgradeAvailable(state, username, namespace))
-        .every(([,{ pendingUpgrade }]) => pendingUpgrade);
+        .filter(([namespace]) => isUpgradeAvailable(state, username, namespace))
+        .every(([, { pendingUpgrade }]) => pendingUpgrade);
 
       return {
         ...state,
@@ -289,16 +293,19 @@ export function packagesReducer(
           ...state.orgInfo,
           [username]: {
             ...currentOrgInfo,
-            packages: Object.entries(currentOrgInfo.packages).reduce<Record<string, OrgPackage>>((acc, [namespace, currentPackage]) => {
-              acc[namespace] =
-                nextValue === currentPackage.pendingUpgrade
-                  ? currentPackage
-                  : {
-                      ...currentPackage,
-                      pendingUpgrade: nextValue,
-                    };
-              return acc;
-            }, {}),
+            packages: Object.entries(currentOrgInfo.packages).reduce<Record<string, OrgPackage>>(
+              (acc, [namespace, currentPackage]) => {
+                acc[namespace] =
+                  nextValue === currentPackage.pendingUpgrade
+                    ? currentPackage
+                    : {
+                        ...currentPackage,
+                        pendingUpgrade: nextValue,
+                      };
+                return acc;
+              },
+              {}
+            ),
           },
         },
       };
@@ -326,29 +333,63 @@ export function packagesReducer(
   }
 }
 
-export function selectOrgInfo(state: State, username: string): OrgPackageState {
-  return state.packages.orgInfo[username] ?? defaultOrgPackageState;
-}
-
-export function selectLatestPackageVersions(
-  state: State,
-  namespaces: string[]
-): Record<string, SubscriberPackageVersion> {
-  return namespaces.reduce<Record<string, SubscriberPackageVersion>>((acc, namespace) => {
-    const packageInfo = state.packages.packageInfo[namespace];
-    const packageVersion = packageInfo?.versions[packageInfo.latestVersionName];
-    if (packageVersion !== undefined) {
-      acc[namespace] = packageVersion;
+export interface OrgPackageDetails extends OrgPackageState {
+  readonly packages: Record<
+    string,
+    {
+      installedVersionInfo: AuthorityPackageVersion;
+      latestVersionInfo: AuthorityPackageVersion;
+      upgradeAvailable: boolean;
+      installedVersion: string;
+      pendingUpgrade: boolean;
     }
-
-    return acc;
-  }, {});
+  >;
 }
 
-export function isUpgradeAvailable(state: PackagesState, username: string, namespace: string): boolean {
+export function selectOrgPackageDetails(state: PackagesState, username: string): OrgPackageDetails {
+  const orgInfo = state.orgInfo[username];
+
+  if (orgInfo === undefined) {
+    return {
+      actionStatus: "initial",
+      packages: {},
+    };
+  }
+
+  return {
+    ...orgInfo,
+    packages: Object.fromEntries(
+      Object.entries(orgInfo.packages).map(([namespace, info]) => {
+        const packageInfo = state.packageInfo[namespace];
+        const installedVersionInfo = packageInfo.versions[info.installedVersion];
+        const latestVersionInfo = packageInfo.versions[packageInfo.latestVersionName];
+
+        return [
+          namespace,
+          {
+            ...info,
+            installedVersionInfo,
+            latestVersionInfo,
+            upgradeAvailable: installedVersionInfo !== undefined && installedVersionInfo !== latestVersionInfo,
+          },
+        ];
+      })
+    ),
+  };
+}
+
+export function isUpgradeAvailable(
+  state: PackagesState,
+  username: string,
+  namespace: string
+): boolean {
   const { orgInfo, packageInfo } = state;
   const installedVersion = orgInfo[username]?.packages[namespace]?.installedVersion;
   const latestVersion = packageInfo[namespace]?.latestVersionName;
 
-  return installedVersion !== undefined && latestVersion !== undefined && installedVersion !== latestVersion;
+  return (
+    installedVersion !== undefined &&
+    latestVersion !== undefined &&
+    installedVersion !== latestVersion
+  );
 }
