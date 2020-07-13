@@ -1,3 +1,8 @@
+## [0.5.0] - 2020-7-13
+- Ability to view installed package versions.
+- Ability to see latest package versions.
+- Ability to open package install url.
+
 ## [0.4.3] - 2020-7-8
 - Windows login setting doesn't display actual value.
 - Initial aliases not being set with authenticate action.
