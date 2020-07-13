@@ -3,12 +3,13 @@
 
 .sbt-package-grid {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(3, auto);
   grid-template-rows: $medium;
   grid-auto-rows: 1fr;
   row-gap: $x-small;
+  align-items: center;
 
-  margin: 10px 0 0 30px;
+  margin: 10px 0 0 15px;
 
   .sbt-header-item {
     margin: 0;
@@ -19,4 +20,5 @@
   margin: 0 !important;
   padding: 0 !important;
   align-self: center;
+  justify-self: center;
 }

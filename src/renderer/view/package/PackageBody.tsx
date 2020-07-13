@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { NonIdealState, Spinner, Button, Checkbox } from "@blueprintjs/core";
+import { NonIdealState, Spinner, Button } from "@blueprintjs/core";
 import { State } from "renderer/store";
 import {
   checkInstalledPackages,
@@ -11,6 +11,8 @@ import {
 } from "renderer/store/packages";
 import "./PackageBody.scss";
 import { selectOrg } from "renderer/store/orgs";
+import { PackageDetail } from "./PackageDetail";
+import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 
 function mapStateToProps(state: State) {
   const { detailUsername } = state.route;
@@ -57,8 +59,11 @@ export const PackageBody = connector((props: Props) => {
     }
   }, [props.orgPackageDetails.actionStatus]);
 
+  const [selectedVersion, setSelectedVersion] = useState<AuthorityPackageVersion | undefined>();
+  const [selectedVersionOpenable, setSelectedVersionOpenable] = useState(false);
+
   if (!props.authorityExists) {
-    return <NonIdealState icon="error" title="Package authority not found. Please check the settings page." />
+    return <NonIdealState icon="error" title="No package authority set." />;
   }
 
   if (props.orgPackageDetails.actionStatus.startsWith("pending")) {
@@ -71,49 +76,101 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
-  const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
-    ({ upgradeAvailable }) => upgradeAvailable
-  );
-  let allChecked = upgradeableInstalledPackages.every(({ pendingUpgrade }) => pendingUpgrade);
-  let anyChecked = upgradeableInstalledPackages.some(({ pendingUpgrade }) => pendingUpgrade);
+  const packageEntities = Object.entries(props.orgPackageDetails.packages);
+
+  // const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
+  //   ({ upgradeAvailable }) => upgradeAvailable
+  // );
+  // let allChecked = upgradeableInstalledPackages.every(({ upgradeSelected }) => upgradeSelected);
+  // let anyChecked = upgradeableInstalledPackages.some(({ upgradeSelected }) => upgradeSelected);
 
   return (
     <div>
-      <div className="sbt-package-grid">
-        <h4 className="sbt-header-item">Namespace</h4>
-        <h4 className="sbt-header-item">Current</h4>
-        <h4 className="sbt-header-item">Latest</h4>
-        <Checkbox
+      {packageEntities.length === 0 && <NonIdealState title="No packages found." />}
+      {packageEntities.length > 0 && (
+        <div className="sbt-package-grid">
+          <h4 className="sbt-header-item">Namespace</h4>
+          <h4 className="sbt-header-item" style={{ marginLeft: "5px" }}>
+            Current
+          </h4>
+          <h4 className="sbt-header-item" style={{ marginLeft: "5px" }}>
+            Latest
+          </h4>
+          {/* <Checkbox
           className="sbt-header-item sbt-package-upgrade-checkbox"
           indeterminate={anyChecked && !allChecked}
           checked={allChecked}
           onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
-        />
-        {Object.entries(props.orgPackageDetails.packages).flatMap(
-          ([namespace, { installedVersionInfo, pendingUpgrade, upgradeAvailable, latestVersionInfo }]) => {
-            return [
-              <span key={`namespace-${namespace}`} style={{ gridColumn: 1 }}>
-                {namespace}
-              </span>,
-              <Button small minimal key={`currentVersion-${namespace}`}>{installedVersionInfo.versionName}</Button>,
-              <Button small minimal key={`latestVersion-${namespace}`}>{latestVersionInfo.versionName}</Button>,
-              upgradeAvailable && (
-                <Checkbox
-                  key={`check-${namespace}`}
-                  checked={pendingUpgrade && upgradeAvailable}
-                  onChange={() => {
-                    props.togglePendingPackageUpgrade(props.detailUsername, namespace);
+        /> */}
+          {packageEntities.flatMap(
+            ([namespace, { installedVersionInfo, upgradeAvailable, latestVersionInfo }]) => {
+              return [
+                <span key={`namespace-${namespace}`} style={{ gridColumn: 1 }}>
+                  {namespace}
+                </span>,
+                <Button
+                  small
+                  fill
+                  minimal
+                  alignText="left"
+                  key={`currentVersion-${namespace}`}
+                  onClick={() => {
+                    setSelectedVersion(installedVersionInfo);
+                    setSelectedVersionOpenable(false);
                   }}
-                  className="sbt-package-upgrade-checkbox"
-                />
-              ),
-            ];
-          }
+                >
+                  {installedVersionInfo?.versionName}
+                </Button>,
+                <Button
+                  small
+                  fill
+                  minimal
+                  alignText="left"
+                  key={`latestVersion-${namespace}`}
+                  disabled={!upgradeAvailable}
+                  onClick={() => {
+                    setSelectedVersion(latestVersionInfo);
+                    setSelectedVersionOpenable(true);
+                  }}
+                >
+                  {latestVersionInfo?.versionName}
+                </Button>,
+                // upgradeAvailable && (
+                //   <Checkbox
+                //     key={`check-${namespace}`}
+                //     checked={upgradeSelected && upgradeAvailable}
+                //     onChange={() => {
+                //       props.togglePendingPackageUpgrade(props.detailUsername, namespace);
+                //     }}
+                //     className="sbt-package-upgrade-checkbox"
+                //   />
+                // ),
+              ];
+            }
+          )}
+        </div>
+      )}
+      <div style={{ float: "right" }}>
+        {props.orgPackageDetails.lastInstalledVersionsChecked !== undefined && (
+          <span>
+            Last checked on:{" "}
+            {new Date(props.orgPackageDetails.lastInstalledVersionsChecked).toDateString()}
+          </span>
         )}
+        <Button
+          className="sbt-m_medium"
+          onClick={() => {
+            props.checkInstalledPackages(props.detailUsername);
+          }}
+        >
+          Refresh
+        </Button>
       </div>
-      <Button intent="primary" style={{ float: "right" }} className="sbt-m_medium">
-        Upgrade
-      </Button>
+      <PackageDetail
+        packageVersion={selectedVersion}
+        isOpenable={selectedVersionOpenable}
+        onClose={() => setSelectedVersion(undefined)}
+      />
     </div>
   );
 });

@@ -15,8 +15,10 @@ export interface SortingPackageVersion {
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
+  readonly packageId: string;
   readonly password: string;
   readonly buildDate: string;
+  readonly sortingVersion: string;
 }
 
 const installedPackageVersionsQuery = strip`
@@ -75,6 +77,7 @@ export class PackageManager {
     );
   }
 
+  // TODO optimize query
   async getAuthorityPackageDetails(
     authorityUsername: string,
     versions: (SortingPackageVersion | SubscriberPackageVersion)[]
@@ -96,6 +99,8 @@ export class PackageManager {
       Name: string;
       PackageManager__Build_Date__c: string;
       PackageManager__Password__c: string;
+      PackageManager__Metadata_Package_Version_Id__c: string;
+      PackageManager__Sorting_Version_Number__c: string;
       PackageManager__Package__r: {
         PackageManager__Namespace_Prefix__c: string;
       };
@@ -107,7 +112,9 @@ export class PackageManager {
         SELECT
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
           Name,
+          PackageManager__Sorting_Version_Number__c,
           PackageManager__Build_Date__c,
+          PackageManager__Metadata_Package_Version_Id__c,
           PackageManager__Password__c
         FROM
           PackageManager__Package_Version__c
@@ -120,10 +127,12 @@ export class PackageManager {
       namespace: version.PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
       versionName: version.Name,
       buildDate: version.PackageManager__Build_Date__c,
+      packageId: version.PackageManager__Metadata_Package_Version_Id__c,
       password: version.PackageManager__Password__c,
+      sortingVersion: version.PackageManager__Sorting_Version_Number__c,
     }));
   }
 }
 
-// I'm not happy with this but don't want to take the time to fix it ;(
+// Singletons ftw
 export const packageManager = new PackageManager(orgCache);

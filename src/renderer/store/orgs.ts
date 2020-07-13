@@ -152,8 +152,7 @@ const defaultOrgsState: OrgsState = {
 };
 
 const defaultOrgData = {
-  state: { pendingAction: false, pendingPackageStatus: "initial" },
-  packages: { installed: [] },
+  state: { pendingAction: false },
 } as const;
 
 // Reducers
@@ -198,7 +197,6 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
         .filter((org) => !prevUsernameSet.has(org.username))
         .map((org) => ({
           state: defaultOrgData.state,
-          packages: defaultOrgData.packages,
           description: org,
         }));
 
@@ -280,6 +278,10 @@ export function selectOrgDescriptions(state: State): SalesforceOrg[] {
 }
 
 export function selectOrg(state: OrgsState, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
+  if (aliasOrUsername === "") {
+    return;
+  }
+
   return state.orgList.find((org) => org.description.username === aliasOrUsername || org.description.alias === aliasOrUsername);
 }
 
