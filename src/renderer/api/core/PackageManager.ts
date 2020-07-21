@@ -3,19 +3,19 @@ import { OrgCache, orgCache } from "./OrgCache";
 import { formatQueryList } from "./util";
 
 export interface PackageVersion {
+  readonly packageId: string;
   readonly namespace: string;
   readonly versionName: string;
 }
 
 export interface SortingPackageVersion {
-  readonly namespace: string;
+  readonly packageId: string;
   readonly sortingVersion: string;
 }
 
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
-  readonly packageId: string;
   readonly password: string;
   readonly buildDate: string;
   readonly sortingVersion: string;
@@ -23,6 +23,7 @@ export interface AuthorityPackageVersion extends PackageVersion {
 
 const installedPackageVersionsQuery = strip`
 SELECT
+  SubscriberPackageId,
   SubscriberPackage.NamespacePrefix,
   SubscriberPackageVersion.Name
 FROM
@@ -34,11 +35,12 @@ export class PackageManager {
 
   async listSubscriberPackageVersions(username: string): Promise<SubscriberPackageVersion[]> {
     interface RawInstalledSubscriberPackage {
-      readonly SubscriberPackage: {
-        readonly NamespacePrefix: string;
+      SubscriberPackageId: string;
+      SubscriberPackage: {
+        NamespacePrefix: string;
       };
-      readonly SubscriberPackageVersion: {
-        readonly Name: string;
+      SubscriberPackageVersion: {
+        Name: string;
       };
     }
 
@@ -48,6 +50,7 @@ export class PackageManager {
       true
     );
     return versions.map((version) => ({
+      packageId: version.SubscriberPackageId,
       namespace: version.SubscriberPackage.NamespacePrefix,
       versionName: version.SubscriberPackageVersion.Name,
     }));
@@ -55,24 +58,28 @@ export class PackageManager {
 
   getLatestAvailablePackageVersions(
     authorityUsername: string,
-    namespaces: string[]
+    packageIds: string[]
   ): Promise<SortingPackageVersion[]> {
+    if (packageIds.length === 0) {
+      return Promise.resolve([]);
+    }
+
     return this.cache.query<SortingPackageVersion>(
       authorityUsername,
       strip`
         SELECT
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c namespace,
+          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c packageId,
           MAX(PackageManager__Sorting_Version_Number__c) sortingVersion
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c IN (${formatQueryList(
-            namespaces
+          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN (${formatQueryList(
+            packageIds
           )})
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
           AND PackageManager__Is_Patch__c = false
-        GROUP BY PackageManager__Package__r.PackageManager__Namespace_Prefix__c
+        GROUP BY PackageManager__Package__r.PackageManager__Metadata_Package_Id__c
       `
     );
   }
@@ -80,8 +87,8 @@ export class PackageManager {
   groupVersions(versions: (SortingPackageVersion | SubscriberPackageVersion)[]) {
     return versions.reduce<Record<string, { sorting: string[]; subscriber: string[] }>>(
       (out, version) => {
-        const { namespace } = version;
-        const entry = out[namespace] ?? (out[namespace] = { sorting: [], subscriber: [] });
+        const { packageId } = version;
+        const entry = out[packageId] ?? (out[packageId] = { sorting: [], subscriber: [] });
 
         if ("sortingVersion" in version) {
           entry.sorting.push(version.sortingVersion);
@@ -96,25 +103,21 @@ export class PackageManager {
   }
 
   versionsGroupToSelector(versionMap: Record<string, { sorting: string[]; subscriber: string[] }>) {
-    function formatValues(xs: string[]): string {
-      return xs.map((x) => `'${x}'`).join(",");
-    }
-
     return Object.entries(versionMap)
       .map(([namespace, { sorting, subscriber }]) => {
         const sortingSelect =
           sorting.length === 0
             ? undefined
-            : `PackageManager__Sorting_Version_Number__c IN (${formatValues(sorting)})`;
+            : `PackageManager__Sorting_Version_Number__c IN (${formatQueryList(sorting)})`;
         const subscriberSelect =
-          subscriber.length === 0 ? undefined : `Name IN (${formatValues(subscriber)})`;
+          subscriber.length === 0 ? undefined : `Name IN (${formatQueryList(subscriber)})`;
 
         let versionSelectors =
           sortingSelect !== undefined && subscriberSelect !== undefined
             ? `(${sortingSelect} OR ${subscriberSelect})`
             : sortingSelect ?? subscriberSelect;
 
-        return `(PackageManager__Package__r.PackageManager__Namespace_Prefix__c = '${namespace}' AND ${versionSelectors})`;
+        return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c = '${namespace}' AND ${versionSelectors})`;
       })
       .join(" OR ");
   }
@@ -123,6 +126,10 @@ export class PackageManager {
     authorityUsername: string,
     versions: (SortingPackageVersion | SubscriberPackageVersion)[]
   ): Promise<AuthorityPackageVersion[]> {
+    if (versions.length === 0) {
+      return [];
+    }
+
     const versionsGroup = this.groupVersions(versions);
     const versionsSelector = this.versionsGroupToSelector(versionsGroup);
 

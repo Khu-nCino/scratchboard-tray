@@ -174,7 +174,7 @@ export class OrgCache {
   }
 
   async query<T>(usernameOrAlias: string, query: string, tooling: boolean = false): Promise<T[]> {
-    logger.log(`{ usernameOrAlias: ${usernameOrAlias}, query: ${query} }`);
+    logger.log(`Executing Query ORG: "${usernameOrAlias}", QUERY: "${query}"`);
     const connection = await this.getConnection(await this.resolveAlias(usernameOrAlias));
 
     return new Promise((resolve, reject) => {

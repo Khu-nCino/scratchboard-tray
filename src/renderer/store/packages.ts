@@ -166,10 +166,10 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
       dispatch(setInstalledPackageVersions(username, installedPackages, Date.now()));
       dispatch(setPackageActionStatus(username, "pending_authority"));
 
-      const namespaces = installedPackages.map((installedPackage) => installedPackage.namespace);
+      const packageIds = installedPackages.map((installedPackage) => installedPackage.packageId);
       const latestPackageVersions = await packageManager.getLatestAvailablePackageVersions(
         authorityUsername,
-        namespaces
+        packageIds
       );
 
       dispatch(setPackageActionStatus(username, "pending_details"));
