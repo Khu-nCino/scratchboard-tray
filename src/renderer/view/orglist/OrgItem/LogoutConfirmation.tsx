@@ -8,7 +8,7 @@ interface Props {
   onConfirm: () => void;
 }
 
-export const LogoutConformation = (props: Props) => (
+export const LogoutConfirmation = (props: Props) => (
   <Alert
     className="sbt-mh_medium"
     cancelButtonText="Cancel"

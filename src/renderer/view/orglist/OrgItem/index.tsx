@@ -5,7 +5,6 @@ import { connect, ConnectedProps } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
 
-import { TimeRemaining } from "../TimeRemaining";
 
 import { SalesforceOrg } from "renderer/api/SalesforceOrg";
 import { State } from "renderer/store";
@@ -18,9 +17,10 @@ import {
   OrgData,
 } from "renderer/store/orgs";
 import { ActionMenu } from "./ActionMenu";
+import { TimeRemaining } from "./TimeRemaining";
 import { DeleteConformation } from "./DeleteConformation";
 import { InputTextDialog } from "renderer/view/InputTextDialog";
-import { LogoutConformation } from "./LogoutConformation";
+import { LogoutConfirmation } from "./LogoutConfirmation";
 import { pushRoute } from "renderer/store/route";
 
 interface OwnProps {
@@ -95,7 +95,7 @@ export const OrgItem = connector((props: Props) => {
         onClose={() => setPendingDelete(false)}
         onConfirm={props.deleteOrg}
       />
-      <LogoutConformation
+      <LogoutConfirmation
         displayName={orgDisplayName}
         isOpen={pendingLogout}
         onClose={() => setPendingLogout(false)}

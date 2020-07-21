@@ -19,16 +19,16 @@ export class PersistManager {
       ...state,
       settings: {
         ...state.settings,
-        theme: this.electronStore.get("theme", state.settings?.theme),
+        theme: this.electronStore.get("theme", state.settings?.theme) as "light" | "dark",
         showSecondaryScratchUsernames: this.electronStore.get(
           "showSecondaryScratchUsernames",
           state.settings?.showSecondaryScratchUsernames
-        ),
+        ) as boolean,
         openAtLogin: false,
       },
       expanded: {
         ...defaultState.expanded,
-        ...this.electronStore.get("expanded", {}),
+        ...this.electronStore.get("expanded", {}) as Record<string, string>,
       },
       updates: {
         ...defaultState.updates,
@@ -39,7 +39,7 @@ export class PersistManager {
         authorityUsername: this.electronStore.get(
           "packageAuthorityUsername",
           state.packages?.authorityUsername
-        ),
+        ) as string,
       },
     };
   }

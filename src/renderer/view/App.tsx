@@ -16,7 +16,6 @@ import { PackageBody } from "./package/PackageBody";
 function mapStateToProps(state: State) {
   return {
     activeRoute: selectActiveRoute(state.route),
-    theme: state.settings.theme,
   };
 }
 

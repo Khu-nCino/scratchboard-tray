@@ -77,23 +77,54 @@ export class PackageManager {
     );
   }
 
-  // TODO optimize query
+  groupVersions(versions: (SortingPackageVersion | SubscriberPackageVersion)[]) {
+    return versions.reduce<Record<string, { sorting: string[]; subscriber: string[] }>>(
+      (out, version) => {
+        const { namespace } = version;
+        const entry = out[namespace] ?? (out[namespace] = { sorting: [], subscriber: [] });
+
+        if ("sortingVersion" in version) {
+          entry.sorting.push(version.sortingVersion);
+        } else {
+          entry.subscriber.push(version.versionName);
+        }
+
+        return out;
+      },
+      {}
+    );
+  }
+
+  versionsGroupToSelector(versionMap: Record<string, { sorting: string[]; subscriber: string[] }>) {
+    function formatValues(xs: string[]): string {
+      return xs.map((x) => `'${x}'`).join(",");
+    }
+
+    return Object.entries(versionMap)
+      .map(([namespace, { sorting, subscriber }]) => {
+        const sortingSelect =
+          sorting.length === 0
+            ? undefined
+            : `PackageManager__Sorting_Version_Number__c IN (${formatValues(sorting)})`;
+        const subscriberSelect =
+          subscriber.length === 0 ? undefined : `Name IN (${formatValues(subscriber)})`;
+
+        let versionSelectors =
+          sortingSelect !== undefined && subscriberSelect !== undefined
+            ? `(${sortingSelect} OR ${subscriberSelect})`
+            : sortingSelect ?? subscriberSelect;
+
+        return `(PackageManager__Package__r.PackageManager__Namespace_Prefix__c = '${namespace}' AND ${versionSelectors})`;
+      })
+      .join(" OR ");
+  }
+
   async getAuthorityPackageDetails(
     authorityUsername: string,
     versions: (SortingPackageVersion | SubscriberPackageVersion)[]
   ): Promise<AuthorityPackageVersion[]> {
-    const versionSelector = versions
-      .map(
-        (version) => strip`(
-          PackageManager__Package__r.PackageManager__Namespace_Prefix__c = '${version.namespace}'
-          AND ${
-            "sortingVersion" in version
-              ? `PackageManager__Sorting_Version_Number__c = '${version.sortingVersion}'`
-              : `Name = '${version.versionName}'`
-          }
-        )`
-      )
-      .join(" OR ");
+    const versionsGroup = this.groupVersions(versions);
+    const versionsSelector = this.versionsGroupToSelector(versionsGroup);
 
     interface RawAuthorityPackageVersion {
       Name: string;
@@ -119,7 +150,7 @@ export class PackageManager {
         FROM
           PackageManager__Package_Version__c
         WHERE
-          ${versionSelector}
+          ${versionsSelector}
       `
     );
 
