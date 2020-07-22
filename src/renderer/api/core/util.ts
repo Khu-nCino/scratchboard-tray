@@ -67,7 +67,13 @@ export function trimTo15(orgId: string) {
 }
 
 export function formatQueryList(items: string[]): string {
-  return items.map((item) => `'${item}'`).join();
+  if (items.length < 1) {
+    throw new Error("Need items for a format query");
+  } else if (items.length === 1) {
+    return `= '${items[0]}'`;
+  } else {
+    return `IN (${items.map((item) => `'${item}'`).join()})`
+  }
 }
 
 export function isScratch(info: AuthInfo) {

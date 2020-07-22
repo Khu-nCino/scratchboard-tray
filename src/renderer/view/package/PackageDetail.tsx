@@ -50,7 +50,7 @@ export const PackageDetail = connector((props: Props) => {
           {props.isOpenable && <Button
             loading={isOpeningFrontDoor}
             onClick={async () => {
-              if (props.detailUsername === undefined) {
+              if (props.detailUsername === undefined || props.packageVersion === undefined) {
                 return;
               }
 
@@ -59,7 +59,7 @@ export const PackageDetail = connector((props: Props) => {
                 shell.openExternal(
                   await orgManager.getFrontDoor(
                     props.detailUsername,
-                    `/packaging/installPackage.apexp?p0=${props.packageVersion?.packageId}`
+                    `/packaging/installPackage.apexp?p0=${props.packageVersion.packageVersionId}`
                   )
                 );
               } catch (error) {

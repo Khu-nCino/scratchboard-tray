@@ -25,6 +25,7 @@ type Props = ConnectedProps<typeof connector>;
 export const App = connector((props: Props) => (
   <div id="app-content">
     <RouteTransitions
+      primaryRoute='orgs'
       activeRoute={props.activeRoute}
       routes={{
         orgs: (

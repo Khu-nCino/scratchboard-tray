@@ -1,6 +1,6 @@
 $duration: 500ms;
 
-.route-transition {
+.sbt-route-transition--enters-left {
   &-enter {
     transform: translateX(-100%);
   }
@@ -17,7 +17,7 @@ $duration: 500ms;
   }
 }
 
-.route-transition--reverse {
+.sbt-route-transition--enters-right {
   &-enter {
     transform: translateX(100%);
   }

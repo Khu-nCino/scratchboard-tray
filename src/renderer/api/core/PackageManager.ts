@@ -1,10 +1,9 @@
 import { shrink as strip } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
-import { formatQueryList } from "./util";
+import { formatQueryList, trimTo15 } from "./util";
 
 export interface PackageVersion {
   readonly packageId: string;
-  readonly namespace: string;
   readonly versionName: string;
 }
 
@@ -16,6 +15,8 @@ export interface SortingPackageVersion {
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
+  readonly packageVersionId: string;
+  readonly namespace: string;
   readonly password: string;
   readonly buildDate: string;
   readonly sortingVersion: string;
@@ -24,7 +25,6 @@ export interface AuthorityPackageVersion extends PackageVersion {
 const installedPackageVersionsQuery = strip`
 SELECT
   SubscriberPackageId,
-  SubscriberPackage.NamespacePrefix,
   SubscriberPackageVersion.Name
 FROM
   InstalledSubscriberPackage
@@ -36,9 +36,6 @@ export class PackageManager {
   async listSubscriberPackageVersions(username: string): Promise<SubscriberPackageVersion[]> {
     interface RawInstalledSubscriberPackage {
       SubscriberPackageId: string;
-      SubscriberPackage: {
-        NamespacePrefix: string;
-      };
       SubscriberPackageVersion: {
         Name: string;
       };
@@ -51,20 +48,31 @@ export class PackageManager {
     );
     return versions.map((version) => ({
       packageId: version.SubscriberPackageId,
-      namespace: version.SubscriberPackage.NamespacePrefix,
       versionName: version.SubscriberPackageVersion.Name,
     }));
   }
 
-  getLatestAvailablePackageVersions(
+  async getLatestAvailablePackageVersions(
     authorityUsername: string,
     packageIds: string[]
   ): Promise<SortingPackageVersion[]> {
     if (packageIds.length === 0) {
-      return Promise.resolve([]);
+      return [];
     }
 
-    return this.cache.query<SortingPackageVersion>(
+    const idsToQuery: string[] = [];
+    const trimmedIdToFull = new Map<string, string>();
+    for (const packageId of packageIds) {
+      const trimmedId = trimTo15(packageId);
+
+      idsToQuery.push(packageId);
+      if (trimmedId !== packageId) {
+        trimmedIdToFull.set(trimmedId, packageId);
+        idsToQuery.push(trimmedId);
+      }
+    }
+
+    const results = await this.cache.query<SortingPackageVersion>(
       authorityUsername,
       strip`
         SELECT
@@ -73,15 +81,20 @@ export class PackageManager {
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN (${formatQueryList(
-            packageIds
-          )})
+          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c ${formatQueryList(
+            idsToQuery
+          )}
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
           AND PackageManager__Is_Patch__c = false
         GROUP BY PackageManager__Package__r.PackageManager__Metadata_Package_Id__c
       `
     );
+
+    return results.map((result) => ({
+      ...result,
+      packageId: trimmedIdToFull.get(result.packageId) ?? result.packageId,
+    }));
   }
 
   groupVersions(versions: (SortingPackageVersion | SubscriberPackageVersion)[]) {
@@ -104,20 +117,22 @@ export class PackageManager {
 
   versionsGroupToSelector(versionMap: Record<string, { sorting: string[]; subscriber: string[] }>) {
     return Object.entries(versionMap)
-      .map(([namespace, { sorting, subscriber }]) => {
+      .map(([packageId, { sorting, subscriber }]) => {
         const sortingSelect =
           sorting.length === 0
             ? undefined
-            : `PackageManager__Sorting_Version_Number__c IN (${formatQueryList(sorting)})`;
+            : `PackageManager__Sorting_Version_Number__c ${formatQueryList(sorting)}`;
         const subscriberSelect =
-          subscriber.length === 0 ? undefined : `Name IN (${formatQueryList(subscriber)})`;
+          subscriber.length === 0 ? undefined : `Name ${formatQueryList(subscriber)}`;
 
         let versionSelectors =
           sortingSelect !== undefined && subscriberSelect !== undefined
             ? `(${sortingSelect} OR ${subscriberSelect})`
             : sortingSelect ?? subscriberSelect;
 
-        return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c = '${namespace}' AND ${versionSelectors})`;
+        return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN ('${trimTo15(
+          packageId
+        )}','${packageId}') AND ${versionSelectors})`;
       })
       .join(" OR ");
   }
@@ -141,6 +156,7 @@ export class PackageManager {
       PackageManager__Sorting_Version_Number__c: string;
       PackageManager__Package__r: {
         PackageManager__Namespace_Prefix__c: string;
+        PackageManager__Metadata_Package_Id__c: string;
       };
     }
 
@@ -149,6 +165,7 @@ export class PackageManager {
       strip`
         SELECT
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
+          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c,
           Name,
           PackageManager__Sorting_Version_Number__c,
           PackageManager__Build_Date__c,
@@ -161,14 +178,24 @@ export class PackageManager {
       `
     );
 
-    return latestVersionsDetails.map((version) => ({
-      namespace: version.PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
-      versionName: version.Name,
-      buildDate: version.PackageManager__Build_Date__c,
-      packageId: version.PackageManager__Metadata_Package_Version_Id__c,
-      password: version.PackageManager__Password__c,
-      sortingVersion: version.PackageManager__Sorting_Version_Number__c,
-    }));
+    const trimmedIdToFull = Object.keys(versionsGroup).reduce((acc, packageId) => {
+      acc.set(trimTo15(packageId), packageId);
+      return acc;
+    }, new Map<string, string>());
+
+    return latestVersionsDetails.map((version) => {
+      const packageId = version.PackageManager__Package__r.PackageManager__Metadata_Package_Id__c;
+
+      return {
+        packageId: trimmedIdToFull.get(packageId) ?? packageId,
+        namespace: version.PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
+        versionName: version.Name,
+        buildDate: version.PackageManager__Build_Date__c,
+        packageVersionId: version.PackageManager__Metadata_Package_Version_Id__c,
+        password: version.PackageManager__Password__c,
+        sortingVersion: version.PackageManager__Sorting_Version_Number__c,
+      };
+    });
   }
 }
 

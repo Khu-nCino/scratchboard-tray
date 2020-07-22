@@ -103,17 +103,17 @@ export const PackageBody = connector((props: Props) => {
           onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
         /> */}
           {packageEntities.flatMap(
-            ([namespace, { installedVersionInfo, upgradeAvailable, latestVersionInfo }]) => {
+            ([packageId, { installedVersionInfo, upgradeAvailable, latestVersionInfo }]) => {
               return [
-                <span key={`namespace-${namespace}`} style={{ gridColumn: 1 }}>
-                  {namespace}
+                <span key={`namespace-${packageId}`} style={{ gridColumn: 1 }}>
+                  {installedVersionInfo?.namespace}
                 </span>,
                 <Button
                   small
                   fill
                   minimal
                   alignText="left"
-                  key={`currentVersion-${namespace}`}
+                  key={`currentVersion-${packageId}`}
                   onClick={() => {
                     setSelectedVersion(installedVersionInfo);
                     setSelectedVersionOpenable(false);
@@ -126,7 +126,7 @@ export const PackageBody = connector((props: Props) => {
                   fill
                   minimal
                   alignText="left"
-                  key={`latestVersion-${namespace}`}
+                  key={`latestVersion-${packageId}`}
                   disabled={!upgradeAvailable}
                   onClick={() => {
                     setSelectedVersion(latestVersionInfo);
