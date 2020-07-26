@@ -270,13 +270,15 @@ export function packagesReducer(
           [action.payload.username]: {
             ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
             lastInstalledVersionsChecked: action.payload.timestamp,
-            packages: action.payload.versions.reduce<Record<string, OrgPackage>>((acc, version) => {
-              acc[version.packageId] = {
-                installedVersion: version.versionName,
-                upgradeSelected: true,
-              };
-              return acc;
-            }, {}),
+            packages: Object.fromEntries(
+              action.payload.versions.map((version) => [
+                version.packageId,
+                {
+                  installedVersion: version.versionName,
+                  upgradeSelected: true,
+                },
+              ])
+            ),
           },
         },
       };
@@ -324,18 +326,16 @@ export function packagesReducer(
           ...state.orgInfo,
           [username]: {
             ...currentOrgInfo,
-            packages: Object.entries(currentOrgInfo.packages).reduce<Record<string, OrgPackage>>(
-              (acc, [packageId, currentPackage]) => {
-                acc[packageId] =
-                  nextValue === currentPackage.upgradeSelected
-                    ? currentPackage
-                    : {
-                        ...currentPackage,
-                        upgradeSelected: nextValue,
-                      };
-                return acc;
-              },
-              {}
+            packages: Object.fromEntries(
+              Object.entries(currentOrgInfo.packages).map(([packageId, currentPackage]) => [
+                packageId,
+                nextValue === currentPackage.upgradeSelected
+                  ? currentPackage
+                  : {
+                      ...currentPackage,
+                      upgradeSelected: nextValue,
+                    },
+              ])
             ),
           },
         },
