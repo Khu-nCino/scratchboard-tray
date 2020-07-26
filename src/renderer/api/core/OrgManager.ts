@@ -174,7 +174,7 @@ export class OrgManager {
             const formatedOrgIds = formatQueryList(Object.keys(orgIdToUsername));
 
             connection.query(
-              `SELECT ScratchOrg,ExpirationDate FROM ActiveScratchOrg WHERE ScratchOrg IN (${formatedOrgIds})`,
+              `SELECT ScratchOrg,ExpirationDate FROM ActiveScratchOrg WHERE ScratchOrg ${formatedOrgIds}`,
               { autoFetch: true },
               (err, result) => {
                 if (err) {

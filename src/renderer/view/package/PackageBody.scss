@@ -3,9 +3,9 @@
 
 .sbt-package-grid {
   display: grid;
-  grid-template-columns: repeat(3, auto);
+  grid-template-columns: minmax(auto, 40%) 1fr 1fr 0.5fr;
   grid-template-rows: $medium;
-  grid-auto-rows: 1fr;
+  grid-auto-rows: auto;
   row-gap: $x-small;
   align-items: center;
 

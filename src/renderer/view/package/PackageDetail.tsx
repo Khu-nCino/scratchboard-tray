@@ -34,15 +34,14 @@ export const PackageDetail = connector((props: Props) => {
 
   return (
     <Dialog
+      title={props.packageVersion?.packageName}
       isOpen={props.packageVersion !== undefined}
       onClose={props.onClose}
       className="sbt-mh_medium"
     >
       <div className={Classes.DIALOG_BODY}>
-        <div>Namespace: {props.packageVersion?.namespace}</div>
         <div>Version: {props.packageVersion?.versionName}</div>
         <div>BuildDate: {props.packageVersion?.buildDate}</div>
-        <div>PackageId: {props.packageVersion?.packageId}</div>
         <div>Password: {props.packageVersion?.password}</div>
       </div>
       <div className={Classes.DIALOG_FOOTER}>

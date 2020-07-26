@@ -15,6 +15,7 @@ export interface SortingPackageVersion {
 export interface SubscriberPackageVersion extends PackageVersion {}
 
 export interface AuthorityPackageVersion extends PackageVersion {
+  readonly packageName: string;
   readonly packageVersionId: string;
   readonly namespace: string;
   readonly password: string;
@@ -155,6 +156,7 @@ export class PackageManager {
       PackageManager__Metadata_Package_Version_Id__c: string;
       PackageManager__Sorting_Version_Number__c: string;
       PackageManager__Package__r: {
+        Name: string;
         PackageManager__Namespace_Prefix__c: string;
         PackageManager__Metadata_Package_Id__c: string;
       };
@@ -164,6 +166,7 @@ export class PackageManager {
       authorityUsername,
       strip`
         SELECT
+          PackageManager__Package__r.Name,
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
           PackageManager__Package__r.PackageManager__Metadata_Package_Id__c,
           Name,
@@ -187,6 +190,7 @@ export class PackageManager {
       const packageId = version.PackageManager__Package__r.PackageManager__Metadata_Package_Id__c;
 
       return {
+        packageName: version.PackageManager__Package__r.Name,
         packageId: trimmedIdToFull.get(packageId) ?? packageId,
         namespace: version.PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
         versionName: version.Name,
