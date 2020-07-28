@@ -6,7 +6,8 @@ $large: 50px;
 
 $sizes: (
   "none": 0,
-  "xx-small": 2px,
+  "xx-small": $xx-small,
+  "x-small": $x-small,
   "small": $small,
   "medium": $medium,
   "large": $large,
