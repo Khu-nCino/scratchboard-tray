@@ -104,24 +104,6 @@ export const PackageBody = connector((props: Props) => {
 
   return (
     <div style={{ overflow: "hidden auto" }}>
-      <div className="sbt-flex-container">
-        <Button intent="primary" className="sbt-m_small sbt-mb_none">
-          Upgrade
-        </Button>
-        <span className="sbt-flex-item--right sbt-m_small sbt-mb_none">
-          {`checked on: ${new Date(
-            props.orgPackageDetails.lastInstalledVersionsChecked!!
-          ).toDateString()}`}
-        </span>
-        <Button
-          className="sbt-m_small sbt-mb_none"
-          minimal
-          icon="refresh"
-          onClick={() => {
-            props.checkInstalledPackages(props.detailUsername);
-          }}
-        />
-      </div>
       <div className="sbt-package-grid">
         <h4 className="sbt-header-item">Name</h4>
         <h4 className="sbt-header-item sbt-ml_x-small">Current</h4>
@@ -181,6 +163,24 @@ export const PackageBody = connector((props: Props) => {
             ];
           }
         )}
+      </div>
+      <div className="sbt-flex-container">
+        <span className="sbt-ml_medium sbt-mv_medium">
+          {`checked on: ${new Date(
+            props.orgPackageDetails.lastInstalledVersionsChecked!!
+          ).toDateString()}`}
+        </span>
+        <Button
+          className="sbt-ml_none sbt-mv_medium"
+          minimal
+          icon="refresh"
+          onClick={() => {
+            props.checkInstalledPackages(props.detailUsername);
+          }}
+        />
+        <Button intent="primary" className="sbt-flex-item--right sbt-m_medium">
+          Upgrade
+        </Button>
       </div>
       <PackageDetail
         packageVersion={selectedVersion}

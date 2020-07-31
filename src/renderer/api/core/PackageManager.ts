@@ -1,6 +1,7 @@
 import { shrink as strip } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
 import { formatQueryList, trimTo15 } from "./util";
+import { RecordResult, SuccessResult } from 'jsforce'
 
 export interface PackageVersion {
   readonly packageId: string;
@@ -201,6 +202,27 @@ export class PackageManager {
       };
     });
   }
+
+  async installPackages(
+    username: string,
+    packageVersions: AuthorityPackageVersion[]
+  ): Promise<void> {
+    const connection = await this.cache.getConnection(username);
+
+    const metadata = packageVersions.map(({ packageId, password }) => ({
+      SubscriberPackageVersionKey: packageId,
+      Password: password,
+    }));
+
+    const results = await connection.tooling.create("PackageInstallRequest", metadata);
+    const resultArray = "length" in results ? results : [results];
+
+    const out = resultArray.filter(isSuccess);
+  }
+}
+
+function isSuccess(result: RecordResult): result is SuccessResult {
+  return result.success;
 }
 
 // Singletons ftw
