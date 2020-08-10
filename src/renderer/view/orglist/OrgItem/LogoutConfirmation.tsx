@@ -10,7 +10,7 @@ interface Props {
 
 export const LogoutConfirmation = (props: Props) => (
   <Alert
-    className="sbt-mh_medium"
+    className="sbt-popover"
     cancelButtonText="Cancel"
     confirmButtonText="Logout"
     icon="log-out"

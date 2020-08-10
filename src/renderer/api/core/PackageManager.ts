@@ -1,7 +1,7 @@
 import { shrink as strip } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
-import { formatQueryList, trimTo15 } from "./util";
-import { RecordResult, SuccessResult } from 'jsforce'
+import { formatQueryList, trimTo15, combineSelectors } from "./util";
+import { RecordResult, SuccessResult, ErrorResult } from "jsforce";
 
 export interface PackageVersion {
   readonly packageId: string;
@@ -22,6 +22,21 @@ export interface AuthorityPackageVersion extends PackageVersion {
   readonly password: string;
   readonly buildDate: string;
   readonly sortingVersion: string;
+}
+
+export interface PackageInstallRequest {
+  requestId: string;
+  packageVersion: AuthorityPackageVersion;
+  status: "pending" | "error" | "success";
+}
+
+interface PackageInstallRequestMetadata {
+  NameConflictResolution: "Block" | "RenameMetadata";
+  SecurityType: "Full" | "Custom" | "None";
+  SubscriberPackageVersionKey: string;
+  Password: string;
+  Status?: "Error" | "InProgress" | "Success";
+  errors?: { message: string }[];
 }
 
 const installedPackageVersionsQuery = strip`
@@ -127,10 +142,7 @@ export class PackageManager {
         const subscriberSelect =
           subscriber.length === 0 ? undefined : `Name ${formatQueryList(subscriber)}`;
 
-        let versionSelectors =
-          sortingSelect !== undefined && subscriberSelect !== undefined
-            ? `(${sortingSelect} OR ${subscriberSelect})`
-            : sortingSelect ?? subscriberSelect;
+        let versionSelectors = combineSelectors(sortingSelect, subscriberSelect, "OR");
 
         return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN ('${trimTo15(
           packageId
@@ -203,25 +215,82 @@ export class PackageManager {
     });
   }
 
-  async installPackages(
+  async createPackagesInstallRequests(
     username: string,
     packageVersions: AuthorityPackageVersion[]
-  ): Promise<void> {
+  ): Promise<PackageInstallRequest[]> {
     const connection = await this.cache.getConnection(username);
 
-    const metadata = packageVersions.map(({ packageId, password }) => ({
-      SubscriberPackageVersionKey: packageId,
-      Password: password,
-    }));
+    const metadata: PackageInstallRequestMetadata[] = packageVersions.map(
+      ({ packageVersionId, password }) => ({
+        NameConflictResolution: "Block",
+        SecurityType: "Full",
+        SubscriberPackageVersionKey: packageVersionId,
+        Password: password,
+      })
+    );
 
-    const results = await connection.tooling.create("PackageInstallRequest", metadata);
+    const results = await connection.tooling.sobject("PackageInstallRequest").create(metadata);
     const resultArray = "length" in results ? results : [results];
 
-    const out = resultArray.filter(isSuccess);
+    const errorResults = resultArray.filter(isNotSuccess);
+    if (errorResults.length > 0) {
+      throw new AggregateError(
+        errorResults.map(
+          ({ errors }) => new AggregateError(errors, "Failed to request package install.")
+        )
+      );
+    }
+
+    return (resultArray as SuccessResult[]).map(({ id: requestId }, index) => ({
+      requestId,
+      packageVersion: packageVersions[index],
+      status: "pending",
+    }));
+  }
+
+  async checkPackageInstallRequests(
+    username: string,
+    requests: PackageInstallRequest[]
+  ): Promise<PackageInstallRequest[]> {
+    const connection = await this.cache.getConnection(username);
+
+    const requestIds = requests.map(({ requestId }) => requestId);
+    const results = await connection.tooling
+      .sobject<PackageInstallRequestMetadata>("PackageInstallRequest")
+      .retrieve(requestIds);
+
+    const errorResults = results.filter((result) => result.Status === "Error");
+    if (errorResults.length > 0) {
+      throw new AggregateError(
+        errorResults.map(
+          ({ errors }) =>
+            new AggregateError(
+              errors!!.map(({ message }) => message),
+              "Failed to request package install."
+            )
+        )
+      );
+    }
+
+    const resultsMap = new Map<string, PackageInstallRequestMetadata>(
+      results.map((result) => [result.Id!!, result])
+    );
+
+    return requests.map((request) => ({
+      ...request,
+      status: metadataStatusMap[resultsMap.get(request.requestId)?.Status!!],
+    }));
   }
 }
 
-function isSuccess(result: RecordResult): result is SuccessResult {
+const metadataStatusMap = {
+  InProgress: "pending",
+  Success: "success",
+  Error: "error",
+} as const;
+
+function isNotSuccess(result: RecordResult): result is ErrorResult {
   return result.success;
 }
 

@@ -15,21 +15,21 @@ export function arrayDiff<T>(next: T[], prev: T[]) {
   };
 }
 
-export function groupBy<
-  K1 extends string,
-  T extends Record<K1, string>,
->(xs: T[], key1: K1): Record<string, T> {
+export function groupBy<K1 extends string, T extends Record<K1, string>>(
+  xs: T[],
+  key1: K1
+): Record<string, T> {
   return xs.reduce<Record<string, T>>((acc, x) => {
     acc[x[key1]] = x;
     return acc;
   }, {});
 }
 
-export function groupBy2<
-  K1 extends string,
-  K2 extends string,
-  T extends Record<K1 | K2, string>,
->(xs: T[], key1: K1, key2: K2): Record<string, Record<string, T>> {
+export function groupBy2<K1 extends string, K2 extends string, T extends Record<K1 | K2, string>>(
+  xs: T[],
+  key1: K1,
+  key2: K2
+): Record<string, Record<string, T>> {
   return xs.reduce<Record<string, Record<string, T>>>((acc, x) => {
     (acc[x[key1]] ?? (acc[x[key1]] = {}))[x[key2]] = x;
     return acc;
@@ -64,4 +64,10 @@ export function notConcurrent<T>(proc: () => PromiseLike<T>) {
 export function shrink(strings: TemplateStringsArray, ...placeholders: any[]) {
   const withSpace = strings.reduce((result, string, i) => result + placeholders[i - 1] + string);
   return withSpace.trim().replace(/\s\s+/g, " ");
+}
+
+export function delay(timeout: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
 }

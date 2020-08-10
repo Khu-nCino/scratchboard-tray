@@ -8,11 +8,14 @@ import {
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
   selectOrgPackageDetails,
+  installPackages,
 } from "renderer/store/packages";
 import "./PackageBody.scss";
 import { selectOrg } from "renderer/store/orgs";
 import { PackageDetail } from "./PackageDetail";
 import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
+import { InstallConfirmationAlert } from "./InstallConfirmationAlert";
+import { notUndefined } from "common/util";
 
 function mapStateToProps(state: State) {
   const { detailUsername } = state.route;
@@ -34,6 +37,7 @@ const mapDispatchToProps = {
   checkInstalledPackages,
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
+  installPackages,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -47,10 +51,15 @@ function getLoadingMessage(status: OrgActionStatus) {
       return "Retrieving latest package versions (2/3)";
     case "pending_details":
       return "Retrieving package details (3/3)";
+    case "pending_install":
+      return "Installing packages";
     default:
       return "Invalid state";
   }
 }
+
+const targetTypes = ["Latest", "Patch"] as const;
+type TargetType = typeof targetTypes[number];
 
 export const PackageBody = connector((props: Props) => {
   useEffect(() => {
@@ -60,7 +69,9 @@ export const PackageBody = connector((props: Props) => {
   }, [props.orgPackageDetails.actionStatus]);
 
   const [selectedVersion, setSelectedVersion] = useState<AuthorityPackageVersion | undefined>();
-  const [selectedVersionOpenable, setSelectedVersionOpenable] = useState(false);
+  const [selectedVersionOpened, setSelectedVersionOpened] = useState(false);
+  const [targetType, setTargetType] = useState<TargetType>("Latest");
+  const [showInstallConformation, setShowInstallConformation] = useState(false);
 
   if (!props.authorityExists) {
     return <NonIdealState icon="error" title="No package authority set." />;
@@ -77,13 +88,6 @@ export const PackageBody = connector((props: Props) => {
   }
 
   const packageEntities = Object.entries(props.orgPackageDetails.packages);
-
-  const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
-    ({ upgradeAvailable }) => upgradeAvailable
-  );
-  let allChecked = upgradeableInstalledPackages.every(({ upgradeSelected }) => upgradeSelected);
-  let anyChecked = upgradeableInstalledPackages.some(({ upgradeSelected }) => upgradeSelected);
-
   if (packageEntities.length === 0) {
     return (
       <NonIdealState
@@ -102,12 +106,30 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
+  const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
+    ({ upgradeAvailable }) => upgradeAvailable
+  );
+  const markedForUpgrade = upgradeableInstalledPackages
+    .filter(({ upgradeSelected }) => upgradeSelected)
+    .map(({ latestVersionInfo }) => latestVersionInfo)
+    .filter(notUndefined);
+  const allChecked = upgradeableInstalledPackages.length === markedForUpgrade.length;
+  const anyChecked = markedForUpgrade.length > 0;
+
   return (
     <div style={{ overflow: "hidden auto" }}>
       <div className="sbt-package-grid">
         <h4 className="sbt-header-item">Name</h4>
         <h4 className="sbt-header-item sbt-ml_x-small">Current</h4>
-        <HTMLSelect className="sbt-header-item" minimal options={["Latest", "Patch", "Release"]} />
+        <HTMLSelect
+          className="sbt-header-item"
+          minimal
+          options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
+          value={targetType}
+          onChange={(event) => {
+            setTargetType(event.target.value as TargetType);
+          }}
+        />
         <Checkbox
           className="sbt-header-item sbt-package-upgrade-checkbox"
           indeterminate={anyChecked && !allChecked}
@@ -131,7 +153,7 @@ export const PackageBody = connector((props: Props) => {
                 key={`currentVersion-${packageId}`}
                 onClick={() => {
                   setSelectedVersion(installedVersionInfo);
-                  setSelectedVersionOpenable(false);
+                  setSelectedVersionOpened(false);
                 }}
               >
                 {installedVersionInfo?.versionName}
@@ -145,7 +167,7 @@ export const PackageBody = connector((props: Props) => {
                 disabled={!upgradeAvailable}
                 onClick={() => {
                   setSelectedVersion(latestVersionInfo);
-                  setSelectedVersionOpenable(true);
+                  setSelectedVersionOpened(true);
                 }}
               >
                 {latestVersionInfo?.versionName}
@@ -178,14 +200,30 @@ export const PackageBody = connector((props: Props) => {
             props.checkInstalledPackages(props.detailUsername);
           }}
         />
-        <Button intent="primary" className="sbt-flex-item--right sbt-m_medium">
+        <Button
+          intent="primary"
+          className="sbt-flex-item--right sbt-m_medium"
+          disabled={!anyChecked}
+          onClick={() => setShowInstallConformation(true)}
+        >
           Upgrade
         </Button>
       </div>
       <PackageDetail
         packageVersion={selectedVersion}
-        isOpenable={selectedVersionOpenable}
+        isOpenable={selectedVersionOpened}
         onClose={() => setSelectedVersion(undefined)}
+      />
+      <InstallConfirmationAlert
+        isOpen={showInstallConformation}
+        targetType={targetType}
+        aliasOrUsername={props.detailUsername}
+        targets={markedForUpgrade}
+        onConfirm={() => {
+          setShowInstallConformation(false);
+          props.installPackages(props.detailUsername, markedForUpgrade);
+        }}
+        onCancel={() => setShowInstallConformation(false)}
       />
     </div>
   );

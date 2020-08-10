@@ -49,7 +49,7 @@ export const ToastManager = connector((props: Props) => {
         onClose={closeDialog}
         canEscapeKeyClose={false}
         canOutsideClickClose={false}
-        className="sbt-mh_medium"
+        className="sbt-popover"
       >
         <div className={Classes.DIALOG_BODY}>
           <span className="bp3-code-block">{dialogToast?.detail}</span>

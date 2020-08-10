@@ -37,7 +37,7 @@ export const PackageDetail = connector((props: Props) => {
       title={props.packageVersion?.packageName}
       isOpen={props.packageVersion !== undefined}
       onClose={props.onClose}
-      className="sbt-mh_medium"
+      className="sbt-popover"
     >
       <div className={Classes.DIALOG_BODY}>
         <div>Version: {props.packageVersion?.versionName}</div>

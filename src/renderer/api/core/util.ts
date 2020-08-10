@@ -76,6 +76,18 @@ export function formatQueryList(items: string[]): string {
   }
 }
 
+export function combineSelectors(a: string | undefined, b: string | undefined, op: 'OR' | 'AND'): string {
+  if (a !== undefined && b !== undefined ) {
+    return `(${a} ${op} ${b})`;
+  } else if (a !== undefined) {
+    return a;
+  } else if (b !== undefined) {
+    return b;
+  } else {
+    throw new Error("Both a and b can not be undefined.")
+  }
+}
+
 export function isScratch(info: AuthInfo) {
   return info.getFields().devHubUsername;
 }

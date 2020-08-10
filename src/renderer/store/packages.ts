@@ -197,13 +197,28 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
   };
 }
 
+export function installPackages(username: string, targets: AuthorityPackageVersion[]): ThunkResult<Promise<void>> {
+  return async (dispatch) => {
+    dispatch(setPackageActionStatus(username, 'pending_install'));
+
+    try {
+      await packageManager.createPackagesInstallRequests(username, targets);
+    } catch (error) {
+      dispatch(createErrorToast("There was an error upgrading your packages", error));
+    } finally {
+      dispatch(setPackageActionStatus(username, 'ideal'));
+    }
+  };
+}
+
 // State
 export type OrgActionStatus =
   | "initial"
   | "ideal"
   | "pending_subscriber"
   | "pending_authority"
-  | "pending_details";
+  | "pending_details"
+  | "pending_install";
 
 interface OrgPackage {
   readonly installedVersion: string;

@@ -16,7 +16,7 @@ export const InputTextDialog = (props: Props) => (
     title={props.titleText}
     isOpen={props.isOpen}
     onClose={props.onClose}
-    className="sbt-mh_medium"
+    className="sbt-popover"
   >
     <div className={Classes.DIALOG_BODY}>
       <InputGroup
