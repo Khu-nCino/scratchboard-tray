@@ -31,11 +31,12 @@ export interface PackageInstallRequest {
 }
 
 interface PackageInstallRequestMetadata {
+  Id?: string;
   NameConflictResolution: "Block" | "RenameMetadata";
   SecurityType: "Full" | "Custom" | "None";
   SubscriberPackageVersionKey: string;
   Password: string;
-  Status?: "Error" | "InProgress" | "Success";
+  Status?: "ERROR" | "IN_PROGRESS" | "SUCCESS";
   errors?: { message: string }[];
 }
 
@@ -98,7 +99,8 @@ export class PackageManager {
         FROM
           PackageManager__Package_Version__c
         WHERE
-          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c ${formatQueryList(
+          ${formatQueryList(
+            "PackageManager__Package__r.PackageManager__Metadata_Package_Id__c",
             idsToQuery
           )}
           AND PackageManager__Install_URL__c != null
@@ -138,9 +140,9 @@ export class PackageManager {
         const sortingSelect =
           sorting.length === 0
             ? undefined
-            : `PackageManager__Sorting_Version_Number__c ${formatQueryList(sorting)}`;
+            : formatQueryList("PackageManager__Sorting_Version_Number__c", sorting);
         const subscriberSelect =
-          subscriber.length === 0 ? undefined : `Name ${formatQueryList(subscriber)}`;
+          subscriber.length === 0 ? undefined : formatQueryList("Name", subscriber);
 
         let versionSelectors = combineSelectors(sortingSelect, subscriberSelect, "OR");
 
@@ -235,11 +237,7 @@ export class PackageManager {
 
     const errorResults = resultArray.filter(isNotSuccess);
     if (errorResults.length > 0) {
-      throw new AggregateError(
-        errorResults.map(
-          ({ errors }) => new AggregateError(errors, "Failed to request package install.")
-        )
-      );
+      throw new Error(errorResults.flatMap(({ errors }) => errors).join());
     }
 
     return (resultArray as SuccessResult[]).map(({ id: requestId }, index) => ({
@@ -255,43 +253,37 @@ export class PackageManager {
   ): Promise<PackageInstallRequest[]> {
     const connection = await this.cache.getConnection(username);
 
-    const requestIds = requests.map(({ requestId }) => requestId);
-    const results = await connection.tooling
-      .sobject<PackageInstallRequestMetadata>("PackageInstallRequest")
-      .retrieve(requestIds);
+    const requestIds = requests
+      .filter(({ status }) => status === "pending")
+      .map(({ requestId }) => requestId);
 
-    const errorResults = results.filter((result) => result.Status === "Error");
-    if (errorResults.length > 0) {
-      throw new AggregateError(
-        errorResults.map(
-          ({ errors }) =>
-            new AggregateError(
-              errors!!.map(({ message }) => message),
-              "Failed to request package install."
-            )
-        )
-      );
-    }
-
-    const resultsMap = new Map<string, PackageInstallRequestMetadata>(
-      results.map((result) => [result.Id!!, result])
+    const results = await connection.tooling.query<PackageInstallRequestMetadata>(
+      `SELECT Id, Status FROM PackageInstallRequest WHERE ${formatQueryList("Id", requestIds)}`
     );
 
-    return requests.map((request) => ({
-      ...request,
-      status: metadataStatusMap[resultsMap.get(request.requestId)?.Status!!],
-    }));
+    const resultsMap = new Map<string, PackageInstallRequestMetadata>(
+      results.records.map((result) => [result.Id!!, result])
+    );
+
+    return requests.map((request) => {
+      const nextStatus = resultsMap.get(request.requestId)?.Status;
+
+      return nextStatus === undefined ? request : {
+        ...request,
+        status: metadataStatusMap[nextStatus],
+      };
+    });
   }
 }
 
 const metadataStatusMap = {
-  InProgress: "pending",
-  Success: "success",
-  Error: "error",
+  IN_PROGRESS: "pending",
+  SUCCESS: "success",
+  ERROR: "error",
 } as const;
 
 function isNotSuccess(result: RecordResult): result is ErrorResult {
-  return result.success;
+  return !result.success;
 }
 
 // Singletons ftw

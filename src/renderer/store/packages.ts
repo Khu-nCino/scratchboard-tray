@@ -1,6 +1,6 @@
 import { Action } from "redux";
 import { ThunkAction } from "redux-thunk";
-import { groupBy2 } from "common/util";
+import { groupBy2, delay } from "common/util";
 import { State } from ".";
 import { OrgListChanges } from "./orgs";
 import {
@@ -8,6 +8,7 @@ import {
   SubscriberPackageVersion,
   AuthorityPackageVersion,
   PackageVersion,
+  PackageInstallRequest,
 } from "renderer/api/core/PackageManager";
 import { createErrorToast, MessagesAction } from "./messages";
 
@@ -20,7 +21,8 @@ type PackagesAction =
   | SetPackageActionStatusAction
   | OrgListChanges
   | TogglePendingPackageUpgrade
-  | ToggleAllPendingPackageUpgrade;
+  | ToggleAllPendingPackageUpgrade
+  | PackageInstallRequestStatusUpdate;
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction | MessagesAction>;
 
@@ -68,6 +70,14 @@ interface TogglePendingPackageUpgrade extends Action<"TOGGLE_PENDING_PACKAGE_UPG
 interface ToggleAllPendingPackageUpgrade extends Action<"TOGGLE_ALL_PENDING_PACKAGE_UPGRADE"> {
   payload: {
     username: string;
+  };
+}
+
+interface PackageInstallRequestStatusUpdate
+  extends Action<"PACKAGE_INSTALL_REQUEST_STATUS_UPDATE"> {
+  payload: {
+    username: string;
+    requests: PackageInstallRequest[];
   };
 }
 
@@ -154,8 +164,22 @@ export function toggleAllPendingPackageUpgrade(username: string): ToggleAllPendi
   };
 }
 
+function packageInstallRequestStatusUpdate(
+  username: string,
+  requests: PackageInstallRequest[]
+): PackageInstallRequestStatusUpdate {
+  return {
+    type: "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE",
+    payload: {
+      username,
+      requests,
+    },
+  };
+}
+
 export function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
   return async (dispatch, getState) => {
+
     const { authorityUsername } = getState().packages;
 
     dispatch(setPackageActionStatus(username, "pending_subscriber"));
@@ -197,16 +221,43 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
   };
 }
 
-export function installPackages(username: string, targets: AuthorityPackageVersion[]): ThunkResult<Promise<void>> {
+export function installPackages(
+  username: string,
+  targets: AuthorityPackageVersion[]
+): ThunkResult<Promise<void>> {
   return async (dispatch) => {
-    dispatch(setPackageActionStatus(username, 'pending_install'));
-
     try {
-      await packageManager.createPackagesInstallRequests(username, targets);
+      const requests = await packageManager.createPackagesInstallRequests(username, targets);
+      dispatch(packageInstallRequestStatusUpdate(username, requests));
+      dispatch(checkPackageInstallRequests(username, requests));
     } catch (error) {
       dispatch(createErrorToast("There was an error upgrading your packages", error));
-    } finally {
-      dispatch(setPackageActionStatus(username, 'ideal'));
+    }
+  };
+}
+
+function checkPackageInstallRequests(
+  username: string,
+  requests: PackageInstallRequest[]
+): ThunkResult<Promise<void>> {
+  return async (dispatch) => {
+    try {
+      const nextRequests = await packageManager.checkPackageInstallRequests(username, requests);
+      const statusChange = nextRequests.some(
+        (nextRequest, index) => nextRequest.status !== requests[index].status
+      );
+      const pendingRequests = nextRequests.filter(({ status }) => status === "pending");
+
+      if (statusChange) {
+        dispatch(packageInstallRequestStatusUpdate(username, nextRequests));
+      }
+
+      if (pendingRequests.length > 0) {
+        await delay(10000);
+        dispatch(checkPackageInstallRequests(username, pendingRequests));
+      }
+    } catch (error) {
+      dispatch(createErrorToast("There was an error upgrading your packages", error));
     }
   };
 }
@@ -217,12 +268,12 @@ export type OrgActionStatus =
   | "ideal"
   | "pending_subscriber"
   | "pending_authority"
-  | "pending_details"
-  | "pending_install";
+  | "pending_details";
 
 interface OrgPackage {
   readonly installedVersion: string;
   readonly upgradeSelected: boolean;
+  readonly pendingInstall: boolean;
 }
 
 export interface OrgPackageState {
@@ -291,6 +342,7 @@ export function packagesReducer(
                 {
                   installedVersion: version.versionName,
                   upgradeSelected: true,
+                  pendingInstall: false,
                 },
               ])
             ),
@@ -393,6 +445,38 @@ export function packagesReducer(
         },
       };
     }
+    case "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE": {
+      const { username, requests } = action.payload;
+      const statusMap = new Map<string, boolean>(
+        requests.map((request) => [request.packageVersion.packageId, request.status === "pending"])
+      );
+
+      const org = state.orgInfo[username];
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...org,
+            packages: Object.fromEntries(
+              Object.entries(org.packages).map(([packageId, packageObj]) => {
+                const pendingInstall = statusMap.get(packageId);
+
+                return [
+                  packageId,
+                  pendingInstall === undefined || pendingInstall === packageObj.pendingInstall
+                    ? packageObj
+                    : {
+                        ...packageObj,
+                        pendingInstall,
+                      },
+                ];
+              })
+            ),
+          },
+        },
+      };
+    }
     default:
       return state;
   }
@@ -407,6 +491,7 @@ export interface OrgPackageDetails extends OrgPackageState {
       upgradeAvailable: boolean;
       installedVersion: string;
       upgradeSelected: boolean;
+      pendingInstall: boolean;
     }
   >;
 }

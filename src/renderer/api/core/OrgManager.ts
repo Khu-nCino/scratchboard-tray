@@ -171,10 +171,11 @@ export class OrgManager {
               return acc;
             }, {});
 
-            const formatedOrgIds = formatQueryList(Object.keys(orgIdToUsername));
-
             connection.query(
-              `SELECT ScratchOrg,ExpirationDate FROM ActiveScratchOrg WHERE ScratchOrg ${formatedOrgIds}`,
+              `SELECT ScratchOrg,ExpirationDate FROM ActiveScratchOrg WHERE ${formatQueryList(
+                "ScratchOrg",
+                Object.keys(orgIdToUsername)
+              )}`,
               { autoFetch: true },
               (err, result) => {
                 if (err) {

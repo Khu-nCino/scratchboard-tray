@@ -23,6 +23,10 @@ import { setIsVisible } from "./store/route";
 
 import "./patchCaCert";
 
+if (module.hot) {
+  module.hot.accept();
+}
+
 const logger = getLogger();
 
 ipc

@@ -66,13 +66,13 @@ export function trimTo15(orgId: string) {
   return orgId;
 }
 
-export function formatQueryList(items: string[]): string {
+export function formatQueryList(field: string, items: string[]): string {
   if (items.length < 1) {
     throw new Error("Need items for a format query");
   } else if (items.length === 1) {
-    return `= '${items[0]}'`;
+    return `${field} = '${items[0]}'`;
   } else {
-    return `IN (${items.map((item) => `'${item}'`).join()})`
+    return `${field} IN (${items.map((item) => `'${item}'`).join()})`
   }
 }
 

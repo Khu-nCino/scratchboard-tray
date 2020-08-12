@@ -18,6 +18,12 @@ import { packagesReducer, defaultPackagesState } from "./packages";
 
 export type State = ReturnType<typeof rootReducer>;
 
+// if (module.hot) {
+//   module.hot.accept('renderer/store/packages', () => {
+//     (window as unknown as ExtendedGlobal).store = undefined;
+//   });
+// }
+
 const reducers = {
   orgs: orgsReducer,
   route: routeReducer,
@@ -39,6 +45,9 @@ export const defaultState: Partial<State> = {
 const devToolsCompose: ((options: any) => typeof compose) | undefined = (window as any)
   .__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
 
+const rootReducer = combineReducers(reducers);
+
+function createStoreRaw(initial: DeepPartial<State>) {
 const composeEnhancers =
   typeof window === "object" && devToolsCompose
     ? devToolsCompose({
@@ -46,12 +55,18 @@ const composeEnhancers =
       })
     : compose;
 
-const rootReducer = combineReducers(reducers);
-
-export function createStore(initial: DeepPartial<State> = defaultState) {
   return createReduxStore(
     rootReducer,
     initial as State,
     composeEnhancers(applyMiddleware(thunk as ThunkMiddleware<State, AnyAction>))
-  );
+  ); 
+}
+
+// interface ExtendedGlobal {
+//   store?: ReturnType<typeof createStoreRaw>;
+// }
+
+let store: ReturnType<typeof createStoreRaw> | undefined;
+export function createStore(initial: DeepPartial<State> = defaultState) {
+  return store ?? (store = createStoreRaw(initial));
 }
