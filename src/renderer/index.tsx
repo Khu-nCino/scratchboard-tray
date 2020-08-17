@@ -23,21 +23,17 @@ import { setIsVisible } from "./store/route";
 
 import "./patchCaCert";
 
-if (module.hot) {
-  module.hot.accept();
-}
-
 const logger = getLogger();
 
 ipc
   .callMain<void, string>(IpcRendererEvent.GET_APP_VERSION)
-  .then(initialApp)
+  .then(initializeApp)
   .catch((error) => {
     logger.error("Couldn't get appVersion, fatal error");
     logger.error(error);
   });
 
-function initialApp(appVersion: string) {
+function initializeApp(appVersion: string) {
   const persistManager = new PersistManager(appVersion);
 
   const initialState = persistManager.loadPersistedState(defaultState);

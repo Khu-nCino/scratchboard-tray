@@ -13,7 +13,9 @@ export interface SortingPackageVersion {
   readonly sortingVersion: string;
 }
 
-export interface SubscriberPackageVersion extends PackageVersion {}
+export interface SubscriberPackageVersion extends PackageVersion {
+  readonly isManaged: boolean;
+}
 
 export interface AuthorityPackageVersion extends PackageVersion {
   readonly packageName: string;
@@ -43,7 +45,8 @@ interface PackageInstallRequestMetadata {
 const installedPackageVersionsQuery = strip`
 SELECT
   SubscriberPackageId,
-  SubscriberPackageVersion.Name
+  SubscriberPackageVersion.Name,
+  SubscriberPackageVersion.IsManaged
 FROM
   InstalledSubscriberPackage
 `;
@@ -56,6 +59,7 @@ export class PackageManager {
       SubscriberPackageId: string;
       SubscriberPackageVersion: {
         Name: string;
+        IsManaged: boolean;
       };
     }
 
@@ -67,6 +71,7 @@ export class PackageManager {
     return versions.map((version) => ({
       packageId: version.SubscriberPackageId,
       versionName: version.SubscriberPackageVersion.Name,
+      isManaged: version.SubscriberPackageVersion.IsManaged,
     }));
   }
 

@@ -114,10 +114,6 @@ export const PackageBody = connector((props: Props) => {
   const allChecked = upgradeableInstalledPackages.length === markedForUpgrade.length;
   const anyChecked = markedForUpgrade.length > 0;
 
-  const anyPendingInstall = Object.values(props.orgPackageDetails.packages).some(
-    ({ pendingInstall }) => pendingInstall
-  );
-
   return (
     <div style={{ overflow: "hidden auto" }}>
       <div className="sbt-package-grid">
@@ -136,7 +132,6 @@ export const PackageBody = connector((props: Props) => {
           <Checkbox
             className="sbt-header-item sbt-package-upgrade-checkbox"
             indeterminate={anyChecked && !allChecked}
-            disabled={anyPendingInstall}
             checked={allChecked}
             onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
           />
@@ -144,13 +139,7 @@ export const PackageBody = connector((props: Props) => {
         {packageEntities.flatMap(
           ([
             packageId,
-            {
-              installedVersionInfo,
-              upgradeAvailable,
-              latestVersionInfo,
-              upgradeSelected,
-              pendingInstall,
-            },
+            { installedVersionInfo, upgradeAvailable, latestVersionInfo, upgradeSelected },
           ]) => {
             return [
               <span key={`namespace-${packageId}`} style={{ gridColumn: 1 }}>
@@ -183,20 +172,15 @@ export const PackageBody = connector((props: Props) => {
               >
                 {latestVersionInfo?.versionName}
               </Button>,
-              pendingInstall ? (
-                <Spinner key={`spinner-${packageId}`} size={15} />
-              ) : (
-                upgradeAvailable && (
-                  <Checkbox
-                    key={`check-${packageId}`}
-                    checked={upgradeSelected && upgradeAvailable}
-                    disabled={anyPendingInstall}
-                    onChange={() => {
-                      props.togglePendingPackageUpgrade(props.detailUsername, packageId);
-                    }}
-                    className="sbt-package-upgrade-checkbox"
-                  />
-                )
+              upgradeAvailable && (
+                <Checkbox
+                  key={`check-${packageId}`}
+                  checked={upgradeSelected && upgradeAvailable}
+                  onChange={() => {
+                    props.togglePendingPackageUpgrade(props.detailUsername, packageId);
+                  }}
+                  className="sbt-package-upgrade-checkbox"
+                />
               ),
             ];
           }
@@ -204,15 +188,12 @@ export const PackageBody = connector((props: Props) => {
       </div>
       <div className="sbt-flex-container">
         <span className="sbt-ml_medium sbt-mv_medium">
-          {`checked on: ${new Date(
-            props.orgPackageDetails.lastInstalledVersionsChecked!!
-          ).toDateString()}`}
+          {new Date(props.orgPackageDetails.lastInstalledVersionsChecked!!).toDateString()}
         </span>
         <Button
           className="sbt-ml_none sbt-mv_medium"
           minimal
           icon="refresh"
-          disabled={anyPendingInstall}
           onClick={() => {
             props.checkInstalledPackages(props.detailUsername);
           }}
@@ -221,7 +202,6 @@ export const PackageBody = connector((props: Props) => {
           intent="primary"
           className="sbt-flex-item--right sbt-m_medium"
           disabled={!anyChecked}
-          loading={anyPendingInstall}
           onClick={() => setShowInstallConformation(true)}
         >
           Upgrade

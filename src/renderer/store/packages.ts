@@ -263,6 +263,13 @@ function checkPackageInstallRequests(
 }
 
 // State
+const targets = [
+  "latest",
+  "release"
+] as const;
+
+type PackageTarget = typeof targets[number];
+
 export type OrgActionStatus =
   | "initial"
   | "ideal"
@@ -270,16 +277,24 @@ export type OrgActionStatus =
   | "pending_authority"
   | "pending_details";
 
+interface OrgPackageInstallRequest {
+  requests: PackageInstallRequest[];
+  timestamp: number;
+}
+
 interface OrgPackage {
   readonly installedVersion: string;
+  readonly isManaged: boolean;
   readonly upgradeSelected: boolean;
-  readonly pendingInstall: boolean;
 }
 
 export interface OrgPackageState {
   readonly actionStatus: OrgActionStatus;
   readonly lastInstalledVersionsChecked?: number;
   readonly packages: Record<string, OrgPackage>;
+
+  readonly target: PackageTarget;
+  readonly installRequest?: OrgPackageInstallRequest;
 }
 
 interface PackageInfo {
@@ -299,6 +314,7 @@ export interface PackagesState {
 const defaultOrgPackageState: OrgPackageState = {
   actionStatus: "initial",
   packages: {},
+  target: "latest",
 };
 
 export const defaultPackagesState: PackagesState = {
@@ -341,8 +357,8 @@ export function packagesReducer(
                 version.packageId,
                 {
                   installedVersion: version.versionName,
-                  upgradeSelected: true,
-                  pendingInstall: false,
+                  isManaged: version.isManaged,
+                  upgradeSelected: false,
                 },
               ])
             ),
@@ -445,38 +461,38 @@ export function packagesReducer(
         },
       };
     }
-    case "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE": {
-      const { username, requests } = action.payload;
-      const statusMap = new Map<string, boolean>(
-        requests.map((request) => [request.packageVersion.packageId, request.status === "pending"])
-      );
+    // case "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE": {
+    //   const { username, requests } = action.payload;
+    //   const statusMap = new Map<string, boolean>(
+    //     requests.map((request) => [request.packageVersion.packageId, request.status === "pending"])
+    //   );
 
-      const org = state.orgInfo[username];
-      return {
-        ...state,
-        orgInfo: {
-          ...state.orgInfo,
-          [username]: {
-            ...org,
-            packages: Object.fromEntries(
-              Object.entries(org.packages).map(([packageId, packageObj]) => {
-                const pendingInstall = statusMap.get(packageId);
+    //   const org = state.orgInfo[username];
+    //   return {
+    //     ...state,
+    //     orgInfo: {
+    //       ...state.orgInfo,
+    //       [username]: {
+    //         ...org,
+    //         packages: Object.fromEntries(
+    //           Object.entries(org.packages).map(([packageId, packageObj]) => {
+    //             const pendingInstall = statusMap.get(packageId);
 
-                return [
-                  packageId,
-                  pendingInstall === undefined || pendingInstall === packageObj.pendingInstall
-                    ? packageObj
-                    : {
-                        ...packageObj,
-                        pendingInstall,
-                      },
-                ];
-              })
-            ),
-          },
-        },
-      };
-    }
+    //             return [
+    //               packageId,
+    //               pendingInstall === undefined || pendingInstall === packageObj.pendingInstall
+    //                 ? packageObj
+    //                 : {
+    //                     ...packageObj,
+    //                     pendingInstall,
+    //                   },
+    //             ];
+    //           })
+    //         ),
+    //       },
+    //     },
+    //   };
+    // }
     default:
       return state;
   }
@@ -491,7 +507,7 @@ export interface OrgPackageDetails extends OrgPackageState {
       upgradeAvailable: boolean;
       installedVersion: string;
       upgradeSelected: boolean;
-      pendingInstall: boolean;
+      isManaged: boolean;
     }
   >;
 }
@@ -501,7 +517,7 @@ export function selectOrgPackageDetails(state: PackagesState, username: string):
 
   if (orgInfo === undefined) {
     return {
-      actionStatus: "initial",
+      ...defaultOrgPackageState,
       packages: {},
     };
   }
