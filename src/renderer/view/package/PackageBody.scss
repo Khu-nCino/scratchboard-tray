@@ -3,6 +3,7 @@
 
 .sbt-package-grid {
   display: grid;
+  flex-grow: 1;
   grid-template-columns: minmax(auto, 40%) 1fr 1fr 0.5fr;
   grid-template-rows: $medium;
   grid-auto-rows: auto;
@@ -22,4 +23,8 @@
   padding: 0 !important;
   align-self: center;
   justify-self: center;
+}
+
+.sbt-first-column {
+  grid-column: 1;
 }

@@ -16,6 +16,7 @@ import { PackageDetail } from "./PackageDetail";
 import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 import { InstallConfirmationAlert } from "./InstallConfirmationAlert";
 import { notUndefined } from "common/util";
+import { UpgradeCheckbox } from "./UpgradeCheckbox";
 
 function mapStateToProps(state: State) {
   const { detailUsername } = state.route;
@@ -67,6 +68,7 @@ export const PackageBody = connector((props: Props) => {
   }, [props.orgPackageDetails.actionStatus]);
 
   const [selectedVersion, setSelectedVersion] = useState<AuthorityPackageVersion | undefined>();
+
   const [selectedVersionOpened, setSelectedVersionOpened] = useState(false);
   const [targetType, setTargetType] = useState<TargetType>("Latest");
   const [showInstallConformation, setShowInstallConformation] = useState(false);
@@ -105,7 +107,7 @@ export const PackageBody = connector((props: Props) => {
   }
 
   const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
-    ({ upgradeAvailable }) => upgradeAvailable
+    ({ upgradeAvailable, isManaged }) => isManaged && upgradeAvailable
   );
   const markedForUpgrade = upgradeableInstalledPackages
     .filter(({ upgradeSelected }) => upgradeSelected)
@@ -115,78 +117,86 @@ export const PackageBody = connector((props: Props) => {
   const anyChecked = markedForUpgrade.length > 0;
 
   return (
-    <div style={{ overflow: "hidden auto" }}>
-      <div className="sbt-package-grid">
-        <h4 className="sbt-header-item">Name</h4>
-        <h4 className="sbt-header-item sbt-ml_x-small">Current</h4>
-        <HTMLSelect
-          className="sbt-header-item"
-          minimal
-          options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
-          value={targetType}
-          onChange={(event) => {
-            setTargetType(event.target.value as TargetType);
-          }}
-        />
-        {upgradeableInstalledPackages.length > 0 && (
-          <Checkbox
-            className="sbt-header-item sbt-package-upgrade-checkbox"
-            indeterminate={anyChecked && !allChecked}
-            checked={allChecked}
-            onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
+    <>
+      <div style={{ overflow: "hidden auto" }} style={{ flexGrow: 1 }}>
+        <div className="sbt-package-grid">
+          <h4 className="sbt-header-item">Name</h4>
+          <h4 className="sbt-header-item sbt-ml_x-small">Current</h4>
+          <HTMLSelect
+            className="sbt-header-item"
+            minimal
+            options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
+            value={targetType}
+            onChange={(event) => {
+              setTargetType(event.target.value as TargetType);
+            }}
           />
-        )}
-        {packageEntities.flatMap(
-          ([
-            packageId,
-            { installedVersionInfo, upgradeAvailable, latestVersionInfo, upgradeSelected },
-          ]) => {
-            return [
-              <span key={`namespace-${packageId}`} style={{ gridColumn: 1 }}>
-                {installedVersionInfo?.namespace ?? installedVersionInfo?.packageName}
-              </span>,
-              <Button
-                small
-                fill
-                minimal
-                alignText="left"
-                key={`currentVersion-${packageId}`}
-                onClick={() => {
-                  setSelectedVersion(installedVersionInfo);
-                  setSelectedVersionOpened(false);
-                }}
-              >
-                {installedVersionInfo?.versionName}
-              </Button>,
-              <Button
-                small
-                fill
-                minimal
-                alignText="left"
-                key={`latestVersion-${packageId}`}
-                disabled={!upgradeAvailable}
-                onClick={() => {
-                  setSelectedVersion(latestVersionInfo);
-                  setSelectedVersionOpened(true);
-                }}
-              >
-                {latestVersionInfo?.versionName}
-              </Button>,
-              upgradeAvailable && (
-                <Checkbox
+          {upgradeableInstalledPackages.length > 0 && (
+            <Checkbox
+              className="sbt-header-item sbt-package-upgrade-checkbox"
+              indeterminate={anyChecked && !allChecked}
+              checked={allChecked}
+              onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
+            />
+          )}
+          {packageEntities.flatMap(
+            ([
+              packageId,
+              {
+                installedVersionInfo,
+                upgradeAvailable,
+                latestVersionInfo,
+                upgradeSelected,
+                isManaged,
+              },
+            ]) => {
+              return [
+                <span key={`namespace-${packageId}`} className="sbt-first-column">
+                  {installedVersionInfo?.namespace ?? installedVersionInfo?.packageName}
+                </span>,
+                <Button
+                  small
+                  fill
+                  minimal
+                  alignText="left"
+                  key={`currentVersion-${packageId}`}
+                  onClick={() => {
+                    setSelectedVersion(installedVersionInfo);
+                    setSelectedVersionOpened(false);
+                  }}
+                >
+                  {installedVersionInfo?.versionName}
+                </Button>,
+                <Button
+                  small
+                  fill
+                  minimal
+                  alignText="left"
+                  key={`latestVersion-${packageId}`}
+                  disabled={!upgradeAvailable}
+                  onClick={() => {
+                    setSelectedVersion(latestVersionInfo);
+                    setSelectedVersionOpened(true);
+                  }}
+                >
+                  {latestVersionInfo?.versionName}
+                </Button>,
+                <UpgradeCheckbox
                   key={`check-${packageId}`}
+                  managed={isManaged}
+                  loading={false}
+                  disabled={!upgradeAvailable}
                   checked={upgradeSelected && upgradeAvailable}
-                  onChange={() => {
+                  onToggle={() => {
                     props.togglePendingPackageUpgrade(props.detailUsername, packageId);
                   }}
-                  className="sbt-package-upgrade-checkbox"
-                />
-              ),
-            ];
-          }
-        )}
+                />,
+              ];
+            }
+          )}
+        </div>
       </div>
-      <div className="sbt-flex-container">
+      <div className="sbt-footer-container sbt-flex-container">
         <span className="sbt-ml_medium sbt-mv_medium">
           {new Date(props.orgPackageDetails.lastInstalledVersionsChecked!!).toDateString()}
         </span>
@@ -223,6 +233,6 @@ export const PackageBody = connector((props: Props) => {
         }}
         onCancel={() => setShowInstallConformation(false)}
       />
-    </div>
+    </>
   );
 });

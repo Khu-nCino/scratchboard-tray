@@ -551,10 +551,14 @@ export function isUpgradeAvailable(
   packageId: string
 ): boolean {
   const { orgInfo, packageInfo } = state;
-  const installedVersion = orgInfo[username]?.packages[packageId]?.installedVersion;
+  const orgPackage = orgInfo[username]?.packages[packageId];
+
+  const installedVersion = orgPackage?.installedVersion;
+  const isManaged = orgPackage?.isManaged;
   const latestVersion = packageInfo[packageId]?.latestVersionName;
 
   return (
+    isManaged &&
     installedVersion !== undefined &&
     latestVersion !== undefined &&
     installedVersion !== latestVersion

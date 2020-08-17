@@ -46,30 +46,32 @@ export const PackageDetail = connector((props: Props) => {
       </div>
       <div className={Classes.DIALOG_FOOTER}>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          {props.isOpenable && <Button
-            loading={isOpeningFrontDoor}
-            onClick={async () => {
-              if (props.detailUsername === undefined || props.packageVersion === undefined) {
-                return;
-              }
+          {props.isOpenable && (
+            <Button
+              loading={isOpeningFrontDoor}
+              onClick={async () => {
+                if (props.detailUsername === undefined || props.packageVersion === undefined) {
+                  return;
+                }
 
-              try {
-                setIsOpeningFrontDoor(true);
-                shell.openExternal(
-                  await orgManager.getFrontDoor(
-                    props.detailUsername,
-                    `/packaging/installPackage.apexp?p0=${props.packageVersion.packageVersionId}`
-                  )
-                );
-              } catch (error) {
-                props.createErrorToast("", error);
-              } finally {
-                setIsOpeningFrontDoor(false);
-              }
-            }}
-          >
-            Open Install URL
-          </Button>}
+                try {
+                  setIsOpeningFrontDoor(true);
+                  shell.openExternal(
+                    await orgManager.getFrontDoor(
+                      props.detailUsername,
+                      `/packaging/installPackage.apexp?p0=${props.packageVersion.packageVersionId}`
+                    )
+                  );
+                } catch (error) {
+                  props.createErrorToast("", error);
+                } finally {
+                  setIsOpeningFrontDoor(false);
+                }
+              }}
+            >
+              Open Install URL
+            </Button>
+          )}
           <Button onClick={props.onClose}>Close</Button>
         </div>
       </div>
