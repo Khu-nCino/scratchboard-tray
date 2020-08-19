@@ -277,7 +277,7 @@ export function selectOrgDescriptions(state: State): SalesforceOrg[] {
   return state.orgs.orgList.map(({ description }) => description);
 }
 
-export function selectOrg(state: OrgsState, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
+export function selectOrg({ orgs: state }: State, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
   if (aliasOrUsername === "") {
     return;
   }

@@ -11,7 +11,7 @@ import {
   toggleOpenAtLogin,
   toggleShowSecondaryScratchUsernames,
 } from "renderer/store/settings";
-import { setPackageAuthorityUsername } from "renderer/store/packages";
+import { setPackageAuthorityUsername } from "renderer/store/packages/actions";
 import { UpdateManager } from "./UpdateManager";
 import "./SettingsBody.scss";
 import { selectOrg } from "renderer/store/orgs";
@@ -27,7 +27,7 @@ function mapStateToProps(state: State) {
     showSecondaryScratchUsernames: state.settings.showSecondaryScratchUsernames,
     packageAuthorityUsername: state.packages.authorityUsername,
     authorityOrgFound:
-      selectOrg(state.orgs, state.packages.authorityUsername) !== undefined ||
+      selectOrg(state, state.packages.authorityUsername) !== undefined ||
       state.packages.authorityUsername === "",
   };
 }

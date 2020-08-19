@@ -25,8 +25,8 @@ export function groupBy<K1 extends string, T extends Record<K1, string>>(
   }, {});
 }
 
-export function groupBy2<K1 extends string, K2 extends string, T extends Record<K1 | K2, string>>(
-  xs: T[],
+export function groupBy2<T extends Record<K1 | K2, string>, K1 extends string, K2 extends string>(
+  xs: ReadonlyArray<T>,
   key1: K1,
   key2: K2
 ): Record<string, Record<string, T>> {

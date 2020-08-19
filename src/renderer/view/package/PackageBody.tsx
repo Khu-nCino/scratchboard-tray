@@ -2,14 +2,6 @@ import React, { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { NonIdealState, Spinner, Button, Checkbox, HTMLSelect } from "@blueprintjs/core";
 import { State } from "renderer/store";
-import {
-  checkInstalledPackages,
-  OrgActionStatus,
-  togglePendingPackageUpgrade,
-  toggleAllPendingPackageUpgrade,
-  selectOrgPackageDetails,
-  installPackages,
-} from "renderer/store/packages";
 import "./PackageBody.scss";
 import { selectOrg } from "renderer/store/orgs";
 import { PackageDetail } from "./PackageDetail";
@@ -17,6 +9,14 @@ import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 import { InstallConfirmationAlert } from "./InstallConfirmationAlert";
 import { notUndefined } from "common/util";
 import { UpgradeCheckbox } from "./UpgradeCheckbox";
+import {
+  checkInstalledPackages,
+  togglePendingPackageUpgrade,
+  toggleAllPendingPackageUpgrade,
+  installPackages,
+} from "renderer/store/packages/actions";
+import { selectOrgPackageDetails } from "renderer/store/packages/selectors";
+import { TargetType, OrgActionStatus, targetTypes } from "renderer/store/packages/state";
 
 function mapStateToProps(state: State) {
   const { detailUsername } = state.route;
@@ -25,11 +25,11 @@ function mapStateToProps(state: State) {
     throw new Error("Detail username can't be undefined on the Packages route.");
   }
 
-  const orgPackageDetails = selectOrgPackageDetails(state.packages, detailUsername);
+  const orgPackageDetails = selectOrgPackageDetails(state, detailUsername);
 
   return {
     detailUsername,
-    authorityExists: selectOrg(state.orgs, state.packages.authorityUsername) !== undefined,
+    authorityExists: selectOrg(state, state.packages.authorityUsername) !== undefined,
     orgPackageDetails,
   };
 }
@@ -56,9 +56,6 @@ function getLoadingMessage(status: OrgActionStatus) {
       return "Invalid state";
   }
 }
-
-const targetTypes = ["Latest", "Patch"] as const;
-type TargetType = typeof targetTypes[number];
 
 export const PackageBody = connector((props: Props) => {
   useEffect(() => {
@@ -118,7 +115,7 @@ export const PackageBody = connector((props: Props) => {
 
   return (
     <>
-      <div style={{ overflow: "hidden auto" }} style={{ flexGrow: 1 }}>
+      <div style={{ overflow: "hidden auto", flexGrow: 1 }}>
         <div className="sbt-package-grid">
           <h4 className="sbt-header-item">Name</h4>
           <h4 className="sbt-header-item sbt-ml_x-small">Current</h4>

@@ -2,6 +2,7 @@ import { shrink as strip } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
 import { formatQueryList, trimTo15, combineSelectors } from "./util";
 import { RecordResult, SuccessResult, ErrorResult } from "jsforce";
+import { TargetType } from "renderer/store/packages/state";
 
 export interface PackageVersion {
   readonly packageId: string;
@@ -77,7 +78,8 @@ export class PackageManager {
 
   async getLatestAvailablePackageVersions(
     authorityUsername: string,
-    packageIds: string[]
+    packageIds: string[],
+    target: TargetType,
   ): Promise<SortingPackageVersion[]> {
     if (packageIds.length === 0) {
       return [];
@@ -110,7 +112,7 @@ export class PackageManager {
           )}
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
-          AND PackageManager__Is_Patch__c = false
+          AND PackageManager__Is_Patch__c = ${target === "Patch"}
         GROUP BY PackageManager__Package__r.PackageManager__Metadata_Package_Id__c
       `
     );

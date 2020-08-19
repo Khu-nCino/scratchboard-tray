@@ -5,6 +5,7 @@ import {
   AnyAction,
   DeepPartial,
   compose,
+  StateFromReducersMapObject,
 } from "redux";
 
 import thunk, { ThunkMiddleware } from "redux-thunk";
@@ -14,9 +15,16 @@ import { settingsReducer, defaultSettingsState } from "./settings";
 import { messagesReducer } from "./messages";
 import { updateReducer, defaultUpdateState } from "./updates";
 import { expandedReducer, defaultExpandedState } from "./expanded";
-import { packagesReducer, defaultPackagesState } from "./packages";
+import { packagesReducer } from "./packages/reducers";
+import { defaultPackagesState } from "./packages/state";
 
-export type State = ReturnType<typeof rootReducer>;
+export type State = StateFromReducersMapObject<typeof reducers>;
+
+function addFunction(a: number, b: number): number {
+  return a + b;
+}
+
+const AddFunction = typeof addFunction;
 
 const reducers = {
   orgs: orgsReducer,
@@ -39,10 +47,10 @@ export const defaultState: Partial<State> = {
 const devToolsCompose: typeof compose | undefined = (window as any)
   .__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
 
-const rootReducer = combineReducers(reducers);
-
 export function createStore(initial: DeepPartial<State>) {
-  const composeEnhancers = (typeof window === "object" && devToolsCompose ? devToolsCompose : compose);
+  const rootReducer = combineReducers(reducers);
+  const composeEnhancers =
+    typeof window === "object" && devToolsCompose ? devToolsCompose : compose;
 
   return createReduxStore(
     rootReducer,
