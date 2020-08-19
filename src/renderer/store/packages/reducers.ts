@@ -1,4 +1,9 @@
-import { PackagesState, defaultPackagesState, defaultOrgPackageState } from "./state";
+import {
+  PackagesState,
+  defaultPackagesState,
+  defaultOrgPackageState,
+  defaultPackageInfo,
+} from "./state";
 import {
   PackagesAction,
   SET_PACKAGE_AUTHORITY_USERNAME,
@@ -7,6 +12,8 @@ import {
   TOGGLE_PENDING_PACKAGE_UPGRADE,
   TOGGLE_ALL_PENDING_PACKAGE_UPGRADE,
   SET_PACKAGE_DETAIL_ACTION,
+  SET_TARGET_VERSIONS,
+  SET_ORG_TARGET_TYPE,
 } from "./actions";
 import { isUpgradeAvailable } from "./selectors";
 
@@ -111,23 +118,40 @@ export function packagesReducer(
         },
       };
     }
-    // case "SET_LATEST_PACKAGE_VERSIONS":
-    //   return {
-    //     ...state,
-    //     packageInfo: {
-    //       ...state.packageInfo,
-    //       ...Object.fromEntries(
-    //         action.payload.versions.map(({ packageId, versionName }) => [
-    //           packageId,
-    //           {
-    //             latestVersionChecked: action.payload.timestamp,
-    //             latestVersionName: versionName,
-    //             versions: state.packageInfo[packageId]?.versions ?? {},
-    //           },
-    //         ])
-    //       ),
-    //     },
-    //   };
+    case SET_TARGET_VERSIONS: {
+      return {
+        ...state,
+        packageInfo: {
+          ...state.packageInfo,
+          ...Object.fromEntries(
+            Object.entries(action.payload.targets).map(([packageId, targets]) => [
+              packageId,
+              {
+                ...(state.packageInfo[packageId] ?? defaultPackageInfo),
+                targetVersions: {
+                  ...(state.packageInfo[packageId]?.targetVersions ?? {}),
+                  ...targets,
+                },
+              },
+            ])
+          ),
+        },
+      };
+    }
+    case SET_ORG_TARGET_TYPE: {
+      const { username, target } = action.payload;
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...(state.orgInfo[username] ?? defaultOrgPackageState),
+            target,
+          },
+        },
+      };
+    }
     case SET_PACKAGE_DETAIL_ACTION: {
       return {
         ...state,
@@ -137,7 +161,7 @@ export function packagesReducer(
             Object.entries(action.payload.versions).map(([packageId, versions]) => [
               packageId,
               {
-                ...(state.packageInfo[packageId] ?? {}),
+                ...(state.packageInfo[packageId] ?? defaultPackageInfo),
                 versions: {
                   ...(state.packageInfo[packageId]?.versions ?? {}),
                   ...versions,

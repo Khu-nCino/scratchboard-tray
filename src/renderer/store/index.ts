@@ -20,12 +20,6 @@ import { defaultPackagesState } from "./packages/state";
 
 export type State = StateFromReducersMapObject<typeof reducers>;
 
-function addFunction(a: number, b: number): number {
-  return a + b;
-}
-
-const AddFunction = typeof addFunction;
-
 const reducers = {
   orgs: orgsReducer,
   route: routeReducer,

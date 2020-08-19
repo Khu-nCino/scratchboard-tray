@@ -5,16 +5,15 @@ import { OrgActionStatus, TargetType, targetTypes } from "./state";
 import {
   SubscriberPackageVersion,
   AuthorityPackageVersion,
-  PackageVersion,
-  PackageInstallRequest,
   packageManager,
 } from "renderer/api/core/PackageManager";
-import { groupBy2, delay } from "common/util";
+import { groupBy2 } from "common/util";
 
 export const SET_PACKAGE_AUTHORITY_USERNAME = "SET_PACKAGE_AUTHORITY_USERNAME";
 export const SET_PACKAGE_ACTION_STATUS = "SET_PACKAGE_ACTION_STATUS";
 export const SET_INSTALLED_PACKAGE_VERSIONS = "SET_INSTALLED_PACKAGE_VERSIONS";
 export const SET_TARGET_VERSIONS = "SET_TARGET_VERSIONS";
+export const SET_ORG_TARGET_TYPE = "SET_ORG_TARGET_TYPE";
 export const SET_PACKAGE_DETAIL_ACTION = "SET_PACKAGE_DETAIL_ACTION";
 export const TOGGLE_PENDING_PACKAGE_UPGRADE = "TOGGLE_PENDING_PACKAGE_UPGRADE";
 export const TOGGLE_ALL_PENDING_PACKAGE_UPGRADE = "TOGGLE_ALL_PENDING_PACKAGE_UPGRADE";
@@ -25,10 +24,10 @@ export type PackagesAction =
   | ReturnType<typeof setInstalledPackageVersions>
   | ReturnType<typeof setPackageDetails>
   | ReturnType<typeof setTargetVersions>
+  | ReturnType<typeof setOrgTargetType>
   | ReturnType<typeof setPackageActionStatus>
   | ReturnType<typeof togglePendingPackageUpgrade>
-  | ReturnType<typeof toggleAllPendingPackageUpgrade>
-  | ReturnType<typeof packageInstallRequestStatusUpdate>;
+  | ReturnType<typeof toggleAllPendingPackageUpgrade>;
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction | MessagesAction>;
 
@@ -66,7 +65,7 @@ function setInstalledPackageVersions(
   } as const;
 }
 
-function setTargetVersions(targets: Record<TargetType, PackageVersion[]>) {
+function setTargetVersions(targets: Record<string, Record<TargetType, string>>) {
   return {
     type: SET_TARGET_VERSIONS,
     payload: {
@@ -80,6 +79,16 @@ function setPackageDetails(versions: Record<string, Record<string, AuthorityPack
     type: SET_PACKAGE_DETAIL_ACTION,
     payload: {
       versions,
+    },
+  } as const;
+}
+
+export function setOrgTargetType(username: string, target: TargetType) {
+  return {
+    type: "SET_ORG_TARGET_TYPE",
+    payload: {
+      username,
+      target,
     },
   } as const;
 }
@@ -103,15 +112,15 @@ export function toggleAllPendingPackageUpgrade(username: string) {
   } as const;
 }
 
-function packageInstallRequestStatusUpdate(username: string, requests: PackageInstallRequest[]) {
-  return {
-    type: PACKAGE_INSTALL_REQUEST_STATUS_UPDATE,
-    payload: {
-      username,
-      requests,
-    },
-  } as const;
-}
+// function packageInstallRequestStatusUpdate(username: string, requests: PackageInstallRequest[]) {
+//   return {
+//     type: PACKAGE_INSTALL_REQUEST_STATUS_UPDATE,
+//     payload: {
+//       username,
+//       requests,
+//     },
+//   } as const;
+// }
 
 export function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
   return async (dispatch, getState) => {
@@ -121,34 +130,47 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
 
     try {
       const installedPackages = await packageManager.listSubscriberPackageVersions(username);
-      dispatch(setInstalledPackageVersions(username, installedPackages, Date.now()));
       dispatch(setPackageActionStatus(username, "pending_authority"));
 
       const packageIds = installedPackages.map((installedPackage) => installedPackage.packageId);
-      const latestPackageVersions = await Promise.all(targetTypes.map((target) => packageManager.getLatestAvailablePackageVersions(
-        authorityUsername,
-        packageIds,
-        target
-      )));
+      const targetPackageVersions = await Promise.all(
+        targetTypes.map((target) =>
+          packageManager.getLatestAvailablePackageVersions(authorityUsername, packageIds, target)
+        )
+      );
 
       dispatch(setPackageActionStatus(username, "pending_details"));
       const packageDetails = await packageManager.getAuthorityPackageDetails(authorityUsername, [
         ...installedPackages,
-        ...latestPackageVersions.flat(),
+        ...targetPackageVersions.flat(),
       ]);
 
-      const latestVersionSet = new Set<string>(
-        latestPackageVersions.map(({ sortingVersion }) => sortingVersion)
-      );
+      // Note needs to support case where two targets point to the same version.
+      const targetIdMap: Map<string, Map<string, TargetType>> = new Map();
+      targetPackageVersions.forEach((versions, index) => {
+        const target = targetTypes[index];
+        versions.forEach(({ packageId, sortingVersion }) => {
+          if (targetIdMap.get(packageId)?.set(sortingVersion, target) === undefined) {
+            targetIdMap.set(packageId, new Map().set(sortingVersion, target));
+          }
+        });
+      });
 
-      const latestPackageDetails = packageDetails.filter((packageDetail) =>
-        latestVersionSet.has(packageDetail.sortingVersion)
-      );
+      const targets: Record<string, Record<TargetType, string>> = {};
+      packageDetails.forEach(({ packageId, sortingVersion, versionName }) => {
+        const targetType = targetIdMap.get(packageId)?.get(sortingVersion);
+        if (targetType !== undefined) {
+          (targets[packageId] ?? (targets[packageId] = {} as Record<TargetType, string>))[
+            targetType
+          ] = versionName;
+        }
+      });
 
       const packageDetailMap = groupBy2(packageDetails, "packageId", "versionName");
 
-      //dispatch(setLatestPackageVersions(latestPackageDetails, Date.now()));
       dispatch(setPackageDetails(packageDetailMap));
+      dispatch(setInstalledPackageVersions(username, installedPackages, Date.now()));
+      dispatch(setTargetVersions(targets));
     } catch (error) {
       dispatch(createErrorToast("There was an error fetching you package data 🤔", error));
     } finally {
@@ -157,43 +179,43 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
   };
 }
 
-export function installPackages(
-  username: string,
-  targets: AuthorityPackageVersion[]
-): ThunkResult<Promise<void>> {
-  return async (dispatch) => {
-    try {
-      const requests = await packageManager.createPackagesInstallRequests(username, targets);
-      dispatch(packageInstallRequestStatusUpdate(username, requests));
-      dispatch(checkPackageInstallRequests(username, requests));
-    } catch (error) {
-      dispatch(createErrorToast("There was an error upgrading your packages", error));
-    }
-  };
-}
+// export function installPackages(
+//   username: string,
+//   targets: AuthorityPackageVersion[]
+// ): ThunkResult<Promise<void>> {
+//   return async (dispatch) => {
+//     try {
+//       const requests = await packageManager.createPackagesInstallRequests(username, targets);
+//       dispatch(packageInstallRequestStatusUpdate(username, requests));
+//       dispatch(checkPackageInstallRequests(username, requests));
+//     } catch (error) {
+//       dispatch(createErrorToast("There was an error upgrading your packages", error));
+//     }
+//   };
+// }
 
-function checkPackageInstallRequests(
-  username: string,
-  requests: PackageInstallRequest[]
-): ThunkResult<Promise<void>> {
-  return async (dispatch) => {
-    try {
-      const nextRequests = await packageManager.checkPackageInstallRequests(username, requests);
-      const statusChange = nextRequests.some(
-        (nextRequest, index) => nextRequest.status !== requests[index].status
-      );
-      const pendingRequests = nextRequests.filter(({ status }) => status === "pending");
+// function checkPackageInstallRequests(
+//   username: string,
+//   requests: PackageInstallRequest[]
+// ): ThunkResult<Promise<void>> {
+//   return async (dispatch) => {
+//     try {
+//       const nextRequests = await packageManager.checkPackageInstallRequests(username, requests);
+//       const statusChange = nextRequests.some(
+//         (nextRequest, index) => nextRequest.status !== requests[index].status
+//       );
+//       const pendingRequests = nextRequests.filter(({ status }) => status === "pending");
 
-      if (statusChange) {
-        dispatch(packageInstallRequestStatusUpdate(username, nextRequests));
-      }
+//       if (statusChange) {
+//         dispatch(packageInstallRequestStatusUpdate(username, nextRequests));
+//       }
 
-      if (pendingRequests.length > 0) {
-        await delay(10000);
-        dispatch(checkPackageInstallRequests(username, pendingRequests));
-      }
-    } catch (error) {
-      dispatch(createErrorToast("There was an error upgrading your packages", error));
-    }
-  };
-}
+//       if (pendingRequests.length > 0) {
+//         await delay(10000);
+//         dispatch(checkPackageInstallRequests(username, pendingRequests));
+//       }
+//     } catch (error) {
+//       dispatch(createErrorToast("There was an error upgrading your packages", error));
+//     }
+//   };
+// }

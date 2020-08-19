@@ -35,9 +35,7 @@ export interface OrgPackageState {
 }
 
 interface PackageInfo {
-  readonly targetVersions: Record<TargetType, {
-    readonly versionName: string;
-  }>;
+  readonly targetVersions: Partial<Record<TargetType, string>>;
 
   readonly versions: Record<string, AuthorityPackageVersion>;
 }
@@ -60,3 +58,8 @@ export const defaultPackagesState: PackagesState = {
   orgInfo: {},
   packageInfo: {},
 };
+
+export const defaultPackageInfo: PackageInfo = {
+  targetVersions: {},
+  versions: {}
+}

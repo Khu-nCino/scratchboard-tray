@@ -13,7 +13,8 @@ import {
   checkInstalledPackages,
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
-  installPackages,
+  setOrgTargetType,
+  // installPackages,
 } from "renderer/store/packages/actions";
 import { selectOrgPackageDetails } from "renderer/store/packages/selectors";
 import { TargetType, OrgActionStatus, targetTypes } from "renderer/store/packages/state";
@@ -29,8 +30,9 @@ function mapStateToProps(state: State) {
 
   return {
     detailUsername,
-    authorityExists: selectOrg(state, state.packages.authorityUsername) !== undefined,
     orgPackageDetails,
+    authorityExists: selectOrg(state, state.packages.authorityUsername) !== undefined,
+    targetType: state.packages.orgInfo[detailUsername]?.target ?? "Latest",
   };
 }
 
@@ -38,7 +40,7 @@ const mapDispatchToProps = {
   checkInstalledPackages,
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
-  installPackages,
+  setOrgTargetType,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -67,7 +69,6 @@ export const PackageBody = connector((props: Props) => {
   const [selectedVersion, setSelectedVersion] = useState<AuthorityPackageVersion | undefined>();
 
   const [selectedVersionOpened, setSelectedVersionOpened] = useState(false);
-  const [targetType, setTargetType] = useState<TargetType>("Latest");
   const [showInstallConformation, setShowInstallConformation] = useState(false);
 
   if (!props.authorityExists) {
@@ -123,9 +124,9 @@ export const PackageBody = connector((props: Props) => {
             className="sbt-header-item"
             minimal
             options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
-            value={targetType}
+            value={props.targetType}
             onChange={(event) => {
-              setTargetType(event.target.value as TargetType);
+              props.setOrgTargetType(props.detailUsername, event.target.value as TargetType);
             }}
           />
           {upgradeableInstalledPackages.length > 0 && (
@@ -221,12 +222,12 @@ export const PackageBody = connector((props: Props) => {
       />
       <InstallConfirmationAlert
         isOpen={showInstallConformation}
-        targetType={targetType}
+        targetType={props.targetType}
         aliasOrUsername={props.detailUsername}
         targets={markedForUpgrade}
         onConfirm={() => {
           setShowInstallConformation(false);
-          props.installPackages(props.detailUsername, markedForUpgrade);
+          //props.installPackages(props.detailUsername, markedForUpgrade);
         }}
         onCancel={() => setShowInstallConformation(false)}
       />

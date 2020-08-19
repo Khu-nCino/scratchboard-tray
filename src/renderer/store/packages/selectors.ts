@@ -35,7 +35,7 @@ export function selectOrgPackageDetails(
       Object.entries(orgInfo.packages).map(([packageId, info]) => {
         const packageInfo = state.packageInfo[packageId];
         const installedVersionInfo = packageInfo?.versions[info.installedVersion];
-        const latestVersionInfo = packageInfo?.versions[packageInfo.latestVersionName];
+        const latestVersionInfo = packageInfo?.versions[packageInfo.targetVersions[orgInfo.target]!!];
 
         return [
           packageId,
@@ -62,7 +62,7 @@ export function isUpgradeAvailable(
 
   const installedVersion = orgPackage?.installedVersion;
   const isManaged = orgPackage?.isManaged;
-  const latestVersion = packageInfo[packageId]?.latestVersionName;
+  const latestVersion = packageInfo[packageId]?.targetVersions[orgInfo[username]?.target];
 
   return (
     isManaged &&
