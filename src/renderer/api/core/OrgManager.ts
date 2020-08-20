@@ -5,7 +5,7 @@ import { binaryGroups, notUndefined } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
 import { SalesforceOrg } from "../SalesforceOrg";
 import { formatFrontDoorUrl } from "../url";
-import { isActive, readOrgGroupReverse, trimTo15, formatQueryList } from "./util";
+import { isActive, readOrgGroupReverse, trimTo15, formatQueryList, escapeSoql } from "./util";
 
 const logger = getLogger();
 export class OrgManager {
@@ -142,7 +142,7 @@ export class OrgManager {
   private async queryOrgId(devHubConn: Connection, orgId: string): Promise<string> {
     return new Promise((resolve, reject) => {
       devHubConn.query(
-        `SELECT Id FROM ActiveScratchOrg WHERE ScratchOrg = '${trimTo15(orgId)}'`,
+        `SELECT Id FROM ActiveScratchOrg WHERE ScratchOrg = '${escapeSoql(trimTo15(orgId))}'`,
         {},
         (err, result) => {
           if (err) {

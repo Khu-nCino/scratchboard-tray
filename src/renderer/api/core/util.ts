@@ -6,13 +6,10 @@ export function readOrgGroup(aliases: Aliases): Record<string, string> {
     return {};
   }
 
-  return Object.entries(orgsGroup).reduce<Record<string, string>>(
-    (acc, [alias, username]) => {
-      acc[alias] = `${username}`;
-      return acc;
-    },
-    {}
-  );
+  return Object.entries(orgsGroup).reduce<Record<string, string>>((acc, [alias, username]) => {
+    acc[alias] = `${username}`;
+    return acc;
+  }, {});
 }
 
 export function readOrgGroupReverse(aliases: Aliases): Record<string, string> {
@@ -21,13 +18,10 @@ export function readOrgGroupReverse(aliases: Aliases): Record<string, string> {
     return {};
   }
 
-  return Object.entries(orgsGroup).reduce<Record<string, string>>(
-    (acc, [alias, username]) => {
-      acc[`${username}`] = alias;
-      return acc;
-    },
-    {}
-  );
+  return Object.entries(orgsGroup).reduce<Record<string, string>>((acc, [alias, username]) => {
+    acc[`${username}`] = alias;
+    return acc;
+  }, {});
 }
 
 export function compareAliases(
@@ -70,22 +64,30 @@ export function formatQueryList(field: string, items: string[]): string {
   if (items.length < 1) {
     throw new Error("Need items for a format query");
   } else if (items.length === 1) {
-    return `${field} = '${items[0]}'`;
+    return `${escapeSoql(field)} = '${escapeSoql(items[0])}'`;
   } else {
-    return `${field} IN (${items.map((item) => `'${item}'`).join()})`
+    return `${escapeSoql(field)} IN (${items.map((item) => `'${escapeSoql(item)}'`).join()})`;
   }
 }
 
-export function combineSelectors(a: string | undefined, b: string | undefined, op: 'OR' | 'AND'): string {
-  if (a !== undefined && b !== undefined ) {
+export function combineSelectors(
+  a: string | undefined,
+  b: string | undefined,
+  op: "OR" | "AND"
+): string {
+  if (a !== undefined && b !== undefined) {
     return `(${a} ${op} ${b})`;
   } else if (a !== undefined) {
     return a;
   } else if (b !== undefined) {
     return b;
   } else {
-    throw new Error("Both a and b can not be undefined.")
+    throw new Error("Both a and b can not be undefined.");
   }
+}
+
+export function escapeSoql(str: string) {
+  return str.replace(/'/g, "\\'");
 }
 
 export function isScratch(info: AuthInfo) {
@@ -95,4 +97,25 @@ export function isScratch(info: AuthInfo) {
 export function isActive(info: AuthInfo) {
   const expirationDate = info.getFields().expirationDate;
   return !isScratch(info) || !expirationDate || Date.parse(expirationDate) > Date.now();
+}
+
+export function compareVersions(a: string, b: string): -1 | 0 | 1 {
+  const aList = a.split(".").map(Number);
+  const bList = b.split(".").map(Number);
+
+  const length = Math.min(aList.length, bList.length);
+  for (let i = 0; i < length; i++) {
+    if (aList[i] > bList[i]) {
+      return 1;
+    } else if (aList[i] < bList[i]) {
+      return -1;
+    }
+  }
+
+  if (aList.length > bList.length) {
+    return 1;
+  } else if (aList.length < bList.length) {
+    return -1;
+  }
+  return 0;
 }

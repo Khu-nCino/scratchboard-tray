@@ -1,6 +1,7 @@
 import { OrgPackageState, defaultOrgPackageState, PackagesState } from "./state";
 import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 import { State } from "..";
+import { compareVersions } from "renderer/api/core/util";
 
 export interface OrgPackageDetails extends OrgPackageState {
   readonly packages: Record<
@@ -8,6 +9,7 @@ export interface OrgPackageDetails extends OrgPackageState {
     {
       installedVersionInfo?: AuthorityPackageVersion;
       latestVersionInfo?: AuthorityPackageVersion;
+      sameVersion: boolean;
       upgradeAvailable: boolean;
       installedVersion: string;
       upgradeSelected: boolean;
@@ -34,17 +36,20 @@ export function selectOrgPackageDetails(
     packages: Object.fromEntries(
       Object.entries(orgInfo.packages).map(([packageId, info]) => {
         const packageInfo = state.packageInfo[packageId];
-        const installedVersionInfo = packageInfo?.versions[info.installedVersion];
-        const latestVersionInfo = packageInfo?.versions[packageInfo.targetVersions[orgInfo.target]!!];
+        const targetVersion = packageInfo.targetVersions[orgInfo.target];
 
+        const installedVersionInfo = packageInfo?.versions[info.installedVersion];
+        const latestVersionInfo = targetVersion === undefined ? undefined : packageInfo?.versions[targetVersion];
+
+        const versionCompare = targetVersion === undefined ? undefined : compareVersions(info.installedVersion, targetVersion);
         return [
           packageId,
           {
             ...info,
             installedVersionInfo,
             latestVersionInfo,
-            upgradeAvailable:
-              installedVersionInfo !== undefined && installedVersionInfo !== latestVersionInfo,
+            sameVersion: versionCompare === 0,
+            upgradeAvailable: info.isManaged && versionCompare === -1,
           },
         ];
       })
@@ -68,6 +73,6 @@ export function isUpgradeAvailable(
     isManaged &&
     installedVersion !== undefined &&
     latestVersion !== undefined &&
-    installedVersion !== latestVersion
+    compareVersions(installedVersion, latestVersion) === -1
   );
 }

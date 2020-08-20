@@ -1,8 +1,7 @@
 import { shrink as strip } from "common/util";
 import { OrgCache, orgCache } from "./OrgCache";
-import { formatQueryList, trimTo15, combineSelectors } from "./util";
+import { formatQueryList, trimTo15, combineSelectors, escapeSoql } from "./util";
 import { RecordResult, SuccessResult, ErrorResult } from "jsforce";
-import { TargetType } from "renderer/store/packages/state";
 
 export interface PackageVersion {
   readonly packageId: string;
@@ -73,21 +72,20 @@ export class PackageManager {
       packageId: version.SubscriberPackageId,
       versionName: version.SubscriberPackageVersion.Name,
       isManaged: version.SubscriberPackageVersion.IsManaged,
-    }));
+    })).filter(({ isManaged }) => isManaged);
   }
 
   async getLatestAvailablePackageVersions(
     authorityUsername: string,
-    packageIds: string[],
-    target: TargetType,
+    packages: { packageId: string }[]
   ): Promise<SortingPackageVersion[]> {
-    if (packageIds.length === 0) {
+    if (packages.length === 0) {
       return [];
     }
 
     const idsToQuery: string[] = [];
     const trimmedIdToFull = new Map<string, string>();
-    for (const packageId of packageIds) {
+    for (const { packageId } of packages) {
       const trimmedId = trimTo15(packageId);
 
       idsToQuery.push(packageId);
@@ -112,7 +110,54 @@ export class PackageManager {
           )}
           AND PackageManager__Install_URL__c != null
           AND PackageManager__Is_Beta__c = false
-          AND PackageManager__Is_Patch__c = ${target === "Patch"}
+          AND PackageManager__Is_Patch__c = false
+        GROUP BY PackageManager__Package__r.PackageManager__Metadata_Package_Id__c
+      `
+    );
+
+    return results.map((result) => ({
+      ...result,
+      packageId: trimmedIdToFull.get(result.packageId) ?? result.packageId,
+    }));
+  }
+
+  async getLatestPatchPackageVersions(
+    authorityUsername: string,
+    packages: { packageId: string; versionName: string }[]
+  ): Promise<SortingPackageVersion[]> {
+    if (packages.length === 0) {
+      return [];
+    }
+
+    const trimmedIdToFull = new Map<string, string>();
+    const versionSelector = packages
+      .map(({ packageId, versionName }) => {
+        const trimmedId = trimTo15(packageId);
+        const shortenedVersion = versionName.match(/^\d+(?:\.\d+){0,2}/)?.[0] ?? ''; // TODO fix me
+
+        if (trimmedId !== packageId) {
+          trimmedIdToFull.set(trimmedId, packageId);
+        }
+
+        return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN ('${escapeSoql(
+          trimmedId
+        )}','${escapeSoql(packageId)}') AND Name LIKE '${escapeSoql(shortenedVersion)}%')`;
+      })
+      .join(" OR ");
+
+    const results = await this.cache.query<SortingPackageVersion>(
+      authorityUsername,
+      strip`
+        SELECT
+          PackageManager__Package__r.PackageManager__Metadata_Package_Id__c packageId,
+          MAX(PackageManager__Sorting_Version_Number__c) sortingVersion
+        FROM
+          PackageManager__Package_Version__c
+        WHERE
+          (${versionSelector})
+          AND PackageManager__Install_URL__c != null
+          AND PackageManager__Is_Beta__c = false
+          AND PackageManager__Is_Patch__c = true
         GROUP BY PackageManager__Package__r.PackageManager__Metadata_Package_Id__c
       `
     );
@@ -153,9 +198,9 @@ export class PackageManager {
 
         let versionSelectors = combineSelectors(sortingSelect, subscriberSelect, "OR");
 
-        return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN ('${trimTo15(
+        return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN ('${escapeSoql(trimTo15(
           packageId
-        )}','${packageId}') AND ${versionSelectors})`;
+        ))}','${escapeSoql(packageId)}') AND ${versionSelectors})`;
       })
       .join(" OR ");
   }
@@ -275,10 +320,12 @@ export class PackageManager {
     return requests.map((request) => {
       const nextStatus = resultsMap.get(request.requestId)?.Status;
 
-      return nextStatus === undefined ? request : {
-        ...request,
-        status: metadataStatusMap[nextStatus],
-      };
+      return nextStatus === undefined
+        ? request
+        : {
+            ...request,
+            status: metadataStatusMap[nextStatus],
+          };
     });
   }
 }

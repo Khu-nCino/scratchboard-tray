@@ -132,11 +132,10 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
       const installedPackages = await packageManager.listSubscriberPackageVersions(username);
       dispatch(setPackageActionStatus(username, "pending_authority"));
 
-      const packageIds = installedPackages.map((installedPackage) => installedPackage.packageId);
-      const targetPackageVersions = await Promise.all(
-        targetTypes.map((target) =>
-          packageManager.getLatestAvailablePackageVersions(authorityUsername, packageIds, target)
-        )
+      const targetPackageVersions = await Promise.all([
+          packageManager.getLatestAvailablePackageVersions(authorityUsername, installedPackages),
+          packageManager.getLatestPatchPackageVersions(authorityUsername, installedPackages),
+        ]
       );
 
       dispatch(setPackageActionStatus(username, "pending_details"));
@@ -159,6 +158,7 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
       const targets: Record<string, Record<TargetType, string>> = {};
       packageDetails.forEach(({ packageId, sortingVersion, versionName }) => {
         const targetType = targetIdMap.get(packageId)?.get(sortingVersion);
+        // TODO default to installed version
         if (targetType !== undefined) {
           (targets[packageId] ?? (targets[packageId] = {} as Record<TargetType, string>))[
             targetType
