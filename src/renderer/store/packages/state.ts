@@ -1,9 +1,6 @@
 import { PackageInstallRequest, AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 
-export const targetTypes = [
-  "Latest",
-  "Patch"
-] as const;
+export const targetTypes = ["latest", "patch"] as const;
 
 export type TargetType = typeof targetTypes[number];
 
@@ -20,46 +17,43 @@ interface OrgPackageInstallRequest {
 }
 
 interface OrgPackage {
-  readonly installedVersion: string;
   readonly isManaged: boolean;
   readonly upgradeSelected: boolean;
+  readonly targets: {
+    readonly installed?: AuthorityPackageVersion;
+    readonly latest?: AuthorityPackageVersion;
+    readonly patch?: AuthorityPackageVersion;
+  };
 }
 
 export interface OrgPackageState {
   readonly actionStatus: OrgActionStatus;
-  readonly lastInstalledVersionsChecked?: number;
+  readonly versionsCheckedTimestamp?: number;
   readonly packages: Record<string, OrgPackage>;
 
   readonly target: TargetType;
   readonly installRequest?: OrgPackageInstallRequest;
 }
 
-interface PackageInfo {
-  readonly targetVersions: Partial<Record<TargetType, string>>;
-
-  readonly versions: Record<string, AuthorityPackageVersion>;
-}
-
 export interface PackagesState {
   readonly authorityUsername: string;
 
   readonly orgInfo: Record<string, OrgPackageState>;
-  readonly packageInfo: Record<string, PackageInfo>;
 }
 
 export const defaultOrgPackageState: OrgPackageState = {
   actionStatus: "initial",
   packages: {},
-  target: "Latest",
+  target: "latest",
 };
 
 export const defaultPackagesState: PackagesState = {
   authorityUsername: "",
   orgInfo: {},
-  packageInfo: {},
 };
 
-export const defaultPackageInfo: PackageInfo = {
-  targetVersions: {},
-  versions: {}
+export const defaultOrgPackage: OrgPackage = {
+  isManaged: false,
+  upgradeSelected: false,
+  targets: {},
 }

@@ -70,22 +70,6 @@ export function formatQueryList(field: string, items: string[]): string {
   }
 }
 
-export function combineSelectors(
-  a: string | undefined,
-  b: string | undefined,
-  op: "OR" | "AND"
-): string {
-  if (a !== undefined && b !== undefined) {
-    return `(${a} ${op} ${b})`;
-  } else if (a !== undefined) {
-    return a;
-  } else if (b !== undefined) {
-    return b;
-  } else {
-    throw new Error("Both a and b can not be undefined.");
-  }
-}
-
 export function escapeSoql(str: string) {
   return str.replace(/'/g, "\\'");
 }
@@ -99,7 +83,11 @@ export function isActive(info: AuthInfo) {
   return !isScratch(info) || !expirationDate || Date.parse(expirationDate) > Date.now();
 }
 
-export function compareVersions(a: string, b: string): -1 | 0 | 1 {
+export function compareVersions(a?: string, b?: string): -1 | 0 | 1 | undefined {
+  if (a === undefined || b === undefined) {
+    return undefined;
+  }
+
   const aList = a.split(".").map(Number);
   const bList = b.split(".").map(Number);
 

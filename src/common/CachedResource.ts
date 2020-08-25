@@ -4,17 +4,14 @@ export class CachedResource<R> {
   constructor(private accessor: (key: string) => Promise<R>) {}
 
   get(key: string): Promise<R> {
-    return (
-      this.cache[key] ??
-      (this.cache[key] = new Promise<R>((resolve, reject) =>
-        this.accessor(key)
-          .then(resolve)
-          .catch((reason) => {
-            delete this.cache[key];
-            reject(reason);
-          })
-      ))
-    );
+    return (this.cache[key] ??= new Promise<R>((resolve, reject) =>
+      this.accessor(key)
+        .then(resolve)
+        .catch((reason) => {
+          delete this.cache[key];
+          reject(reason);
+        })
+    ));
   }
 
   set(key: string, value: Promise<R>): void {

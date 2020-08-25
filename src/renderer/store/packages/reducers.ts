@@ -2,17 +2,15 @@ import {
   PackagesState,
   defaultPackagesState,
   defaultOrgPackageState,
-  defaultPackageInfo,
+  defaultOrgPackage,
 } from "./state";
 import {
   PackagesAction,
   SET_PACKAGE_AUTHORITY_USERNAME,
   SET_PACKAGE_ACTION_STATUS,
-  SET_INSTALLED_PACKAGE_VERSIONS,
   TOGGLE_PENDING_PACKAGE_UPGRADE,
   TOGGLE_ALL_PENDING_PACKAGE_UPGRADE,
   SET_PACKAGE_DETAIL_ACTION,
-  SET_TARGET_VERSIONS,
   SET_ORG_TARGET_TYPE,
 } from "./actions";
 import { isUpgradeAvailable } from "./selectors";
@@ -35,27 +33,6 @@ export function packagesReducer(
           [action.payload.username]: {
             ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
             actionStatus: action.payload.status,
-          },
-        },
-      };
-    case SET_INSTALLED_PACKAGE_VERSIONS:
-      return {
-        ...state,
-        orgInfo: {
-          ...state.orgInfo,
-          [action.payload.username]: {
-            ...(state.orgInfo[action.payload.username] ?? defaultOrgPackageState),
-            lastInstalledVersionsChecked: action.payload.timestamp,
-            packages: Object.fromEntries(
-              action.payload.versions.map((version) => [
-                version.packageId,
-                {
-                  installedVersion: version.versionName,
-                  isManaged: version.isManaged,
-                  upgradeSelected: false,
-                },
-              ])
-            ),
           },
         },
       };
@@ -118,26 +95,6 @@ export function packagesReducer(
         },
       };
     }
-    case SET_TARGET_VERSIONS: {
-      return {
-        ...state,
-        packageInfo: {
-          ...state.packageInfo,
-          ...Object.fromEntries(
-            Object.entries(action.payload.targets).map(([packageId, targets]) => [
-              packageId,
-              {
-                ...(state.packageInfo[packageId] ?? defaultPackageInfo),
-                targetVersions: {
-                  ...(state.packageInfo[packageId]?.targetVersions ?? {}),
-                  ...targets,
-                },
-              },
-            ])
-          ),
-        },
-      };
-    }
     case SET_ORG_TARGET_TYPE: {
       const { username, target } = action.payload;
 
@@ -153,57 +110,32 @@ export function packagesReducer(
       };
     }
     case SET_PACKAGE_DETAIL_ACTION: {
+      const { username, packages, timestamp } = action.payload;
+      const previousOrgInfo = state.orgInfo[username] ?? defaultOrgPackageState;
+
       return {
         ...state,
-        packageInfo: {
-          ...state.packageInfo,
-          ...Object.fromEntries(
-            Object.entries(action.payload.versions).map(([packageId, versions]) => [
-              packageId,
-              {
-                ...(state.packageInfo[packageId] ?? defaultPackageInfo),
-                versions: {
-                  ...(state.packageInfo[packageId]?.versions ?? {}),
-                  ...versions,
-                },
-              },
-            ])
-          ),
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...previousOrgInfo,
+            versionsCheckedTimestamp: timestamp,
+            packages: {
+              ...previousOrgInfo.packages,
+              ...Object.fromEntries(
+                Object.entries(packages).map(([packageId, pack]) => [
+                  packageId,
+                  {
+                    ...(previousOrgInfo.packages[packageId] ?? defaultOrgPackage),
+                    ...pack,
+                  },
+                ])
+              ),
+            },
+          },
         },
       };
     }
-    // case "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE": {
-    //   const { username, requests } = action.payload;
-    //   const statusMap = new Map<string, boolean>(
-    //     requests.map((request) => [request.packageVersion.packageId, request.status === "pending"])
-    //   );
-
-    //   const org = state.orgInfo[username];
-    //   return {
-    //     ...state,
-    //     orgInfo: {
-    //       ...state.orgInfo,
-    //       [username]: {
-    //         ...org,
-    //         packages: Object.fromEntries(
-    //           Object.entries(org.packages).map(([packageId, packageObj]) => {
-    //             const pendingInstall = statusMap.get(packageId);
-
-    //             return [
-    //               packageId,
-    //               pendingInstall === undefined || pendingInstall === packageObj.pendingInstall
-    //                 ? packageObj
-    //                 : {
-    //                     ...packageObj,
-    //                     pendingInstall,
-    //                   },
-    //             ];
-    //           })
-    //         ),
-    //       },
-    //     },
-    //   };
-    // }
     default:
       return state;
   }

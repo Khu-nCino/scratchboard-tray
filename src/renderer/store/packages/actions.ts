@@ -1,18 +1,11 @@
 import { ThunkAction } from "redux-thunk";
 import { State } from "..";
 import { MessagesAction, createErrorToast } from "../messages";
-import { OrgActionStatus, TargetType, targetTypes } from "./state";
-import {
-  SubscriberPackageVersion,
-  AuthorityPackageVersion,
-  packageManager,
-} from "renderer/api/core/PackageManager";
-import { groupBy2 } from "common/util";
+import { OrgActionStatus, TargetType } from "./state";
+import { AuthorityPackageVersion, packageManager } from "renderer/api/core/PackageManager";
 
 export const SET_PACKAGE_AUTHORITY_USERNAME = "SET_PACKAGE_AUTHORITY_USERNAME";
 export const SET_PACKAGE_ACTION_STATUS = "SET_PACKAGE_ACTION_STATUS";
-export const SET_INSTALLED_PACKAGE_VERSIONS = "SET_INSTALLED_PACKAGE_VERSIONS";
-export const SET_TARGET_VERSIONS = "SET_TARGET_VERSIONS";
 export const SET_ORG_TARGET_TYPE = "SET_ORG_TARGET_TYPE";
 export const SET_PACKAGE_DETAIL_ACTION = "SET_PACKAGE_DETAIL_ACTION";
 export const TOGGLE_PENDING_PACKAGE_UPGRADE = "TOGGLE_PENDING_PACKAGE_UPGRADE";
@@ -21,15 +14,18 @@ export const PACKAGE_INSTALL_REQUEST_STATUS_UPDATE = "PACKAGE_INSTALL_REQUEST_ST
 
 export type PackagesAction =
   | ReturnType<typeof setPackageAuthorityUsername>
-  | ReturnType<typeof setInstalledPackageVersions>
   | ReturnType<typeof setPackageDetails>
-  | ReturnType<typeof setTargetVersions>
   | ReturnType<typeof setOrgTargetType>
   | ReturnType<typeof setPackageActionStatus>
   | ReturnType<typeof togglePendingPackageUpgrade>
   | ReturnType<typeof toggleAllPendingPackageUpgrade>;
 
 type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction | MessagesAction>;
+
+interface PackageDetailsVersion {
+  isManaged: boolean;
+  targets: Record<string, AuthorityPackageVersion>;
+}
 
 export function setPackageAuthorityUsername(username: string) {
   return {
@@ -50,42 +46,24 @@ function setPackageActionStatus(username: string, status: OrgActionStatus) {
   } as const;
 }
 
-function setInstalledPackageVersions(
+function setPackageDetails(
   username: string,
-  versions: SubscriberPackageVersion[],
+  packages: Record<string, PackageDetailsVersion>,
   timestamp: number
 ) {
   return {
-    type: SET_INSTALLED_PACKAGE_VERSIONS,
-    payload: {
-      username,
-      versions,
-      timestamp,
-    },
-  } as const;
-}
-
-function setTargetVersions(targets: Record<string, Record<TargetType, string>>) {
-  return {
-    type: SET_TARGET_VERSIONS,
-    payload: {
-      targets,
-    },
-  } as const;
-}
-
-function setPackageDetails(versions: Record<string, Record<string, AuthorityPackageVersion>>) {
-  return {
     type: SET_PACKAGE_DETAIL_ACTION,
     payload: {
-      versions,
+      username,
+      packages,
+      timestamp,
     },
   } as const;
 }
 
 export function setOrgTargetType(username: string, target: TargetType) {
   return {
-    type: "SET_ORG_TARGET_TYPE",
+    type: SET_ORG_TARGET_TYPE,
     payload: {
       username,
       target,
@@ -133,44 +111,34 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
       dispatch(setPackageActionStatus(username, "pending_authority"));
 
       const targetPackageVersions = await Promise.all([
-          packageManager.getLatestAvailablePackageVersions(authorityUsername, installedPackages),
-          packageManager.getLatestPatchPackageVersions(authorityUsername, installedPackages),
-        ]
-      );
-
-      dispatch(setPackageActionStatus(username, "pending_details"));
-      const packageDetails = await packageManager.getAuthorityPackageDetails(authorityUsername, [
-        ...installedPackages,
-        ...targetPackageVersions.flat(),
+        packageManager.getLatestAvailablePackageVersions(authorityUsername, installedPackages),
+        packageManager.getLatestPatchPackageVersions(authorityUsername, installedPackages),
       ]);
 
-      // Note needs to support case where two targets point to the same version.
-      const targetIdMap: Map<string, Map<string, TargetType>> = new Map();
-      targetPackageVersions.forEach((versions, index) => {
-        const target = targetTypes[index];
-        versions.forEach(({ packageId, sortingVersion }) => {
-          if (targetIdMap.get(packageId)?.set(sortingVersion, target) === undefined) {
-            targetIdMap.set(packageId, new Map().set(sortingVersion, target));
-          }
+      dispatch(setPackageActionStatus(username, "pending_details"));
+      const packageDetailGroups = await packageManager.getAuthorityPackageDetails(
+        authorityUsername,
+        [installedPackages, ...targetPackageVersions]
+      );
+
+      const isManagedMap = new Map<string, boolean>();
+      installedPackages.forEach(({ packageId, isManaged }) => {
+        isManagedMap.set(packageId, isManaged);
+      });
+
+      const targetList = ["installed", "latest", "patch"];
+
+      const out: Record<string, PackageDetailsVersion> = {};
+      packageDetailGroups.forEach((packageDetails, targetIndex) => {
+        packageDetails.forEach((packageDetail) => {
+          (out[packageDetail.packageId] ??= {
+            isManaged: isManagedMap.get(packageDetail.packageId) ?? false,
+            targets: {},
+          }).targets[targetList[targetIndex]] = packageDetail;
         });
       });
 
-      const targets: Record<string, Record<TargetType, string>> = {};
-      packageDetails.forEach(({ packageId, sortingVersion, versionName }) => {
-        const targetType = targetIdMap.get(packageId)?.get(sortingVersion);
-        // TODO default to installed version
-        if (targetType !== undefined) {
-          (targets[packageId] ?? (targets[packageId] = {} as Record<TargetType, string>))[
-            targetType
-          ] = versionName;
-        }
-      });
-
-      const packageDetailMap = groupBy2(packageDetails, "packageId", "versionName");
-
-      dispatch(setPackageDetails(packageDetailMap));
-      dispatch(setInstalledPackageVersions(username, installedPackages, Date.now()));
-      dispatch(setTargetVersions(targets));
+      dispatch(setPackageDetails(username, out, Date.now()));
     } catch (error) {
       dispatch(createErrorToast("There was an error fetching you package data 🤔", error));
     } finally {

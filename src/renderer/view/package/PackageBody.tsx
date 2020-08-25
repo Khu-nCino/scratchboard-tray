@@ -16,8 +16,14 @@ import {
   setOrgTargetType,
   // installPackages,
 } from "renderer/store/packages/actions";
-import { selectOrgPackageDetails } from "renderer/store/packages/selectors";
-import { TargetType, OrgActionStatus, targetTypes } from "renderer/store/packages/state";
+import {
+  TargetType,
+  OrgActionStatus,
+  targetTypes,
+  OrgPackageState,
+  defaultOrgPackageState,
+} from "renderer/store/packages/state";
+import { compareVersions } from "renderer/api/core/util";
 
 function mapStateToProps(state: State) {
   const { detailUsername } = state.route;
@@ -26,13 +32,13 @@ function mapStateToProps(state: State) {
     throw new Error("Detail username can't be undefined on the Packages route.");
   }
 
-  const orgPackageDetails = selectOrgPackageDetails(state, detailUsername);
+  const orgPackageDetails: OrgPackageState =
+    state.packages.orgInfo[detailUsername] ?? defaultOrgPackageState;
 
   return {
     detailUsername,
     orgPackageDetails,
     authorityExists: selectOrg(state, state.packages.authorityUsername) !== undefined,
-    targetType: state.packages.orgInfo[detailUsername]?.target ?? "Latest",
   };
 }
 
@@ -64,7 +70,7 @@ export const PackageBody = connector((props: Props) => {
     if (props.authorityExists && props.orgPackageDetails.actionStatus === "initial") {
       props.checkInstalledPackages(props.detailUsername);
     }
-  }, [props.orgPackageDetails.actionStatus]);
+  }, [props.authorityExists, props.orgPackageDetails.actionStatus]);
 
   const [selectedVersion, setSelectedVersion] = useState<AuthorityPackageVersion | undefined>();
 
@@ -104,14 +110,38 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
-  const upgradeableInstalledPackages = Object.values(props.orgPackageDetails.packages).filter(
+  const mappedPackageEntities = packageEntities.map(
+    ([packageId, { targets, isManaged, upgradeSelected }]) => {
+      const installedVersionInfo = targets.installed;
+      const targetVersionInfo = targets[props.orgPackageDetails.target] ?? installedVersionInfo;
+
+      const versionCompare = compareVersions(
+        installedVersionInfo?.versionName,
+        targetVersionInfo?.versionName
+      );
+
+      return {
+        packageId,
+        installedVersionInfo,
+        targetVersionInfo,
+        isManaged,
+        upgradeSelected,
+        upgradeAvailable: versionCompare === -1,
+        sameVersion: versionCompare === 0,
+      };
+    }
+  );
+
+  const upgradeableInstalledPackages = mappedPackageEntities.filter(
     ({ upgradeAvailable, isManaged }) => isManaged && upgradeAvailable
   );
   const markedForUpgrade = upgradeableInstalledPackages
     .filter(({ upgradeSelected }) => upgradeSelected)
-    .map(({ latestVersionInfo }) => latestVersionInfo)
+    .map(({ targetVersionInfo }) => targetVersionInfo)
     .filter(notUndefined);
-  const allChecked = upgradeableInstalledPackages.length === markedForUpgrade.length;
+  const allChecked =
+    upgradeableInstalledPackages.length > 0 &&
+    upgradeableInstalledPackages.length === markedForUpgrade.length;
   const anyChecked = markedForUpgrade.length > 0;
 
   return (
@@ -124,31 +154,28 @@ export const PackageBody = connector((props: Props) => {
             className="sbt-header-item"
             minimal
             options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
-            value={props.targetType}
+            value={props.orgPackageDetails.target}
             onChange={(event) => {
               props.setOrgTargetType(props.detailUsername, event.target.value as TargetType);
             }}
           />
-          {upgradeableInstalledPackages.length > 0 && (
-            <Checkbox
-              className="sbt-header-item sbt-package-upgrade-checkbox"
-              indeterminate={anyChecked && !allChecked}
-              checked={allChecked}
-              onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
-            />
-          )}
-          {packageEntities.flatMap(
-            ([
+          <Checkbox
+            className="sbt-header-item sbt-package-upgrade-checkbox"
+            indeterminate={anyChecked && !allChecked}
+            disabled={upgradeableInstalledPackages.length === 0}
+            checked={allChecked}
+            onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
+          />
+          {mappedPackageEntities.flatMap(
+            ({
               packageId,
-              {
-                installedVersionInfo,
-                upgradeAvailable,
-                latestVersionInfo,
-                sameVersion,
-                upgradeSelected,
-                isManaged,
-              },
-            ]) => {
+              installedVersionInfo,
+              upgradeAvailable,
+              targetVersionInfo,
+              sameVersion,
+              upgradeSelected,
+              isManaged,
+            }) => {
               return [
                 <span key={`namespace-${packageId}`} className="sbt-first-column">
                   {installedVersionInfo?.namespace ?? installedVersionInfo?.packageName}
@@ -174,11 +201,11 @@ export const PackageBody = connector((props: Props) => {
                   key={`latestVersion-${packageId}`}
                   disabled={sameVersion}
                   onClick={() => {
-                    setSelectedVersion(latestVersionInfo);
+                    setSelectedVersion(targetVersionInfo);
                     setSelectedVersionOpened(true);
                   }}
                 >
-                  {latestVersionInfo?.versionName}
+                  {targetVersionInfo?.versionName}
                 </Button>,
                 <UpgradeCheckbox
                   key={`check-${packageId}`}
@@ -197,7 +224,7 @@ export const PackageBody = connector((props: Props) => {
       </div>
       <div className="sbt-footer-container sbt-flex-container">
         <span className="sbt-ml_medium sbt-mv_medium">
-          {new Date(props.orgPackageDetails.lastInstalledVersionsChecked!!).toDateString()}
+          {new Date(props.orgPackageDetails.versionsCheckedTimestamp!!).toDateString()}
         </span>
         <Button
           className="sbt-ml_none sbt-mv_medium"
@@ -223,7 +250,7 @@ export const PackageBody = connector((props: Props) => {
       />
       <InstallConfirmationAlert
         isOpen={showInstallConformation}
-        targetType={props.targetType}
+        targetType={props.orgPackageDetails.target}
         aliasOrUsername={props.detailUsername}
         targets={markedForUpgrade}
         onConfirm={() => {

@@ -220,7 +220,7 @@ export class OrgManager {
     for (const authInfo of authInfos) {
       const username = authInfo.getFields().devHubUsername;
       if (username) {
-        (groups[username] ?? (groups[username] = [])).push(authInfo);
+        (groups[username] ??= []).push(authInfo);
       }
     }
 
