@@ -20,5 +20,6 @@ export const browserWindowConfig: BrowserWindowConstructorOptions = {
   resizable: false,
   webPreferences: {
     nodeIntegration: true,
+    enableRemoteModule: true, //needed for electron-store package.
   },
 };
