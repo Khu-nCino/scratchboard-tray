@@ -12,6 +12,7 @@ export const TOGGLE_PENDING_PACKAGE_UPGRADE = "TOGGLE_PENDING_PACKAGE_UPGRADE";
 export const TOGGLE_ALL_PENDING_PACKAGE_UPGRADE = "TOGGLE_ALL_PENDING_PACKAGE_UPGRADE";
 export const PACKAGE_INSTALL_REQUEST_STATUS_UPDATE = "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE";
 export const CREATE_PACKAGE_INSTALL_REQUEST = "CREATE_PACKAGE_INSTALL_REQUEST";
+export const SET_PACKAGE_INSTALL_REQUEST_PROGRESS = "SET_PACKAGE_INSTALL_REQUEST_PROGRESS";
 export const SET_PACKAGE_INSTALL_REQUEST_ERROR = "SET_PACKAGE_INSTALL_REQUEST_ERROR";
 export const SET_PACKAGE_INSTALL_REQUEST_SUCCESS = "SET_PACKAGE_INSTALL_REQUEST_SUCCESS";
 
@@ -23,6 +24,7 @@ export type PackagesAction =
   | ReturnType<typeof togglePendingPackageUpgrade>
   | ReturnType<typeof toggleAllPendingPackageUpgrade>
   | ReturnType<typeof createPackageInstallRequest>
+  | ReturnType<typeof setPackageInstallRequestProgress>
   | ReturnType<typeof setPackageInstallRequestError>
   | ReturnType<typeof setPackageInstallRequestSuccess>;
 interface PackageDetailsVersion {
@@ -93,25 +95,26 @@ export function toggleAllPendingPackageUpgrade(username: string) {
   } as const;
 }
 
-function createPackageInstallRequest(username: string, timestamp: number) {
+function createPackageInstallRequest(username: string, totalPackages: number, timestamp: number) {
   return {
     type: CREATE_PACKAGE_INSTALL_REQUEST,
     payload: {
       username,
+      totalPackages,
       timestamp,
     },
   } as const;
 }
 
-// function setPackageInstallRequestStatus(username: string, status: "success" | "error") {
-//   return {
-//     type: SET_PACKAGE_INSTALL_REQUEST_STATUS,
-//     payload: {
-//       username,
-//       status,
-//     },
-//   } as const;
-// }
+function setPackageInstallRequestProgress(username: string, progress: number) {
+  return {
+    type: SET_PACKAGE_INSTALL_REQUEST_PROGRESS,
+    payload: {
+      username,
+      progress,
+    },
+  } as const;
+}
 
 function setPackageInstallRequestError(username: string) {
   return {
@@ -184,7 +187,7 @@ export function installPackages(
 ): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     try {
-      dispatch(createPackageInstallRequest(username, Date.now()));
+      dispatch(createPackageInstallRequest(username, targets.length, Date.now()));
       const originalRequests = await packageManager.createPackagesInstallRequests(
         username,
         targets
@@ -204,11 +207,21 @@ export function installPackages(
           break;
         }
 
+        const previousLength = activeRequests.length;
         activeRequests = nextRequests.filter(({ status }) => status === "pending");
         if (activeRequests.length === 0) {
           dispatch(setPackageInstallRequestSuccess(username));
           dispatch(createToast("Package upgrade complete!", "success"));
           break;
+        }
+
+        if (activeRequests.length < previousLength) {
+          dispatch(
+            setPackageInstallRequestProgress(
+              username,
+              originalRequests.length - activeRequests.length
+            )
+          );
         }
       }
     } catch (error) {

@@ -15,6 +15,7 @@ import {
   CREATE_PACKAGE_INSTALL_REQUEST,
   SET_PACKAGE_INSTALL_REQUEST_ERROR,
   SET_PACKAGE_INSTALL_REQUEST_SUCCESS,
+  SET_PACKAGE_INSTALL_REQUEST_PROGRESS,
 } from "./actions";
 import { isUpgradeAvailable } from "./selectors";
 
@@ -140,7 +141,7 @@ export function packagesReducer(
       };
     }
     case CREATE_PACKAGE_INSTALL_REQUEST: {
-      const { username, timestamp } = action.payload;
+      const { username, totalPackages, timestamp } = action.payload;
 
       return {
         ...state,
@@ -150,7 +151,31 @@ export function packagesReducer(
             ...(state.orgInfo[username] ?? defaultOrgPackageState),
             installRequest: {
               status: "pending",
+              progress: 0,
+              totalPackages,
               timestamp,
+            },
+          },
+        },
+      };
+    }
+    case SET_PACKAGE_INSTALL_REQUEST_PROGRESS: {
+      const { username, progress } = action.payload;
+
+      const previousInstallRequest = state.orgInfo[username]?.installRequest;
+      if (previousInstallRequest === undefined) {
+        return state;
+      }
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...state.orgInfo[username],
+            installRequest: {
+              ...previousInstallRequest,
+              progress,
             },
           },
         },
@@ -196,13 +221,15 @@ export function packagesReducer(
             packages: Object.fromEntries(
               Object.entries(previousOrgInfo.packages).map(([packageId, pack]) => [
                 packageId,
-                !pack.upgradeSelected ? pack : {
-                  ...pack,
-                  targets: {
-                    ...pack.targets,
-                    installed: pack.targets[previousOrgInfo.target],
-                  },
-                },
+                !pack.upgradeSelected
+                  ? pack
+                  : {
+                      ...pack,
+                      targets: {
+                        ...pack.targets,
+                        installed: pack.targets[previousOrgInfo.target],
+                      },
+                    },
               ])
             ),
             installRequest: {

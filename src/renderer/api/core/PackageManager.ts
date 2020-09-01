@@ -320,6 +320,24 @@ export class PackageManager {
     }));
   }
 
+  async installPackageMetadata(
+    username: string,
+    packageVersions: AuthorityPackageVersion[]
+  ): Promise<void> {
+    const connection = await this.cache.getConnection(username);
+
+    const metadata = packageVersions.map(
+      ({ namespace, versionName, password }) => ({
+        fullName: namespace,
+        activateRSS: false,
+        versionNumber: versionName,
+        password,
+      })
+    );
+
+    await connection.metadata.upsert("InstalledPackage", metadata);
+  }
+
   async checkPackageInstallRequests(
     username: string,
     requests: PackageInstallRequest[]

@@ -25,6 +25,8 @@ import {
 import { compareVersions } from "renderer/api/core/util";
 
 import "./PackageBody.scss";
+import { OrgListRefresh } from "./OrgListRefresh";
+import { UpgradeTracker } from "./UpgradeTracker";
 
 function mapStateToProps(state: ScratchBoardState) {
   const { detailUsername } = state.route;
@@ -57,11 +59,11 @@ type Props = ConnectedProps<typeof connector>;
 function getLoadingMessage(status: OrgActionStatus) {
   switch (status) {
     case "pending_subscriber":
-      return "Retrieving installed packages (1/3)";
+      return "Retrieving installed packages";
     case "pending_authority":
-      return "Retrieving latest package versions (2/3)";
+      return "Retrieving latest package versions";
     case "pending_details":
-      return "Retrieving package details (3/3)";
+      return "Retrieving package details";
     default:
       return "Invalid state";
   }
@@ -112,7 +114,8 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
-  const upgradeInProgress = props.orgPackageDetails.installRequest?.status === "pending";
+  const { installRequest } = props.orgPackageDetails;
+  const upgradeInProgress = installRequest?.status === "pending";
 
   const mappedPackageEntities = packageEntities.map(
     ([packageId, { targets, isManaged, upgradeSelected }]) => {
@@ -227,18 +230,22 @@ export const PackageBody = connector((props: Props) => {
         </div>
       </div>
       <div className="sbt-footer-container sbt-flex-container">
-        <span className="sbt-ml_medium sbt-mv_medium">
-          {new Date(props.orgPackageDetails.versionsCheckedTimestamp!!).toDateString()}
-        </span>
-        <Button
-          className="sbt-ml_none sbt-mv_medium"
-          minimal
-          icon="refresh"
-          disabled={upgradeInProgress}
-          onClick={() => {
-            props.checkInstalledPackages(props.detailUsername);
-          }}
-        />
+        {!upgradeInProgress && (
+          <OrgListRefresh
+            versionsCheckedTimestamp={props.orgPackageDetails.versionsCheckedTimestamp}
+            upgradeInProgress={upgradeInProgress}
+            onClick={() => {
+              props.checkInstalledPackages(props.detailUsername);
+            }}
+          />
+        )}
+        {upgradeInProgress && installRequest && (
+          <UpgradeTracker
+            startTime={installRequest.timestamp}
+            progress={installRequest.progress}
+            totalPackages={installRequest.totalPackages}
+          />
+        )}
         <Button
           intent="primary"
           className="sbt-flex-item--right sbt-m_medium"

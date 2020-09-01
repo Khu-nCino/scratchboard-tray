@@ -13,6 +13,8 @@ export type OrgActionStatus =
 
 interface OrgPackageInstallRequest {
   status: "pending" | "success" | "error";
+  progress: number;
+  totalPackages: number;
   timestamp: number;
 }
 
