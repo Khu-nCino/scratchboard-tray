@@ -2,14 +2,14 @@ import React from "react";
 
 import { connect, ConnectedProps } from "react-redux";
 
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import { selectSharedOrgs, selectScratchOrgs } from "renderer/store/orgs";
 import { toggleExpansion } from "renderer/store/expanded";
 import { OrgItem } from "./OrgItem";
 import { CollapseGroup } from "../CollapseGroup";
 import { pushRoute } from "renderer/store/route";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   const {
     expanded: { sharedOrgs: sharedExpanded, scratchOrgs: scratchExpanded },
     settings: { showSecondaryScratchUsernames },

@@ -12,6 +12,8 @@ import {
   TOGGLE_ALL_PENDING_PACKAGE_UPGRADE,
   SET_PACKAGE_DETAIL_ACTION,
   SET_ORG_TARGET_TYPE,
+  CREATE_PACKAGE_INSTALL_REQUEST,
+  SET_PACKAGE_INSTALL_REQUEST_STATUS,
 } from "./actions";
 import { isUpgradeAvailable } from "./selectors";
 
@@ -131,6 +133,45 @@ export function packagesReducer(
                   },
                 ])
               ),
+            },
+          },
+        },
+      };
+    }
+    case CREATE_PACKAGE_INSTALL_REQUEST: {
+      const { username, timestamp } = action.payload;
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...(state.orgInfo[username] ?? defaultOrgPackageState),
+            installRequest: {
+              status: "pending",
+              timestamp,
+            },
+          },
+        },
+      };
+    }
+    case SET_PACKAGE_INSTALL_REQUEST_STATUS: {
+      const { username, status } = action.payload;
+
+      const previousInstallRequest = state.orgInfo[username]?.installRequest;
+      if (previousInstallRequest === undefined) {
+        return state;
+      }
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...state.orgInfo[username],
+            installRequest: {
+              ...previousInstallRequest,
+              status,
             },
           },
         },

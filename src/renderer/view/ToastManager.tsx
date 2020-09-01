@@ -11,10 +11,10 @@ import {
 } from "@blueprintjs/core";
 import { connect, ConnectedProps } from "react-redux";
 import { dismissToast, createToast } from "renderer/store/messages";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import { Toast as ToastRecord } from "renderer/store/messages";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   const { toasts } = state.messages;
   return {
     toasts,

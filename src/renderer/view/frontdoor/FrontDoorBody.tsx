@@ -10,11 +10,11 @@ import {
   Intent,
 } from "@blueprintjs/core";
 import { urlToFrontDoorUrl, coerceInstanceUrl, matchOrgByUrl } from "renderer/api/url";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import { createErrorToast, createToast } from "renderer/store/messages";
 import { SalesforceOrg } from "renderer/api/SalesforceOrg";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   return {
     orgList: state.orgs.orgList.map((org) => org.description),
   };

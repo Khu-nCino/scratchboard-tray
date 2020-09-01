@@ -1,4 +1,4 @@
-import { PackageInstallRequest, AuthorityPackageVersion } from "renderer/api/core/PackageManager";
+import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 
 export const targetTypes = ["latest", "patch"] as const;
 
@@ -12,7 +12,7 @@ export type OrgActionStatus =
   | "pending_details";
 
 interface OrgPackageInstallRequest {
-  requests: PackageInstallRequest[];
+  status: "pending" | "success" | "error";
   timestamp: number;
 }
 

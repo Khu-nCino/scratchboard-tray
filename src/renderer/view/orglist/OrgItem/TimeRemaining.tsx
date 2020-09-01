@@ -1,10 +1,10 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 
 const oneDay = 1000 * 60 * 60 * 24;
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   return {
     isVisible: state.route.isVisible, // use to trigger a rerender
   };

@@ -5,7 +5,7 @@ import { Switch, Button, FormGroup, InputGroup } from "@blueprintjs/core";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { ipcRenderer as ipc } from "electron-better-ipc";
 
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import {
   toggleTheme,
   toggleOpenAtLogin,
@@ -20,7 +20,7 @@ function quitApp() {
   ipcRenderer.send(IpcRendererEvent.QUIT_APP);
 }
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   return {
     isDarkTheme: state.settings.theme === "dark",
     openAtLogin: state.settings.openAtLogin,

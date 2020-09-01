@@ -3,9 +3,9 @@ import { connect, ConnectedProps } from "react-redux";
 import { ButtonGroup, Button, Icon, Tooltip } from "@blueprintjs/core";
 
 import { popRoute } from "renderer/store/route";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   return {
     navigationEnabled: state.route.navigationEnabled,
   };

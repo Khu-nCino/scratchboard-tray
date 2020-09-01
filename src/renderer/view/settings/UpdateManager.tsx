@@ -1,10 +1,10 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { ProgressBar } from "@blueprintjs/core";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import { UpdateButton } from "./UpdateButton";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   const {
     status,
     appVersion,

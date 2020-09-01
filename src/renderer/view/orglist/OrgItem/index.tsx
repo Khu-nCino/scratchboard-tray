@@ -7,7 +7,7 @@ import { AnyAction } from "redux";
 
 
 import { SalesforceOrg } from "renderer/api/SalesforceOrg";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import {
   openOrgAction,
   deleteOrgAction,
@@ -28,7 +28,7 @@ interface OwnProps {
 }
 
 function mapDispatchToProps(
-  dispatch: ThunkDispatch<State, undefined, AnyAction>,
+  dispatch: ThunkDispatch<ScratchBoardState, undefined, AnyAction>,
   ownProps: OwnProps
 ) {
   const { username } = ownProps.org.description;

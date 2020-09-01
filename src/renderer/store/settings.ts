@@ -1,10 +1,7 @@
 import { ipcRenderer as ipc } from "electron-better-ipc";
 import { Action } from "redux";
-import { ThunkAction } from "redux-thunk";
 import { IpcRendererEvent } from "common/IpcEvent";
-import { State } from ".";
-
-type ThunkReturn<R> = ThunkAction<R, State, undefined, SettingsAction>;
+import { ScratchBoardThunk } from ".";
 
 interface SetThemeAction extends Action<"SET_THEME"> {
   payload: {
@@ -47,7 +44,7 @@ export function toggleTheme(): ToggleThemeAction {
   };
 }
 
-export function checkOpenAtLogin(): ThunkReturn<void> {
+export function checkOpenAtLogin(): ScratchBoardThunk<void> {
   return async (dispatch) => {
     const openAtLogin: boolean = await ipc.callMain(IpcRendererEvent.GET_LAUNCH_SETTINGS);
 
@@ -60,7 +57,7 @@ export function checkOpenAtLogin(): ThunkReturn<void> {
   };
 }
 
-export function toggleOpenAtLogin(): ThunkReturn<void> {
+export function toggleOpenAtLogin(): ScratchBoardThunk<void> {
   return (dispatch, getState) => {
     const value = !getState().settings.openAtLogin;
     ipc.callMain(IpcRendererEvent.SET_LAUNCH_SETTINGS, value);

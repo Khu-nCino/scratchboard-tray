@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { NonIdealState, Spinner, Button, Checkbox, HTMLSelect } from "@blueprintjs/core";
-import { State } from "renderer/store";
-import "./PackageBody.scss";
+import { ScratchBoardState } from "renderer/store";
 import { selectOrg } from "renderer/store/orgs";
 import { PackageDetail } from "./PackageDetail";
 import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
@@ -25,7 +24,9 @@ import {
 } from "renderer/store/packages/state";
 import { compareVersions } from "renderer/api/core/util";
 
-function mapStateToProps(state: State) {
+import "./PackageBody.scss";
+
+function mapStateToProps(state: ScratchBoardState) {
   const { detailUsername } = state.route;
 
   if (detailUsername === undefined) {

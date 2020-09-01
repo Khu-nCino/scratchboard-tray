@@ -1,8 +1,8 @@
 import { Store, CombinedState, DeepPartial } from "redux";
 import ElectronStore from "electron-store";
-import { State, defaultState } from "../store";
+import { ScratchBoardState, defaultState } from "../store";
 
-type AppState = CombinedState<State>;
+type AppState = CombinedState<ScratchBoardState>;
 
 export class PersistManager {
   private electronStore: ElectronStore;
@@ -14,7 +14,7 @@ export class PersistManager {
     } as ElectronStore.Options<any>);
   }
 
-  loadPersistedState(state: DeepPartial<State>): DeepPartial<State> {
+  loadPersistedState(state: DeepPartial<ScratchBoardState>): DeepPartial<ScratchBoardState> {
     return {
       ...state,
       settings: {

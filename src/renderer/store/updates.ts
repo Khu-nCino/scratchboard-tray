@@ -2,6 +2,7 @@ import { Action, Store } from "redux";
 import { ipcRenderer } from "electron";
 import { IpcMainEvent } from "common/IpcEvent";
 import { createErrorToast, createToast } from "./messages";
+import { ScratchBoardStore } from ".";
 
 type UpdateAction = UpdateDownloadedAction | UpdateDownloadingAction | StatusChangeAction;
 
@@ -89,7 +90,7 @@ export function updateReducer(
   }
 }
 
-export function listenForIpcUpdates(store: Store) {
+export function listenForIpcUpdates(store: ScratchBoardStore) {
   ipcRenderer.on(IpcMainEvent.UPDATE_ERROR, (_event, error) => {
     store.dispatch(statusChangeAction("initial"));
     store.dispatch(createErrorToast("Error Updating", error));

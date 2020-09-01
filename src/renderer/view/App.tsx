@@ -1,7 +1,7 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import { RouteTransitions } from "./RouteTransitions";
 import { OrgListBody } from "./orglist/OrgListBody";
 import { OrgListTitleBar } from "./orglist/OrgListTitleBar";
@@ -13,7 +13,7 @@ import { LoginBody } from "./login/LoginBody";
 import { selectActiveRoute } from "renderer/store/route";
 import { PackageBody } from "./package/PackageBody";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   return {
     activeRoute: selectActiveRoute(state.route),
   };

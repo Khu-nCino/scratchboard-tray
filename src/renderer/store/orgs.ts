@@ -1,13 +1,10 @@
 import { clipboard, shell } from "electron";
 import { Action } from "redux";
-import { ThunkAction } from "redux-thunk";
 
 import { SalesforceOrg, BaseOrg, ScratchOrg, SharedOrg } from "renderer/api/SalesforceOrg";
 import { orgManager } from "renderer/api/core/OrgManager";
-import { MessagesAction, createToast, createErrorToast } from "./messages";
-import { State } from ".";
-
-type ThunkResult<R> = ThunkAction<R, State, undefined, OrgAction | MessagesAction>;
+import { createToast, createErrorToast } from "./messages";
+import { ScratchBoardState, ScratchBoardThunk } from ".";
 
 // Actions
 type OrgAction = OrgListChanges | AliasSetAction | SetPendingAction;
@@ -43,7 +40,7 @@ export function orgListChanged(changed: SalesforceOrg[], removed: string[]): Org
   };
 }
 
-export function openOrgAction(username: string): ThunkResult<Promise<void>> {
+export function openOrgAction(username: string): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     try {
       dispatch(setPendingAction(username, true));
@@ -56,7 +53,7 @@ export function openOrgAction(username: string): ThunkResult<Promise<void>> {
   };
 }
 
-export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
+export function copyFrontDoor(username: string): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     try {
       dispatch(setPendingAction(username, true));
@@ -72,7 +69,7 @@ export function copyFrontDoor(username: string): ThunkResult<Promise<void>> {
   };
 }
 
-export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
+export function logoutOrgAction(username: string): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     try {
       dispatch(setPendingAction(username, true));
@@ -88,7 +85,7 @@ export function logoutOrgAction(username: string): ThunkResult<Promise<void>> {
   };
 }
 
-export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
+export function deleteOrgAction(username: string): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     try {
       dispatch(setPendingAction(username, true));
@@ -103,7 +100,7 @@ export function deleteOrgAction(username: string): ThunkResult<Promise<void>> {
   };
 }
 
-export function setAliasAction(username: string, newAlias: string): ThunkResult<Promise<void>> {
+export function setAliasAction(username: string, newAlias: string): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     try {
       await orgManager.setAlias(username, newAlias);
@@ -258,7 +255,7 @@ export function orgsReducer(state: OrgsState = defaultOrgsState, action: OrgActi
 
 // Selectors
 export function selectScratchOrgs(
-  state: State,
+  state: ScratchBoardState,
   showSecondary: boolean = true
 ): OrgData<ScratchOrg>[] {
   let scratchOrgs = state.orgs.orgList.filter(isScratchOrg);
@@ -269,15 +266,15 @@ export function selectScratchOrgs(
   return scratchOrgs.sort(orgCompare);
 }
 
-export function selectSharedOrgs(state: State): OrgData<SharedOrg>[] {
+export function selectSharedOrgs(state: ScratchBoardState): OrgData<SharedOrg>[] {
   return state.orgs.orgList.filter(isSharedOrg).sort(orgCompare);
 }
 
-export function selectOrgDescriptions(state: State): SalesforceOrg[] {
+export function selectOrgDescriptions(state: ScratchBoardState): SalesforceOrg[] {
   return state.orgs.orgList.map(({ description }) => description);
 }
 
-export function selectOrg({ orgs: state }: State, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
+export function selectOrg({ orgs: state }: ScratchBoardState, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
   if (aliasOrUsername === "") {
     return;
   }

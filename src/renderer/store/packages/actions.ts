@@ -1,8 +1,8 @@
-import { ThunkAction } from "redux-thunk";
-import { State } from "..";
-import { MessagesAction, createErrorToast } from "../messages";
+import { ScratchBoardThunk } from "..";
+import { createErrorToast } from "../messages";
 import { OrgActionStatus, TargetType } from "./state";
 import { AuthorityPackageVersion, packageManager } from "renderer/api/core/PackageManager";
+import { delay } from "common/util";
 
 export const SET_PACKAGE_AUTHORITY_USERNAME = "SET_PACKAGE_AUTHORITY_USERNAME";
 export const SET_PACKAGE_ACTION_STATUS = "SET_PACKAGE_ACTION_STATUS";
@@ -11,6 +11,8 @@ export const SET_PACKAGE_DETAIL_ACTION = "SET_PACKAGE_DETAIL_ACTION";
 export const TOGGLE_PENDING_PACKAGE_UPGRADE = "TOGGLE_PENDING_PACKAGE_UPGRADE";
 export const TOGGLE_ALL_PENDING_PACKAGE_UPGRADE = "TOGGLE_ALL_PENDING_PACKAGE_UPGRADE";
 export const PACKAGE_INSTALL_REQUEST_STATUS_UPDATE = "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE";
+export const CREATE_PACKAGE_INSTALL_REQUEST = "CREATE_PACKAGE_INSTALL_REQUEST";
+export const SET_PACKAGE_INSTALL_REQUEST_STATUS = "SET_PACKAGE_INSTALL_REQUEST_STATUS";
 
 export type PackagesAction =
   | ReturnType<typeof setPackageAuthorityUsername>
@@ -18,9 +20,9 @@ export type PackagesAction =
   | ReturnType<typeof setOrgTargetType>
   | ReturnType<typeof setPackageActionStatus>
   | ReturnType<typeof togglePendingPackageUpgrade>
-  | ReturnType<typeof toggleAllPendingPackageUpgrade>;
-
-type ThunkResult<R> = ThunkAction<R, State, undefined, PackagesAction | MessagesAction>;
+  | ReturnType<typeof toggleAllPendingPackageUpgrade>
+  | ReturnType<typeof createPackageInstallRequest>
+  | ReturnType<typeof setPackageInstallRequestStatus>;
 
 interface PackageDetailsVersion {
   isManaged: boolean;
@@ -90,17 +92,27 @@ export function toggleAllPendingPackageUpgrade(username: string) {
   } as const;
 }
 
-// function packageInstallRequestStatusUpdate(username: string, requests: PackageInstallRequest[]) {
-//   return {
-//     type: PACKAGE_INSTALL_REQUEST_STATUS_UPDATE,
-//     payload: {
-//       username,
-//       requests,
-//     },
-//   } as const;
-// }
+function createPackageInstallRequest(username: string, timestamp: number) {
+  return {
+    type: CREATE_PACKAGE_INSTALL_REQUEST,
+    payload: {
+      username,
+      timestamp,
+    },
+  } as const;
+}
 
-export function checkInstalledPackages(username: string): ThunkResult<Promise<void>> {
+function setPackageInstallRequestStatus(username: string, status: "success" | "error") {
+  return {
+    type: SET_PACKAGE_INSTALL_REQUEST_STATUS,
+    payload: {
+      username,
+      status,
+    },
+  } as const;
+}
+
+export function checkInstalledPackages(username: string): ScratchBoardThunk<Promise<void>> {
   return async (dispatch, getState) => {
     const { authorityUsername } = getState().packages;
 
@@ -147,20 +159,44 @@ export function checkInstalledPackages(username: string): ThunkResult<Promise<vo
   };
 }
 
-// export function installPackages(
-//   username: string,
-//   targets: AuthorityPackageVersion[]
-// ): ThunkResult<Promise<void>> {
-//   return async (dispatch) => {
-//     try {
-//       const requests = await packageManager.createPackagesInstallRequests(username, targets);
-//       dispatch(packageInstallRequestStatusUpdate(username, requests));
-//       dispatch(checkPackageInstallRequests(username, requests));
-//     } catch (error) {
-//       dispatch(createErrorToast("There was an error upgrading your packages", error));
-//     }
-//   };
-// }
+export function installPackages(
+  username: string,
+  targets: AuthorityPackageVersion[]
+): ScratchBoardThunk<Promise<void>> {
+  return async (dispatch) => {
+    try {
+      const originalRequests = await packageManager.createPackagesInstallRequests(
+        username,
+        targets
+      );
+      let activeRequests = originalRequests;
+
+      dispatch(createPackageInstallRequest(username, Date.now()));
+
+      while (true) {
+        await delay(10000);
+        const nextRequests = await packageManager.checkPackageInstallRequests(
+          username,
+          activeRequests
+        );
+
+        if (nextRequests.some(({ status }) => status === "error")) {
+          dispatch(setPackageInstallRequestStatus(username, "error"));
+          break;
+        }
+
+        activeRequests = nextRequests.filter(({ status }) => status === "pending");
+        if (activeRequests.length === 0) {
+          dispatch(setPackageInstallRequestStatus(username, "success"));
+          await dispatch(checkInstalledPackages(username));
+          break;
+        }
+      }
+    } catch (error) {
+      dispatch(createErrorToast("There was an error upgrading your packages", error));
+    }
+  };
+}
 
 // function checkPackageInstallRequests(
 //   username: string,

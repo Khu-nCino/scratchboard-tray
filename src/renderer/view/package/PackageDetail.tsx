@@ -5,10 +5,10 @@ import { Dialog, Classes, Button } from "@blueprintjs/core";
 
 import { AuthorityPackageVersion } from "renderer/api/core/PackageManager";
 import { orgManager } from "renderer/api/core/OrgManager";
-import { State } from "renderer/store";
+import { ScratchBoardState } from "renderer/store";
 import { createErrorToast } from "renderer/store/messages";
 
-function mapStateToProps(state: State) {
+function mapStateToProps(state: ScratchBoardState) {
   const {
     route: { detailUsername },
   } = state;
