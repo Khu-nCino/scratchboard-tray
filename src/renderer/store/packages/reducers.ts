@@ -13,7 +13,8 @@ import {
   SET_PACKAGE_DETAIL_ACTION,
   SET_ORG_TARGET_TYPE,
   CREATE_PACKAGE_INSTALL_REQUEST,
-  SET_PACKAGE_INSTALL_REQUEST_STATUS,
+  SET_PACKAGE_INSTALL_REQUEST_ERROR,
+  SET_PACKAGE_INSTALL_REQUEST_SUCCESS,
 } from "./actions";
 import { isUpgradeAvailable } from "./selectors";
 
@@ -155,8 +156,8 @@ export function packagesReducer(
         },
       };
     }
-    case SET_PACKAGE_INSTALL_REQUEST_STATUS: {
-      const { username, status } = action.payload;
+    case SET_PACKAGE_INSTALL_REQUEST_ERROR: {
+      const { username } = action.payload;
 
       const previousInstallRequest = state.orgInfo[username]?.installRequest;
       if (previousInstallRequest === undefined) {
@@ -171,7 +172,42 @@ export function packagesReducer(
             ...state.orgInfo[username],
             installRequest: {
               ...previousInstallRequest,
-              status,
+              status: "error",
+            },
+          },
+        },
+      };
+    }
+    case SET_PACKAGE_INSTALL_REQUEST_SUCCESS: {
+      const { username } = action.payload;
+
+      const previousOrgInfo = state.orgInfo[username];
+      const previousInstallRequest = previousOrgInfo?.installRequest;
+      if (previousInstallRequest === undefined) {
+        return state;
+      }
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...previousOrgInfo,
+            packages: Object.fromEntries(
+              Object.entries(previousOrgInfo.packages).map(([packageId, pack]) => [
+                packageId,
+                !pack.upgradeSelected ? pack : {
+                  ...pack,
+                  targets: {
+                    ...pack.targets,
+                    installed: pack.targets[previousOrgInfo.target],
+                  },
+                },
+              ])
+            ),
+            installRequest: {
+              ...previousInstallRequest,
+              status: "success",
             },
           },
         },

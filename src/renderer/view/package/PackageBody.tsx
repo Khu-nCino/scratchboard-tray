@@ -13,7 +13,7 @@ import {
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
   setOrgTargetType,
-  // installPackages,
+  installPackages,
 } from "renderer/store/packages/actions";
 import {
   TargetType,
@@ -48,6 +48,7 @@ const mapDispatchToProps = {
   togglePendingPackageUpgrade,
   toggleAllPendingPackageUpgrade,
   setOrgTargetType,
+  installPackages,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -111,6 +112,8 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
+  const upgradeInProgress = props.orgPackageDetails.installRequest?.status === "pending";
+
   const mappedPackageEntities = packageEntities.map(
     ([packageId, { targets, isManaged, upgradeSelected }]) => {
       const installedVersionInfo = targets.installed;
@@ -155,6 +158,7 @@ export const PackageBody = connector((props: Props) => {
             className="sbt-header-item"
             minimal
             options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
+            disabled={upgradeInProgress}
             value={props.orgPackageDetails.target}
             onChange={(event) => {
               props.setOrgTargetType(props.detailUsername, event.target.value as TargetType);
@@ -163,7 +167,7 @@ export const PackageBody = connector((props: Props) => {
           <Checkbox
             className="sbt-header-item sbt-package-upgrade-checkbox"
             indeterminate={anyChecked && !allChecked}
-            disabled={upgradeableInstalledPackages.length === 0}
+            disabled={upgradeableInstalledPackages.length === 0 || upgradeInProgress}
             checked={allChecked}
             onChange={() => props.toggleAllPendingPackageUpgrade(props.detailUsername)}
           />
@@ -211,8 +215,7 @@ export const PackageBody = connector((props: Props) => {
                 <UpgradeCheckbox
                   key={`check-${packageId}`}
                   managed={isManaged}
-                  loading={false}
-                  disabled={!upgradeAvailable}
+                  disabled={!upgradeAvailable || upgradeInProgress}
                   checked={upgradeSelected && upgradeAvailable}
                   onToggle={() => {
                     props.togglePendingPackageUpgrade(props.detailUsername, packageId);
@@ -231,6 +234,7 @@ export const PackageBody = connector((props: Props) => {
           className="sbt-ml_none sbt-mv_medium"
           minimal
           icon="refresh"
+          disabled={upgradeInProgress}
           onClick={() => {
             props.checkInstalledPackages(props.detailUsername);
           }}
@@ -239,6 +243,7 @@ export const PackageBody = connector((props: Props) => {
           intent="primary"
           className="sbt-flex-item--right sbt-m_medium"
           disabled={!anyChecked}
+          loading={upgradeInProgress}
           onClick={() => setShowInstallConformation(true)}
         >
           Upgrade
@@ -256,7 +261,7 @@ export const PackageBody = connector((props: Props) => {
         targets={markedForUpgrade}
         onConfirm={() => {
           setShowInstallConformation(false);
-          //props.installPackages(props.detailUsername, markedForUpgrade);
+          props.installPackages(props.detailUsername, markedForUpgrade);
         }}
         onCancel={() => setShowInstallConformation(false)}
       />

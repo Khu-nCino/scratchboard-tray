@@ -149,3 +149,8 @@ $background-color-dark: #30404d;
 .sbt-popover {
   width: 80%;
 }
+
+.sbt-warning-text {
+  color: bp.$pt-intent-warning;
+  font-style: italic;
+}

@@ -21,9 +21,14 @@ export const InstallConfirmationAlert = (props: Props) => (
     confirmButtonText="Upgrade"
     intent="primary"
   >
-    <b>Org:</b> {props.aliasOrUsername}<br/>
-    <b>Target:</b> {props.targetType}<br/>
-    <b>Packages:</b> {props.targets.map((target) => target.namespace).join(", ")}<br/><br/>
-    Please verify that all of the above information is correct before continuing. This process cannot be undone.
+    <b>Org:</b> {props.aliasOrUsername}
+    <br />
+    <b>Target:</b> {props.targetType}
+    <br />
+    <b>Packages:</b> {props.targets.map((target) => target.namespace).join(", ")}
+    <br />
+    <br />
+    Please verify that all of the above information is correct before continuing.{" "}
+    <span className="sbt-warning-text">This process cannot be undone.</span>
   </Alert>
 );

@@ -1,4 +1,4 @@
-import { Action, Store } from "redux";
+import { Action } from "redux";
 import { ipcRenderer } from "electron";
 import { IpcMainEvent } from "common/IpcEvent";
 import { createErrorToast, createToast } from "./messages";
