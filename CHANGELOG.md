@@ -1,3 +1,8 @@
+## [0.6.0] - 2020-9-8
+- Ability to upgrade packages.
+- Ability to see latest patch targets for packages.
+- Ability to see managed packages.
+
 ## [0.5.0] - 2020-7-13
 - Ability to view installed package versions.
 - Ability to see latest package versions.
