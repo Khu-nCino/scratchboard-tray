@@ -1,20 +1,16 @@
-import { PackagesState } from "./state";
-import { compareVersions } from "renderer/api/core/util";
+import { OrgPackage, TargetType } from "./state";
 
 export function isUpgradeAvailable(
-  state: PackagesState,
-  username: string,
-  packageId: string
-): boolean {
-  const orgInfo = state.orgInfo[username];
-  const orgPackage = orgInfo?.packages[packageId];
-  const orgTargets = orgPackage?.targets;
-
-  const installedVersion = orgTargets.installed;
-  const latestVersion = orgTargets?.[orgInfo.target];
-  const isManaged = orgPackage?.isManaged;
+  { isManaged, targets, installStatus }: OrgPackage,
+  target: TargetType
+) {
+  const targetValue = targets[target];
 
   return (
-    isManaged && compareVersions(installedVersion?.versionName, latestVersion?.versionName) === -1
+    isManaged &&
+    installStatus === "idle" &&
+    targets.installed !== undefined &&
+    targetValue !== undefined &&
+    targets.installed.packageVersionId !== targetValue.packageVersionId
   );
 }

@@ -11,16 +11,10 @@ export type OrgActionStatus =
   | "pending_authority"
   | "pending_details";
 
-interface OrgPackageInstallRequest {
-  status: "pending" | "success" | "error";
-  progress: number;
-  totalPackages: number;
-  timestamp: number;
-}
-
-interface OrgPackage {
+export interface OrgPackage {
   readonly isManaged: boolean;
   readonly upgradeSelected: boolean;
+  readonly installStatus: 'idle' | 'pending' | 'error' | 'success';
   readonly targets: {
     readonly installed?: AuthorityPackageVersion;
     readonly latest?: AuthorityPackageVersion;
@@ -34,7 +28,7 @@ export interface OrgPackageState {
   readonly packages: Record<string, OrgPackage>;
 
   readonly target: TargetType;
-  readonly installRequest?: OrgPackageInstallRequest;
+  readonly installRequestTimestamp?: number;
 }
 
 export interface PackagesState {
@@ -57,5 +51,6 @@ export const defaultPackagesState: PackagesState = {
 export const defaultOrgPackage: OrgPackage = {
   isManaged: false,
   upgradeSelected: false,
+  installStatus: "idle",
   targets: {},
 }

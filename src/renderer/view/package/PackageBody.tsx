@@ -22,11 +22,11 @@ import {
   OrgPackageState,
   defaultOrgPackageState,
 } from "renderer/store/packages/state";
-import { compareVersions } from "renderer/api/core/util";
 
 import "./PackageBody.scss";
 import { OrgListRefresh } from "./OrgListRefresh";
 import { UpgradeTracker } from "./UpgradeTracker";
+import { isUpgradeAvailable } from "renderer/store/packages/selectors";
 
 function mapStateToProps(state: ScratchBoardState) {
   const { detailUsername } = state.route;
@@ -114,33 +114,34 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
-  const { installRequest } = props.orgPackageDetails;
-  const upgradeInProgress = installRequest?.status === "pending";
+  const { installRequestTimestamp } = props.orgPackageDetails;
+  // const upgradeInProgress = installRequest?.status === "pending";
 
   const mappedPackageEntities = packageEntities.map(
-    ([packageId, { targets, isManaged, upgradeSelected }]) => {
-      const installedVersionInfo = targets.installed;
-      const targetVersionInfo = targets[props.orgPackageDetails.target] ?? installedVersionInfo;
+    ([packageId, pack]) => {
+      const { target } = props.orgPackageDetails;
 
-      const versionCompare = compareVersions(
-        installedVersionInfo?.versionName,
-        targetVersionInfo?.versionName
-      );
+      const installedVersionInfo = pack.targets.installed;
+      const targetVersionInfo = pack.targets[target] ?? installedVersionInfo;
 
       return {
         packageId,
         installedVersionInfo,
         targetVersionInfo,
-        isManaged,
-        upgradeSelected,
-        upgradeAvailable: versionCompare === -1,
-        sameVersion: versionCompare === 0,
+        isManaged: pack.isManaged,
+        upgradeSelected: pack.upgradeSelected,
+        installStatus: pack.installStatus,
+        upgradeAvailable: isUpgradeAvailable(pack, target),
       };
     }
   );
 
+  const upgradeInProgress = mappedPackageEntities.some(
+    ({ installStatus }) => installStatus === "pending"
+  );
+
   const upgradeableInstalledPackages = mappedPackageEntities.filter(
-    ({ upgradeAvailable, isManaged }) => isManaged && upgradeAvailable
+    ({ upgradeAvailable }) => upgradeAvailable
   );
   const markedForUpgrade = upgradeableInstalledPackages
     .filter(({ upgradeSelected }) => upgradeSelected)
@@ -180,7 +181,7 @@ export const PackageBody = connector((props: Props) => {
               installedVersionInfo,
               upgradeAvailable,
               targetVersionInfo,
-              sameVersion,
+              installStatus,
               upgradeSelected,
               isManaged,
             }) => {
@@ -207,7 +208,7 @@ export const PackageBody = connector((props: Props) => {
                   minimal
                   alignText="left"
                   key={`latestVersion-${packageId}`}
-                  disabled={sameVersion}
+                  disabled={!upgradeAvailable}
                   onClick={() => {
                     setSelectedVersion(targetVersionInfo);
                     setSelectedVersionOpened(true);
@@ -220,6 +221,7 @@ export const PackageBody = connector((props: Props) => {
                   managed={isManaged}
                   disabled={!upgradeAvailable || upgradeInProgress}
                   checked={upgradeSelected && upgradeAvailable}
+                  installStatus={installStatus}
                   onToggle={() => {
                     props.togglePendingPackageUpgrade(props.detailUsername, packageId);
                   }}
@@ -239,18 +241,13 @@ export const PackageBody = connector((props: Props) => {
             }}
           />
         )}
-        {upgradeInProgress && installRequest && (
-          <UpgradeTracker
-            startTime={installRequest.timestamp}
-            progress={installRequest.progress}
-            totalPackages={installRequest.totalPackages}
-          />
+        {upgradeInProgress && installRequestTimestamp && (
+          <UpgradeTracker startTime={installRequestTimestamp} />
         )}
         <Button
           intent="primary"
           className="sbt-flex-item--right sbt-m_medium"
-          disabled={!anyChecked}
-          loading={upgradeInProgress}
+          disabled={!anyChecked || upgradeInProgress}
           onClick={() => setShowInstallConformation(true)}
         >
           Upgrade

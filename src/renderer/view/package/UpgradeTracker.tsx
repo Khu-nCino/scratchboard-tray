@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 
 interface Props {
   startTime: number;
-  progress: number;
-  totalPackages: number;
 }
 
 export const UpgradeTracker = (props: Props) => {
@@ -18,7 +16,7 @@ export const UpgradeTracker = (props: Props) => {
     };
   });
 
-  return <span className="sbt-ml_medium sbt-mv_medium">{`Time: ${formatMs(elapsedTime)} Deployment Status: ${props.progress + 1}/${props.totalPackages}`}</span>
+  return <span className="sbt-ml_medium sbt-mv_medium">{`Time: ${formatMs(elapsedTime)}`}</span>
 };
 
 function formatMs(ms: number){

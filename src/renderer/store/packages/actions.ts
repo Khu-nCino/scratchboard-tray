@@ -12,9 +12,9 @@ export const TOGGLE_PENDING_PACKAGE_UPGRADE = "TOGGLE_PENDING_PACKAGE_UPGRADE";
 export const TOGGLE_ALL_PENDING_PACKAGE_UPGRADE = "TOGGLE_ALL_PENDING_PACKAGE_UPGRADE";
 export const PACKAGE_INSTALL_REQUEST_STATUS_UPDATE = "PACKAGE_INSTALL_REQUEST_STATUS_UPDATE";
 export const CREATE_PACKAGE_INSTALL_REQUEST = "CREATE_PACKAGE_INSTALL_REQUEST";
-export const SET_PACKAGE_INSTALL_REQUEST_PROGRESS = "SET_PACKAGE_INSTALL_REQUEST_PROGRESS";
-export const SET_PACKAGE_INSTALL_REQUEST_ERROR = "SET_PACKAGE_INSTALL_REQUEST_ERROR";
-export const SET_PACKAGE_INSTALL_REQUEST_SUCCESS = "SET_PACKAGE_INSTALL_REQUEST_SUCCESS";
+export const SET_PACKAGE_INSTALL_SUCCESS = "SET_PACKAGE_INSTALL_SUCCESS";
+export const SET_PACKAGE_INSTALL_ERROR = "SET_PACKAGE_INSTALL_ERROR";
+export const SET_PACKAGE_INSTALL_PROCESS_ERROR = "SET_PACKAGE_INSTALL_PROCESS_ERROR";
 
 export type PackagesAction =
   | ReturnType<typeof setPackageAuthorityUsername>
@@ -24,9 +24,9 @@ export type PackagesAction =
   | ReturnType<typeof togglePendingPackageUpgrade>
   | ReturnType<typeof toggleAllPendingPackageUpgrade>
   | ReturnType<typeof createPackageInstallRequest>
-  | ReturnType<typeof setPackageInstallRequestProgress>
-  | ReturnType<typeof setPackageInstallRequestError>
-  | ReturnType<typeof setPackageInstallRequestSuccess>;
+  | ReturnType<typeof setPackageInstallSuccess>
+  | ReturnType<typeof setPackageInstallError>
+  | ReturnType<typeof setPackageInstallProcessError>;
 interface PackageDetailsVersion {
   isManaged: boolean;
   targets: Record<string, AuthorityPackageVersion>;
@@ -106,28 +106,32 @@ function createPackageInstallRequest(username: string, totalPackages: number, ti
   } as const;
 }
 
-function setPackageInstallRequestProgress(username: string, progress: number) {
+function setPackageInstallSuccess(username: string, packageIds: string[]) {
   return {
-    type: SET_PACKAGE_INSTALL_REQUEST_PROGRESS,
+    type: SET_PACKAGE_INSTALL_SUCCESS,
     payload: {
       username,
-      progress,
+      packageIds,
     },
   } as const;
 }
 
-function setPackageInstallRequestError(username: string) {
+function setPackageInstallError(
+  username: string,
+  packages: { packageId: string; errors: string[] }[]
+) {
   return {
-    type: SET_PACKAGE_INSTALL_REQUEST_ERROR,
+    type: SET_PACKAGE_INSTALL_ERROR,
     payload: {
       username,
+      packages,
     },
   } as const;
 }
 
-function setPackageInstallRequestSuccess(username: string) {
+function setPackageInstallProcessError(username: string) {
   return {
-    type: SET_PACKAGE_INSTALL_REQUEST_SUCCESS,
+    type: SET_PACKAGE_INSTALL_PROCESS_ERROR,
     payload: {
       username,
     },
@@ -193,40 +197,43 @@ export function installPackages(
         targets
       );
       let activeRequests = originalRequests;
+      let someErrors = false;
 
-      while (true) {
+      while (activeRequests.length > 0) {
         await delay(10000);
         const nextRequests = await packageManager.checkPackageInstallRequests(
           username,
           activeRequests
         );
 
-        if (nextRequests.some(({ status }) => status === "error")) {
-          dispatch(createErrorToast("Error upgrading packages."));
-          dispatch(setPackageInstallRequestError(username));
-          break;
+        const successIds = nextRequests
+          .filter(({ status }) => status === "success")
+          .map((pack) => pack.packageVersion.packageId);
+
+        const errorPackages = nextRequests
+          .filter(({ status }) => status === "error")
+          .map((pack) => ({ packageId: pack.packageVersion.packageId, errors: [] }));
+
+        if (successIds.length > 0) {
+          dispatch(setPackageInstallSuccess(username, successIds));
         }
 
-        const previousLength = activeRequests.length;
+        if (errorPackages.length > 0) {
+          dispatch(setPackageInstallError(username, errorPackages));
+          someErrors = true;
+        }
+
         activeRequests = nextRequests.filter(({ status }) => status === "pending");
-        if (activeRequests.length === 0) {
-          dispatch(setPackageInstallRequestSuccess(username));
-          dispatch(createToast("Package upgrade complete!", "success"));
-          break;
-        }
+      }
 
-        if (activeRequests.length < previousLength) {
-          dispatch(
-            setPackageInstallRequestProgress(
-              username,
-              originalRequests.length - activeRequests.length
-            )
-          );
-        }
+      if (someErrors) {
+        dispatch(createToast("Package install request complete with errors", "warning"));
+      } else {
+        dispatch(createToast("Package install request complete", "success"));
       }
     } catch (error) {
       dispatch(createErrorToast("There was an error upgrading your packages", error));
-      dispatch(setPackageInstallRequestError(username));
+      dispatch(setPackageInstallProcessError(username));
     }
   };
 }

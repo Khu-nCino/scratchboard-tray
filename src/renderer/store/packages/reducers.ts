@@ -13,9 +13,9 @@ import {
   SET_PACKAGE_DETAIL_ACTION,
   SET_ORG_TARGET_TYPE,
   CREATE_PACKAGE_INSTALL_REQUEST,
-  SET_PACKAGE_INSTALL_REQUEST_ERROR,
-  SET_PACKAGE_INSTALL_REQUEST_SUCCESS,
-  SET_PACKAGE_INSTALL_REQUEST_PROGRESS,
+  SET_PACKAGE_INSTALL_SUCCESS,
+  SET_PACKAGE_INSTALL_ERROR,
+  SET_PACKAGE_INSTALL_PROCESS_ERROR,
 } from "./actions";
 import { isUpgradeAvailable } from "./selectors";
 
@@ -73,10 +73,9 @@ export function packagesReducer(
         return state;
       }
 
-      const installedPackageList = Object.entries(currentOrgInfo.packages);
-      const nextValue = !installedPackageList
-        .filter(([packageId]) => isUpgradeAvailable(state, username, packageId))
-        .every(([, { upgradeSelected: pendingUpgrade }]) => pendingUpgrade);
+      const nextValue = !Object.values(currentOrgInfo.packages)
+        .filter((pack) => isUpgradeAvailable(pack, currentOrgInfo.target))
+        .every(({ upgradeSelected }) => upgradeSelected);
 
       return {
         ...state,
@@ -85,12 +84,13 @@ export function packagesReducer(
           [username]: {
             ...currentOrgInfo,
             packages: Object.fromEntries(
-              Object.entries(currentOrgInfo.packages).map(([packageId, currentPackage]) => [
+              Object.entries(currentOrgInfo.packages).map(([packageId, pack]) => [
                 packageId,
-                nextValue === currentPackage.upgradeSelected
-                  ? currentPackage
+                !isUpgradeAvailable(pack, currentOrgInfo.target) ||
+                nextValue === pack.upgradeSelected
+                  ? pack
                   : {
-                      ...currentPackage,
+                      ...pack,
                       upgradeSelected: nextValue,
                     },
               ])
@@ -131,6 +131,8 @@ export function packagesReducer(
                   packageId,
                   {
                     ...(previousOrgInfo.packages[packageId] ?? defaultOrgPackage),
+                    installStatus: "idle",
+                    upgradeSelected: false,
                     ...pack,
                   },
                 ])
@@ -141,74 +143,36 @@ export function packagesReducer(
       };
     }
     case CREATE_PACKAGE_INSTALL_REQUEST: {
-      const { username, totalPackages, timestamp } = action.payload;
+      const { username, timestamp } = action.payload;
+      const previousOrgInfo = state.orgInfo[username] ?? defaultOrgPackageState;
 
       return {
         ...state,
         orgInfo: {
           ...state.orgInfo,
           [username]: {
-            ...(state.orgInfo[username] ?? defaultOrgPackageState),
-            installRequest: {
-              status: "pending",
-              progress: 0,
-              totalPackages,
-              timestamp,
-            },
+            ...previousOrgInfo,
+            installRequestTimestamp: timestamp,
+            packages: Object.fromEntries(
+              Object.entries(previousOrgInfo.packages).map(([packId, pack]) => [
+                packId,
+                pack.upgradeSelected &&
+                pack.installStatus === "idle" &&
+                isUpgradeAvailable(pack, previousOrgInfo.target)
+                  ? { ...pack, installStatus: "pending" }
+                  : pack,
+              ])
+            ),
           },
         },
       };
     }
-    case SET_PACKAGE_INSTALL_REQUEST_PROGRESS: {
-      const { username, progress } = action.payload;
-
-      const previousInstallRequest = state.orgInfo[username]?.installRequest;
-      if (previousInstallRequest === undefined) {
-        return state;
-      }
-
-      return {
-        ...state,
-        orgInfo: {
-          ...state.orgInfo,
-          [username]: {
-            ...state.orgInfo[username],
-            installRequest: {
-              ...previousInstallRequest,
-              progress,
-            },
-          },
-        },
-      };
-    }
-    case SET_PACKAGE_INSTALL_REQUEST_ERROR: {
-      const { username } = action.payload;
-
-      const previousInstallRequest = state.orgInfo[username]?.installRequest;
-      if (previousInstallRequest === undefined) {
-        return state;
-      }
-
-      return {
-        ...state,
-        orgInfo: {
-          ...state.orgInfo,
-          [username]: {
-            ...state.orgInfo[username],
-            installRequest: {
-              ...previousInstallRequest,
-              status: "error",
-            },
-          },
-        },
-      };
-    }
-    case SET_PACKAGE_INSTALL_REQUEST_SUCCESS: {
-      const { username } = action.payload;
+    case SET_PACKAGE_INSTALL_SUCCESS: {
+      const { username, packageIds } = action.payload;
+      const packageIdSet = new Set(packageIds);
 
       const previousOrgInfo = state.orgInfo[username];
-      const previousInstallRequest = previousOrgInfo?.installRequest;
-      if (previousInstallRequest === undefined) {
+      if (previousOrgInfo === undefined) {
         return state;
       }
 
@@ -221,21 +185,67 @@ export function packagesReducer(
             packages: Object.fromEntries(
               Object.entries(previousOrgInfo.packages).map(([packageId, pack]) => [
                 packageId,
-                !pack.upgradeSelected
-                  ? pack
-                  : {
+                packageIdSet.has(packageId)
+                  ? {
                       ...pack,
+                      installStatus: "success",
                       targets: {
                         ...pack.targets,
-                        installed: pack.targets[previousOrgInfo.target],
+                        [previousOrgInfo.target]: pack.targets.installed,
                       },
-                    },
+                    }
+                  : pack,
               ])
             ),
-            installRequest: {
-              ...previousInstallRequest,
-              status: "success",
-            },
+          },
+        },
+      };
+    }
+    case SET_PACKAGE_INSTALL_ERROR: {
+      const { username, packages } = action.payload;
+      const packageErrorMap = new Map(packages.map(({ packageId, errors }) => [packageId, errors]));
+
+      const previousOrgInfo = state.orgInfo[username];
+      if (previousOrgInfo === undefined) {
+        return state;
+      }
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...previousOrgInfo,
+            packages: Object.fromEntries(
+              Object.entries(previousOrgInfo.packages).map(([packageId, pack]) => [
+                packageId,
+                packageErrorMap.has(packageId) ? { ...pack, installStatus: "error" } : pack,
+              ])
+            ),
+          },
+        },
+      };
+    }
+    case SET_PACKAGE_INSTALL_PROCESS_ERROR: {
+      const { username } = action.payload;
+
+      const previousOrgInfo = state.orgInfo[username];
+      if (previousOrgInfo === undefined) {
+        return state;
+      }
+
+      return {
+        ...state,
+        orgInfo: {
+          ...state.orgInfo,
+          [username]: {
+            ...previousOrgInfo,
+            packages: Object.fromEntries(
+              Object.entries(previousOrgInfo.packages).map(([packageId, pack]) => [
+                packageId,
+                pack.installStatus === "pending" ? { ...pack, installStatus: "error" } : pack,
+              ])
+            ),
           },
         },
       };
