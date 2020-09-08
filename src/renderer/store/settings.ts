@@ -3,12 +3,6 @@ import { Action } from "redux";
 import { IpcRendererEvent } from "common/IpcEvent";
 import { ScratchBoardThunk } from ".";
 
-interface SetThemeAction extends Action<"SET_THEME"> {
-  payload: {
-    theme: UITheme;
-  };
-}
-
 interface ToggleThemeAction extends Action<"TOGGLE_THEME"> {}
 
 interface ToggleShowSecondaryScratchUsernames
@@ -23,20 +17,10 @@ interface SetLaunchAtLogin extends Action<"SET_OPEN_AT_LOGIN"> {
 interface ToggleDisplayAllOrgs extends Action<"TOGGLE_DISPLAY_ALL_ORGS"> {}
 
 type SettingsAction =
-  | SetThemeAction
   | ToggleThemeAction
   | SetLaunchAtLogin
   | ToggleDisplayAllOrgs
   | ToggleShowSecondaryScratchUsernames;
-
-export function setTheme(theme: UITheme): SetThemeAction {
-  return {
-    type: "SET_THEME",
-    payload: {
-      theme,
-    },
-  };
-}
 
 export function toggleTheme(): ToggleThemeAction {
   return {
@@ -95,11 +79,6 @@ export function settingsReducer(
   action: SettingsAction
 ): SettingsState {
   switch (action.type) {
-    case "SET_THEME":
-      return {
-        ...state,
-        theme: action.payload.theme,
-      };
     case "TOGGLE_THEME":
       return {
         ...state,

@@ -270,10 +270,6 @@ export function selectSharedOrgs(state: ScratchBoardState): OrgData<SharedOrg>[]
   return state.orgs.orgList.filter(isSharedOrg).sort(orgCompare);
 }
 
-export function selectOrgDescriptions(state: ScratchBoardState): SalesforceOrg[] {
-  return state.orgs.orgList.map(({ description }) => description);
-}
-
 export function selectOrg({ orgs: state }: ScratchBoardState, aliasOrUsername: string): OrgData<SalesforceOrg> | undefined {
   if (aliasOrUsername === "") {
     return;

@@ -82,28 +82,3 @@ export function isActive(info: AuthInfo) {
   const expirationDate = info.getFields().expirationDate;
   return !isScratch(info) || !expirationDate || Date.parse(expirationDate) > Date.now();
 }
-
-export function compareVersions(a?: string, b?: string): -1 | 0 | 1 | undefined {
-  if (a === undefined || b === undefined) {
-    return undefined;
-  }
-
-  const aList = a.split(".").map(Number);
-  const bList = b.split(".").map(Number);
-
-  const length = Math.min(aList.length, bList.length);
-  for (let i = 0; i < length; i++) {
-    if (aList[i] > bList[i]) {
-      return 1;
-    } else if (aList[i] < bList[i]) {
-      return -1;
-    }
-  }
-
-  if (aList.length > bList.length) {
-    return 1;
-  } else if (aList.length < bList.length) {
-    return -1;
-  }
-  return 0;
-}
