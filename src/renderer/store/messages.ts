@@ -6,9 +6,10 @@ const DISMISS_TOAST = "DISMISS_TOAST";
 
 export type MessagesAction = ReturnType<typeof createToastRaw> | ReturnType<typeof dismissToast>;
 
-const intentToTitle: Record<string, string> = {
+const intentToTitle: Partial<Record<Intent, string>> = {
   success: "Action Success",
   danger: "Action Failed",
+  warning: "Action Warning",
 };
 
 export function createToast(message: string, intent: Intent, detail?: string): ScratchBoardThunk {
@@ -16,7 +17,7 @@ export function createToast(message: string, intent: Intent, detail?: string): S
     if (getState().route.isVisible) {
       dispatch(createToastRaw(message, intent, detail));
     } else {
-      new Notification(intentToTitle[intent], {
+      new Notification(intentToTitle[intent] ?? "Scratchboard", {
         body: message,
       });
     }
