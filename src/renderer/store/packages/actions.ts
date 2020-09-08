@@ -200,7 +200,7 @@ export function installPackages(
       let someErrors = false;
 
       while (activeRequests.length > 0) {
-        await delay(10000);
+        await delay(60000);
         const nextRequests = await packageManager.checkPackageInstallRequests(
           username,
           activeRequests
