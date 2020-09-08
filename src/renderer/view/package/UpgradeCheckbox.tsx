@@ -21,7 +21,7 @@ export const UpgradeCheckbox = (props: Props) => {
   } else if (props.installStatus === "error") {
     return (
       <Tooltip content="Install Error" position="left" className="sbt-package-upgrade-checkbox">
-        <Icon iconSize={15} icon="warning-sign" intent="danger" />;
+        <Icon iconSize={15} icon="warning-sign" intent="danger" />
       </Tooltip>
     );
   } else if (!props.managed) {
