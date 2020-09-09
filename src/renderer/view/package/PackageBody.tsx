@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { NonIdealState, Spinner, Button, Checkbox, HTMLSelect } from "@blueprintjs/core";
 import { ScratchBoardState } from "renderer/store";
@@ -18,7 +18,6 @@ import {
 import {
   TargetType,
   OrgActionStatus,
-  targetTypes,
   OrgPackageState,
   defaultOrgPackageState,
 } from "renderer/store/packages/state";
@@ -69,6 +68,15 @@ function getLoadingMessage(status: OrgActionStatus) {
   }
 }
 
+function capitalizeTargetType(target: TargetType): string {
+  switch (target) {
+    case "latest":
+      return "Latest";
+    case "patch":
+      return "Patch";
+  }
+}
+
 export const PackageBody = connector((props: Props) => {
   useEffect(() => {
     if (props.authorityExists && props.orgPackageDetails.actionStatus === "initial") {
@@ -80,6 +88,35 @@ export const PackageBody = connector((props: Props) => {
 
   const [selectedVersionOpened, setSelectedVersionOpened] = useState(false);
   const [showInstallConformation, setShowInstallConformation] = useState(false);
+
+  const { target } = props.orgPackageDetails;
+  const mappedPackageEntities = useMemo(
+    () =>
+      Object.entries(props.orgPackageDetails.packages)
+        .map(([packageId, pack]) => {
+          const installedVersionInfo = pack.targets.installed!!; // assume has an installed version
+          const targetVersionInfo = pack.targets[target] ?? installedVersionInfo;
+
+          return {
+            packageId,
+            displayName: installedVersionInfo.namespace ?? installedVersionInfo.packageName,
+            installedVersionInfo,
+            targetVersionInfo,
+            isManaged: pack.isManaged,
+            upgradeSelected: pack.upgradeSelected,
+            installStatus: pack.installStatus,
+            upgradeAvailable: isUpgradeAvailable(pack, target),
+          };
+        })
+        .sort((left, right) => {
+          if (left.isManaged !== right.isManaged) {
+            return left.isManaged ? -1 : 1;
+          }
+
+          return left.displayName.localeCompare(right.displayName);
+        }),
+    [props.orgPackageDetails.packages, target]
+  );
 
   if (!props.authorityExists) {
     return <NonIdealState icon="error" title="No package authority set." />;
@@ -95,8 +132,7 @@ export const PackageBody = connector((props: Props) => {
     );
   }
 
-  const packageEntities = Object.entries(props.orgPackageDetails.packages);
-  if (packageEntities.length === 0) {
+  if (mappedPackageEntities.length === 0) {
     return (
       <NonIdealState
         title="No packages found."
@@ -115,26 +151,6 @@ export const PackageBody = connector((props: Props) => {
   }
 
   const { installRequestTimestamp } = props.orgPackageDetails;
-  // const upgradeInProgress = installRequest?.status === "pending";
-
-  const mappedPackageEntities = packageEntities.map(
-    ([packageId, pack]) => {
-      const { target } = props.orgPackageDetails;
-
-      const installedVersionInfo = pack.targets.installed;
-      const targetVersionInfo = pack.targets[target] ?? installedVersionInfo;
-
-      return {
-        packageId,
-        installedVersionInfo,
-        targetVersionInfo,
-        isManaged: pack.isManaged,
-        upgradeSelected: pack.upgradeSelected,
-        installStatus: pack.installStatus,
-        upgradeAvailable: isUpgradeAvailable(pack, target),
-      };
-    }
-  );
 
   const upgradeInProgress = mappedPackageEntities.some(
     ({ installStatus }) => installStatus === "pending"
@@ -161,11 +177,14 @@ export const PackageBody = connector((props: Props) => {
           <HTMLSelect
             className="sbt-header-item"
             minimal
-            options={(targetTypes as unknown) as string[]} // options isn't marked as readonly so we need to do an unsafe cast.
+            options={["Latest", "Patch"]}
             disabled={upgradeInProgress}
-            value={props.orgPackageDetails.target}
+            value={capitalizeTargetType(props.orgPackageDetails.target)}
             onChange={(event) => {
-              props.setOrgTargetType(props.detailUsername, event.target.value as TargetType);
+              props.setOrgTargetType(
+                props.detailUsername,
+                event.target.value.toLowerCase() as TargetType
+              );
             }}
           />
           <Checkbox
@@ -178,6 +197,7 @@ export const PackageBody = connector((props: Props) => {
           {mappedPackageEntities.flatMap(
             ({
               packageId,
+              displayName,
               installedVersionInfo,
               upgradeAvailable,
               targetVersionInfo,
@@ -187,7 +207,7 @@ export const PackageBody = connector((props: Props) => {
             }) => {
               return [
                 <span key={`namespace-${packageId}`} className="sbt-first-column">
-                  {installedVersionInfo?.namespace ?? installedVersionInfo?.packageName}
+                  {displayName}
                 </span>,
                 <Button
                   small
