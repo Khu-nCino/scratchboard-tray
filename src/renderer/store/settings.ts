@@ -28,7 +28,7 @@ export function toggleTheme(): ToggleThemeAction {
   };
 }
 
-export function checkOpenAtLogin(): ScratchBoardThunk<void> {
+export function checkOpenAtLogin(): ScratchBoardThunk<Promise<void>> {
   return async (dispatch) => {
     const openAtLogin: boolean = await ipc.callMain(IpcRendererEvent.GET_LAUNCH_SETTINGS);
 

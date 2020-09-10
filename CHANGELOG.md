@@ -1,3 +1,7 @@
+## [0.6.1] - 2020-9-10
+- Package list is now sorted by name
+- Capitalized target dropdown
+
 ## [0.6.0] - 2020-9-8
 - Ability to upgrade packages.
 - Ability to see latest patch targets for packages.
