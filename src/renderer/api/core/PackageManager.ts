@@ -5,7 +5,7 @@ import { RecordResult, SuccessResult, ErrorResult } from "jsforce";
 
 export interface PackageVersion {
   readonly packageId: string;
-  readonly versionName: string;
+  readonly packageVersionId: string;
 }
 
 export interface SortingPackageVersion {
@@ -13,17 +13,14 @@ export interface SortingPackageVersion {
   readonly sortingVersion: string;
 }
 
-export interface SubscriberPackageVersion extends PackageVersion {
-  readonly isManaged: boolean;
-}
-
 export interface AuthorityPackageVersion extends PackageVersion {
   readonly packageName: string;
-  readonly packageVersionId: string;
+  readonly versionName: string;
   readonly namespace: string;
   readonly password: string;
   readonly buildDate: string;
   readonly sortingVersion: string;
+  readonly isManaged: boolean;
 }
 
 export interface PackageInstallRequest {
@@ -45,36 +42,18 @@ interface PackageInstallRequestMetadata {
 const installedPackageVersionsQuery = strip`
 SELECT
   SubscriberPackageId,
-  SubscriberPackageVersion.Name,
-  SubscriberPackageVersion.IsManaged,
-  SubscriberPackageVersion.MajorVersion,
-  SubscriberPackageVersion.MinorVersion,
-  SubscriberPackageVersion.PatchVersion
+  SubscriberPackageVersionId
 FROM
   InstalledSubscriberPackage
 `;
 
-function formatVersionNumber(values: number[]): string {
-  return values.filter((value) => value !== 0).join(".");
-}
-
-function sortingVersionToVersionName(sortingVersion: string): string {
-  return formatVersionNumber(sortingVersion.split(".").map(Number));
-}
-
 export class PackageManager {
   constructor(private cache: OrgCache) {}
 
-  async listSubscriberPackageVersions(username: string): Promise<SubscriberPackageVersion[]> {
+  async listSubscriberPackageVersions(username: string): Promise<PackageVersion[]> {
     interface RawInstalledSubscriberPackage {
       SubscriberPackageId: string;
-      SubscriberPackageVersion: {
-        Name: string;
-        IsManaged: boolean;
-        MajorVersion: number;
-        MinorVersion: number;
-        PatchVersion: number;
-      };
+      SubscriberPackageVersionId: string;
     }
 
     const versions = await this.cache.query<RawInstalledSubscriberPackage>(
@@ -82,23 +61,18 @@ export class PackageManager {
       installedPackageVersionsQuery,
       true
     );
-    return versions.map(
-      ({
-        SubscriberPackageId,
-        SubscriberPackageVersion: { IsManaged, MajorVersion, MinorVersion, PatchVersion },
-      }) => ({
-        packageId: SubscriberPackageId,
-        //versionName: version.SubscriberPackageVersion.Name,
-        versionName: formatVersionNumber([MajorVersion, MinorVersion, PatchVersion]),
-        isManaged: IsManaged,
-      })
-    );
+
+    return versions.map(({ SubscriberPackageId, SubscriberPackageVersionId }) => ({
+      packageId: SubscriberPackageId,
+      packageVersionId: SubscriberPackageVersionId,
+      isManaged: true,
+    }));
   }
 
   async getLatestAvailablePackageVersions(
     authorityUsername: string,
     packages: { packageId: string }[]
-  ): Promise<PackageVersion[]> {
+  ): Promise<SortingPackageVersion[]> {
     if (packages.length === 0) {
       return [];
     }
@@ -137,14 +111,14 @@ export class PackageManager {
 
     return results.map(({ packageId, sortingVersion }) => ({
       packageId: trimmedIdToFull.get(packageId) ?? packageId,
-      versionName: sortingVersionToVersionName(sortingVersion),
+      sortingVersion,
     }));
   }
 
   async getLatestPatchPackageVersions(
     authorityUsername: string,
     packages: { packageId: string; versionName: string }[]
-  ): Promise<PackageVersion[]> {
+  ): Promise<SortingPackageVersion[]> {
     if (packages.length === 0) {
       return [];
     }
@@ -184,21 +158,53 @@ export class PackageManager {
 
     return results.map(({ packageId, sortingVersion }) => ({
       packageId: trimmedIdToFull.get(packageId) ?? packageId,
-      versionName: sortingVersionToVersionName(sortingVersion),
+      sortingVersion,
     }));
   }
 
-  groupVersions(versions: PackageVersion[]) {
-    return versions.reduce<Record<string, string[]>>((out, { packageId, versionName }) => {
-      (out[packageId] ??= []).push(versionName);
-      return out;
-    }, {});
+  groupVersions(versions: (PackageVersion | SortingPackageVersion)[]) {
+    return versions.reduce<Record<string, { sortingVersions: string[]; metadataIds: string[] }>>(
+      (out, packageVersion) => {
+        const row = (out[packageVersion.packageId] ??= { sortingVersions: [], metadataIds: [] });
+        if ("sortingVersion" in packageVersion) {
+          row.sortingVersions.push(packageVersion.sortingVersion);
+        } else {
+          row.metadataIds.push(trimTo15(packageVersion.packageVersionId));
+          row.metadataIds.push(packageVersion.packageVersionId);
+        }
+
+        return out;
+      },
+      {}
+    );
   }
 
-  versionsGroupToSelector(versionMap: Record<string, string[]>) {
+  versionsGroupToSelector(
+    versionMap: Record<string, { sortingVersions: string[]; metadataIds: string[] }>
+  ) {
     return Object.entries(versionMap)
       .map(([packageId, versions]) => {
-        const versionSelectors = formatQueryList("Name", Array.from(new Set(versions)));
+        let versionSelectors: string;
+
+        if (versions.metadataIds.length > 0 && versions.sortingVersions.length > 0) {
+          versionSelectors = `(${formatQueryList(
+            "PackageManager__Metadata_Package_Version_Id__c",
+            versions.metadataIds
+          )} OR ${formatQueryList(
+            "PackageManager__Sorting_Version_Number__c",
+            versions.sortingVersions
+          )})`;
+        } else if (versions.metadataIds.length > 0) {
+          versionSelectors = formatQueryList(
+            "PackageManager__Metadata_Package_Version_Id__c",
+            versions.metadataIds
+          );
+        } else {
+          versionSelectors = formatQueryList(
+            "PackageManager__Sorting_Version_Number__c",
+            versions.sortingVersions
+          );
+        }
 
         return `(PackageManager__Package__r.PackageManager__Metadata_Package_Id__c IN ('${escapeSoql(
           trimTo15(packageId)
@@ -209,13 +215,14 @@ export class PackageManager {
 
   async getAuthorityPackageDetails(
     authorityUsername: string,
-    versionGroups: readonly PackageVersion[][]
+    versionGroups: readonly (PackageVersion | SortingPackageVersion)[][]
   ): Promise<AuthorityPackageVersion[][]> {
     if (versionGroups.length === 0) {
       return [];
     }
 
-    const versionsGroup = this.groupVersions(versionGroups.flat());
+    const flatVersionGroups = versionGroups.flat();
+    const versionsGroup = this.groupVersions(flatVersionGroups);
     const versionsSelector = this.versionsGroupToSelector(versionsGroup);
 
     interface RawAuthorityPackageVersion {
@@ -228,6 +235,7 @@ export class PackageManager {
         Name: string;
         PackageManager__Namespace_Prefix__c: string;
         PackageManager__Metadata_Package_Id__c: string;
+        PackageManager__Is_Managed__c: boolean;
       };
     }
 
@@ -235,10 +243,11 @@ export class PackageManager {
       authorityUsername,
       strip`
         SELECT
+          Name,
           PackageManager__Package__r.Name,
           PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
           PackageManager__Package__r.PackageManager__Metadata_Package_Id__c,
-          Name,
+          PackageManager__Package__r.PackageManager__Is_Managed__c,
           PackageManager__Sorting_Version_Number__c,
           PackageManager__Build_Date__c,
           PackageManager__Metadata_Package_Version_Id__c,
@@ -250,17 +259,25 @@ export class PackageManager {
       `
     );
 
-    const trimmedIdToFull = Object.keys(versionsGroup).reduce((acc, packageId) => {
-      acc.set(trimTo15(packageId), packageId);
-      return acc;
-    }, new Map<string, string>());
+    const trimmedPackageIdToFull = new Map(
+      Object.keys(versionsGroup).map((packageId) => [trimTo15(packageId), packageId])
+    );
 
-    // const packageToGroup = new TwoKeyedRecordArray<number>();
+    const trimmedVersionIdToFull = new Map(
+      flatVersionGroups
+        .filter(PackageManager.isPackageVersion)
+        .map(({ packageVersionId }) => [trimTo15(packageVersionId), packageVersionId])
+    );
+
     const packageToGroup: Record<string, Record<string, number[]>> = {};
 
     versionGroups.forEach((versions, groupIndex) => {
-      versions.forEach(({ packageId, versionName }) => {
-        ((packageToGroup[packageId] ??= {})[versionName] ??= []).push(groupIndex);
+      versions.forEach((packageVersion) => {
+        ((packageToGroup[packageVersion.packageId] ??= {})[
+          "sortingVersion" in packageVersion
+            ? packageVersion.sortingVersion
+            : packageVersion.packageVersionId
+        ] ??= []).push(groupIndex);
       });
     });
 
@@ -268,21 +285,27 @@ export class PackageManager {
     latestVersionsDetails.forEach((version) => {
       const rawPackageId =
         version.PackageManager__Package__r.PackageManager__Metadata_Package_Id__c;
-      const packageId = trimmedIdToFull.get(rawPackageId) ?? rawPackageId;
+      const rawPackageVersionId = version.PackageManager__Metadata_Package_Version_Id__c;
+      const packageId = trimmedPackageIdToFull.get(rawPackageId) ?? rawPackageId;
+      const packageVersionId = trimmedVersionIdToFull.get(rawPackageVersionId) ?? rawPackageVersionId;
       const versionName = version.Name;
 
       const packageData = {
         packageId,
+        packageVersionId,
         versionName,
         packageName: version.PackageManager__Package__r.Name,
         namespace: version.PackageManager__Package__r.PackageManager__Namespace_Prefix__c,
+        isManaged: version.PackageManager__Package__r.PackageManager__Is_Managed__c,
         buildDate: version.PackageManager__Build_Date__c,
-        packageVersionId: version.PackageManager__Metadata_Package_Version_Id__c,
         password: version.PackageManager__Password__c,
         sortingVersion: version.PackageManager__Sorting_Version_Number__c,
       };
 
-      packageToGroup[packageId][versionName].forEach((groupIndex) =>
+      packageToGroup[packageId][packageData.sortingVersion]?.forEach((groupIndex) =>
+        out[groupIndex].push(packageData)
+      );
+      packageToGroup[packageId][packageVersionId]?.forEach((groupIndex) =>
         out[groupIndex].push(packageData)
       );
     });
@@ -326,14 +349,12 @@ export class PackageManager {
   ): Promise<void> {
     const connection = await this.cache.getConnection(username);
 
-    const metadata = packageVersions.map(
-      ({ namespace, versionName, password }) => ({
-        fullName: namespace,
-        activateRSS: false,
-        versionNumber: versionName,
-        password,
-      })
-    );
+    const metadata = packageVersions.map(({ namespace, versionName, password }) => ({
+      fullName: namespace,
+      activateRSS: false,
+      versionNumber: versionName,
+      password,
+    }));
 
     await connection.metadata.upsert("InstalledPackage", metadata);
   }
@@ -366,6 +387,12 @@ export class PackageManager {
             status: metadataStatusMap[nextStatus],
           };
     });
+  }
+
+  static isPackageVersion(
+    version: Readonly<SortingPackageVersion | PackageVersion>
+  ): version is PackageVersion {
+    return "packageVersionId" in version;
   }
 }
 

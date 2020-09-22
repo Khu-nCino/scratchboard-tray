@@ -102,7 +102,7 @@ export const PackageBody = connector((props: Props) => {
             displayName: installedVersionInfo.namespace ?? installedVersionInfo.packageName,
             installedVersionInfo,
             targetVersionInfo,
-            isManaged: pack.isManaged,
+            isManaged: installedVersionInfo.isManaged,
             upgradeSelected: pack.upgradeSelected,
             installStatus: pack.installStatus,
             upgradeAvailable: isUpgradeAvailable(pack, target),
@@ -228,7 +228,9 @@ export const PackageBody = connector((props: Props) => {
                   minimal
                   alignText="left"
                   key={`latestVersion-${packageId}`}
-                  disabled={!upgradeAvailable}
+                  disabled={
+                    installedVersionInfo.packageVersionId === targetVersionInfo.packageVersionId
+                  }
                   onClick={() => {
                     setSelectedVersion(targetVersionInfo);
                     setSelectedVersionOpened(true);

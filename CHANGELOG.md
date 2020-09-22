@@ -1,3 +1,7 @@
+## [0.6.2] - 2020-9-18
+- Fixed bug when latest package version would become disabled while upgrade is in progress.
+- Upgraded dependencies.
+
 ## [0.6.1] - 2020-9-10
 - Package list is now sorted by name
 - Capitalized target dropdown

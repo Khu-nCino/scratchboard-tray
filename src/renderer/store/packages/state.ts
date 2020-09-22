@@ -12,7 +12,6 @@ export type OrgActionStatus =
   | "pending_details";
 
 export interface OrgPackage {
-  readonly isManaged: boolean;
   readonly upgradeSelected: boolean;
   readonly installStatus: 'idle' | 'pending' | 'error' | 'success';
   readonly targets: {
@@ -49,7 +48,6 @@ export const defaultPackagesState: PackagesState = {
 };
 
 export const defaultOrgPackage: OrgPackage = {
-  isManaged: false,
   upgradeSelected: false,
   installStatus: "idle",
   targets: {},

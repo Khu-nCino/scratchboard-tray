@@ -27,7 +27,6 @@ export type PackagesAction =
   | ReturnType<typeof setPackageInstallError>
   | ReturnType<typeof setPackageInstallProcessError>;
 interface PackageDetailsVersion {
-  isManaged: boolean;
   targets: Record<string, AuthorityPackageVersion>;
 }
 
@@ -147,21 +146,20 @@ export function checkInstalledPackages(username: string): ScratchBoardThunk<Prom
       const installedPackages = await packageManager.listSubscriberPackageVersions(username);
       dispatch(setPackageActionStatus(username, "pending_authority"));
 
+      const [installedPackageDetails] = await packageManager.getAuthorityPackageDetails(authorityUsername, [
+        installedPackages,
+      ]);
+
       const targetPackageVersions = await Promise.all([
-        packageManager.getLatestAvailablePackageVersions(authorityUsername, installedPackages),
-        packageManager.getLatestPatchPackageVersions(authorityUsername, installedPackages),
+        packageManager.getLatestAvailablePackageVersions(authorityUsername, installedPackageDetails),
+        packageManager.getLatestPatchPackageVersions(authorityUsername, installedPackageDetails),
       ]);
 
       dispatch(setPackageActionStatus(username, "pending_details"));
-      const packageDetailGroups = await packageManager.getAuthorityPackageDetails(
-        authorityUsername,
-        [installedPackages, ...targetPackageVersions]
-      );
-
-      const isManagedMap = new Map<string, boolean>();
-      installedPackages.forEach(({ packageId, isManaged }) => {
-        isManagedMap.set(packageId, isManaged);
-      });
+      const packageDetailGroups = [
+        installedPackageDetails,
+        ...(await packageManager.getAuthorityPackageDetails(authorityUsername, targetPackageVersions)),
+      ];
 
       const targetList = ["installed", "latest", "patch"];
 
@@ -169,7 +167,6 @@ export function checkInstalledPackages(username: string): ScratchBoardThunk<Prom
       packageDetailGroups.forEach((packageDetails, targetIndex) => {
         packageDetails.forEach((packageDetail) => {
           (out[packageDetail.packageId] ??= {
-            isManaged: isManagedMap.get(packageDetail.packageId) ?? false,
             targets: {},
           }).targets[targetList[targetIndex]] = packageDetail;
         });
