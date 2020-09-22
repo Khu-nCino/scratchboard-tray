@@ -1,3 +1,6 @@
+## [0.6.3] - 2020-9-22
+- Improved query speed for pulling package list
+
 ## [0.6.2] - 2020-9-18
 - Fixed bug when latest package version would become disabled while upgrade is in progress.
 - Upgraded dependencies.
