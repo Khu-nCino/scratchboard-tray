@@ -60,7 +60,7 @@ export function setIsVisible(value: boolean): SetIsVisibleAction {
 }
 
 // State
-export type RouteName = "orgs" | "settings" | "login" | "frontdoor" | "package";
+export type RouteName = "orgs" | "settings" | "login" | "frontdoor" | "package" | "scripts";
 
 export interface RouteState {
   readonly activeRoute: RouteName;

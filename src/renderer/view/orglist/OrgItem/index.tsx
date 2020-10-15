@@ -40,6 +40,7 @@ function mapDispatchToProps(
     logoutOrg: () => dispatch(logoutOrgAction(username)),
     setAlias: (newAlias: string) => dispatch(setAliasAction(username, newAlias)),
     pushPackageRoute: () => dispatch(pushRoute("package", username)),
+    pushScriptsRoute: () => dispatch(pushRoute("scripts", username))
   };
 }
 
@@ -73,6 +74,7 @@ export const OrgItem = connector((props: Props) => {
       onDelete={() => setPendingDelete(true)}
       onLogout={() => setPendingLogout(true)}
       onPackages={props.pushPackageRoute}
+      onScripts={props.pushScriptsRoute}
     />
   );
 
