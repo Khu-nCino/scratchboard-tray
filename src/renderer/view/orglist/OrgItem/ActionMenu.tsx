@@ -8,6 +8,7 @@ interface Props {
   onDelete: () => void;
   onLogout: () => void;
   onPackages: () => void;
+  onScripts: () => void;
 }
 
 export const ActionMenu = (props: Props) => (
@@ -15,6 +16,7 @@ export const ActionMenu = (props: Props) => (
     <MenuItem text="Copy Front Door" onClick={props.onCopyFrontdoor} />
     <MenuItem text="Set Alias" onClick={props.onSetAlias} />
     <MenuItem text="Packages" onClick={props.onPackages} />
+    <MenuItem text="Scripts" onClick={props.onScripts} />
     {props.removeAction === "delete" && (
       <MenuItem text="Delete" intent="danger" onClick={props.onDelete} />
     )}
