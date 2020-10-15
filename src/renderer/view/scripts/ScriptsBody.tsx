@@ -1,12 +1,22 @@
-import { ipcRenderer } from "electron";
+import scripts from "./scripts.json";
 import React, { useState } from "react";
-import { connect, ConnectedProps } from "react-redux";
+import { ScriptsItem } from "./ScriptsItem";
 
-const connector = connect(undefined, undefined);
-type Props = ConnectedProps<typeof connector>;
-
-export const ScriptsBody = connector((props: Props) => {
-      return(<div className="sbt-m_medium">
-        Scripts 2
-      </div>);
-});
+export const ScriptsBody = () => {
+  return(
+    <div className="sbt-m_medium">
+      {scripts.map((script, key) => {
+          return (
+            <ScriptsItem
+              key = {key}
+              Name={script.name}
+              Package={script.package}
+              Object={script.object}
+              Description={script.description}
+              Body={script.body}
+            ></ScriptsItem>
+          );
+        })}
+    </div>
+  );
+};
