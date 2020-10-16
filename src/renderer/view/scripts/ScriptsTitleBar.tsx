@@ -26,8 +26,6 @@ export const ScriptsTitleBar = connector((props: Props) => (
         <Button icon="caret-left" onClick={props.popRoute} disabled={!props.navigationEnabled}>
           Back
         </Button>
-      {/* <Button icon="link" onClick={() => props.pushRoute("frontdoor")} />
-      <Button icon="cog" onClick={() => props.pushRoute("settings")} /> */}
     </ButtonGroup>
   </div>
 ));
