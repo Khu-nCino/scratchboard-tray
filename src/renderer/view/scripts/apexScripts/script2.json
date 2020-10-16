@@ -1,0 +1,8 @@
+
+  {
+    "name": "Script 2",
+    "package": "LLC_BI",
+    "object": "Loan",
+    "description": "Script for adding Loans",
+    "body": "System.debug();"
+  }

@@ -1,12 +1,33 @@
-import { ipcRenderer } from "electron";
+import fs from "fs";
 import React, { useState } from "react";
-import { connect, ConnectedProps } from "react-redux";
+import { ScriptsItem } from "./ScriptsItem";
 
-const connector = connect(undefined, undefined);
-type Props = ConnectedProps<typeof connector>;
+const directory = "./src/renderer/view/scripts/apexScripts/";
+const localDirectory = "./apexScripts/";
+let scripts = new Array();
 
-export const ScriptsBody = connector((props: Props) => {
-      return(<div className="sbt-m_medium">
-        Scripts 2
-      </div>);
+fs.readdir(directory, (err, files) => {
+  files.forEach(file => {
+    let temp = require(localDirectory + file + "");
+    scripts.push(temp);
+  });
 });
+
+export const ScriptsBody = () => {
+  return(
+    <div className="sbt-m_medium">
+      {scripts.map((script, key) => {
+          return (
+            <ScriptsItem
+              key = {key}
+              Name={script.name}
+              Package={script.package}
+              Object={script.object}
+              Description={script.description}
+              Body={script.body}
+            ></ScriptsItem>
+          );
+        })}
+    </div>
+  );
+};
