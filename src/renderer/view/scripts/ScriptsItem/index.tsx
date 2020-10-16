@@ -8,6 +8,10 @@ interface OwnProps {
     Body: String
 }
 
+function runScript() {
+    console.log("we're done, ship it");
+}
+
 export const ScriptsItem = (props: OwnProps) => {
     return(
     <div className="sbt-org-list--item sbt-flex-container sbt-hover-highlight">
@@ -17,6 +21,9 @@ export const ScriptsItem = (props: OwnProps) => {
             { props.Object } <br/>
             { props.Description } <br/>
             { props.Body } <br/>
+            <button onClick={runScript}>
+                Run in org
+            </button>
             <hr/>
         </div>
     </div>
