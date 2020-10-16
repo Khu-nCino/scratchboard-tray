@@ -13,6 +13,7 @@ import { LoginBody } from "./login/LoginBody";
 import { selectActiveRoute } from "renderer/store/route";
 import { PackageBody } from "./package/PackageBody";
 import { ScriptsBody } from "./scripts/ScriptsBody";
+import { ScriptsTitleBar } from "./scripts/ScriptsTitleBar";
 
 function mapStateToProps(state: ScratchBoardState) {
   return {
@@ -64,7 +65,7 @@ export const App = connector((props: Props) => (
         ),
         scripts: (
           <div className="sbt-screen">
-            <TitleBar title="Scripts" />
+            <ScriptsTitleBar />
             <ScriptsBody />
           </div>
         ),
