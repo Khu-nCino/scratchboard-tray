@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 
 import { ScratchBoardState } from "renderer/store";
@@ -25,7 +25,9 @@ function mapStateToProps(state: ScratchBoardState) {
 const connector = connect(mapStateToProps);
 type Props = ConnectedProps<typeof connector>;
 
-export const App = connector((props: Props) => (
+export const App = connector((props: Props) => {
+  const [scriptFilter, setScriptFilter] = useState<string>('All');
+  return (
   <div id="app-content">
     <RouteTransitions
       primaryRoute='orgs'
@@ -66,8 +68,8 @@ export const App = connector((props: Props) => (
         ),
         scripts: (
           <div className="sbt-screen">
-            <ScriptsTitleBar />
-            <ScriptsBody />
+            <ScriptsTitleBar onScriptFilterSelect={setScriptFilter} />
+            <ScriptsBody filterApplied={scriptFilter}/>
           </div>
         ),
         scriptAdmin: (
@@ -80,4 +82,4 @@ export const App = connector((props: Props) => (
     />
     <ToastManager />
   </div>
-));
+)});
