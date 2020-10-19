@@ -1,6 +1,8 @@
 import fs from "fs";
-import React, { useState } from "react";
+import React from "react";
+import { connect, ConnectedProps } from "react-redux";
 import { ScriptsItem } from "./ScriptsItem";
+import { ScratchBoardState } from "renderer/store";
 
 const directory = "./src/renderer/view/scripts/apexScripts/";
 const localDirectory = "./apexScripts/";
@@ -13,7 +15,14 @@ fs.readdir(directory, (err, files) => {
   });
 });
 
-export const ScriptsBody = () => {
+function mapStateToProps(state: ScratchBoardState) {
+  return {username: state.route.detailUsername}
+}
+
+const connector = connect(mapStateToProps);
+type Props = ConnectedProps<typeof connector>;
+
+export const ScriptsBody = connector((props: Props) => {
   return(
     <div className="sbt-m_medium">
       {scripts.map((script, key) => {
@@ -30,4 +39,4 @@ export const ScriptsBody = () => {
         })}
     </div>
   );
-};
+});
