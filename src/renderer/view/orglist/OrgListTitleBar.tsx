@@ -18,6 +18,7 @@ export const OrgListTitleBar = connector((props: Props) => (
     <ButtonGroup className="sbt-titlebar-button">
       <Button icon="link" onClick={() => props.pushRoute("frontdoor")} />
       <Button icon="cog" onClick={() => props.pushRoute("settings")} />
+      <Button icon="plus" onClick={() => props.pushRoute("scriptAdmin")} />
     </ButtonGroup>
   </div>
 ));
