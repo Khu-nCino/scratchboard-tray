@@ -15,7 +15,7 @@ export const ScriptsBody = connector((props: Props) => {
   const [ scripts ] = useState(get<object[]>('apexScripts'));
   return(
     <div className="sbt-m_medium">
-      {scripts.map((script, key) => { 
+      {scripts.map((script, key) => {
           return (
             <ScriptsItem
               key = {key}
