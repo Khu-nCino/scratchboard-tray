@@ -5,8 +5,7 @@ import { ButtonGroup, Button, Popover } from "@blueprintjs/core";
 import { popRoute } from "renderer/store/route";
 import { ScratchBoardState } from "renderer/store";
 
-import { ObjectMenu } from "./ScriptsDropdown";
-import { PackageMenu } from "./ScriptsDropdown";
+import { Submenu, PackageMenuItems, ObjectMenuItems }from "./ScriptsDropdown";
 
 function mapStateToProps(state: ScratchBoardState) {
     return {
@@ -19,7 +18,9 @@ const mapDispatchToProps = {
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
-type Props = ConnectedProps<typeof connector>;
+interface Props extends ConnectedProps<typeof connector>{
+  onScriptFilterSelect?: (category: string) => void;
+}
 
 export const ScriptsTitleBar = connector((props: Props) => (
   <div className="sbt-titlebar-container">
@@ -29,10 +30,10 @@ export const ScriptsTitleBar = connector((props: Props) => (
       <Button icon="caret-left" onClick={props.popRoute} disabled={!props.navigationEnabled}>
         Back
       </Button>
-      <Popover content={<PackageMenu />} >
+      <Popover content={<Submenu options={PackageMenuItems} onSelect={props.onScriptFilterSelect}/>} >
         <Button rightIcon="caret-down" icon="box" text="Package"/>
       </Popover>
-      <Popover content={<ObjectMenu />} >
+      <Popover content={<Submenu options={ObjectMenuItems} onSelect={props.onScriptFilterSelect}/>} >
         <Button rightIcon="caret-down" icon="square" text="Object"/>
       </Popover>
     </ButtonGroup>
