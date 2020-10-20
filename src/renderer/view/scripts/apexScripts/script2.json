@@ -1,11 +1,4 @@
 [
-  {
-    "name": "Script 2",
-    "package": "LLC_BI",
-    "object": "Loan",
-    "description": "Script for adding Loans",
-    "body": "Account acc = new Account(Name = 'Gabe'); insert acc;"
-  },
   { 
     "name": "Multiple Loan Creator",
     "package": "LLC_BI",
