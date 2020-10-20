@@ -1,3 +1,4 @@
+import scriptsFile from "renderer/view/scripts/apexScripts/script2.json";
 import React, { useState }  from "react";
 import classNames from "classnames";
 import { get, set } from 'local-storage';
@@ -5,6 +6,7 @@ import {
     Classes,
     InputGroup,
     FormGroup,
+    ButtonGroup,
     Button,
     Overlay,
     TextArea
@@ -71,16 +73,49 @@ export const ScriptAdmin = () => {
 
   const handleDeleteAll = async () => {
     set('apexScripts', null);
+
+    setScripts([]);
   };
 
   const toggleOverlay = () => {
     setIsOpen(!isOpen);
   };
 
-  console.log(scripts);
+  const handleInitialScripts = async () => {
+    let newScript = {
+      "name": "",
+      "package": "",
+      "object": "",
+      "description": "",
+      "body": "" 
+    }
+
+    console.log(scripts);
+
+    scriptsFile.forEach(script => {
+      newScript.name = script.name;
+      newScript.package = script.package;
+      newScript.object = script.object;
+      newScript.description = script.description;
+      newScript.body = script.body;
+      let existingScripts = get<object[]>('apexScripts') || [];
+      set('apexScripts', [...existingScripts, newScript]);
+      console.log("Saved " + script.name)
+    });
+
+    setScripts(get<object[]>('apexScripts'));
+  }
+
   return(
     <div className="sbt-m_medium">
       <Button className="add-script" text="Add Script" onClick={toggleOverlay} />
+      <Button
+          className="add-script"
+          intent="warning"
+          onClick={handleInitialScripts}
+        >
+          Inititate Scripts
+        </Button>
       <Overlay isOpen={isOpen} onClose={toggleOverlay} className={Classes.OVERLAY_SCROLL_CONTAINER}>
         <div className={classes}>
          <FormGroup label="New Script">
