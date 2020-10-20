@@ -4,7 +4,7 @@
     "package": "LLC_BI",
     "object": "Loan",
     "description": "Script for adding Loans",
-    "body": "System.debug();"
+    "body": "Account acc = new Account(Name = 'Gabe'); insert acc;"
   },
   { 
     "name": "Multiple Loan Creator",
@@ -15,8 +15,8 @@
   },
   { "name": "Debt Generator",
     "package": "LLC_BI",
-    "object": "LLC_BI__Debt__c",
+    "object": "Debt",
     "description": "Use this script to generate multiple debts records on a loan.",
-    "body": "Integer howManyYouWant = 8; // change this to the number you want\nId loanId = 'loanId'; // replace with the loan id you want to associate the debts to\n\nList <LLC_BI__Debt__c> debtList = new List <LLC_BI__Debt__c>();\nfor(Integer i = 0; i < howManyYouWant; i++){\n  LLC_BI__Debt__c debt = new LLC_BI__Debt__c();\n  debt.LLC_BI__Monthly_Payment__c = (12.99 * (i+1));\n  debt.LLC_BI__Available_Amount__c = (10000.99 * (i+1));\n  debt.LLC_BI__Maturity_Date__c = Date.today();\n  debt.LLC_BI__Original_Amount__c = (1299999.03 * (i+1));\n  debt.LLC_BI__Principal_Balance__c = (300000.85 * (i+1));\n  debt.LLC_BI__Exclude__c = false;\n  debt.LLC_BI__New_Debt__c = false;\n  debt.LLC_BI__New_Loan__c = false;\n  debt.LLC_BI__Loan__c = loanId;\n  debtList.add(debt);\n}\nnFORCE.DmlUtility.insertObj(debtList);"
+    "body": "Integer howManyYouWant = 8; // change this to the number you want\nId loanId = 'loanId'; // replace with the loan id you want to associate the debts to\n\nList <LLC_BI__Debt__c> debtList = new List <LLC_BI__Debt__c>();\nfor(Integer i = 0; i < howManyYouWant; i++){\n  LLC_BI__Debt__c debt = new LLC_BI__Debt__c();\n  debt.LLC_BI__Available_Amount__c = (10000.99 * (i+1));\n  debt.LLC_BI__Maturity_Date__c = Date.today();\n  debt.LLC_BI__Original_Amount__c = (1299999.03 * (i+1));\n  debt.LLC_BI__Principal_Balance__c = (300000.85 * (i+1));\n  debt.LLC_BI__Exclude__c = false;\n  debt.LLC_BI__New_Debt__c = false;\n  debt.LLC_BI__New_Loan__c = false;\n  debt.LLC_BI__Loan__c = loanId;\n  debtList.add(debt);\n}\nnFORCE.DmlUtility.insertObj(debtList);"
   }
 ]

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { ScriptsItem } from "./ScriptsItem";
 import { ScratchBoardState } from "renderer/store";
+import { DynamicTextArea } from "renderer/view/scripts/DynamicTextArea";
 
 function mapStateToProps(state: ScratchBoardState) {
   return {username: state.route.detailUsername}

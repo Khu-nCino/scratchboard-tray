@@ -1,9 +1,7 @@
-
-  {
-    "name": "Script 1",
-    "package": "LLC_BI",
-    "object": "Account",
-    "description": "Script for adding Accounts",
-    "body": "Account acc = new Account(Name = 'Daniel'); insert acc;"
-  }
-
+{
+  "name": "Script 1",
+  "package": "LLC_BI",
+  "object": "Loan",
+  "description": "Script for adding Loans",
+  "body": "Account acc = new Account(Name = 'Gabe'); insert acc;"
+}

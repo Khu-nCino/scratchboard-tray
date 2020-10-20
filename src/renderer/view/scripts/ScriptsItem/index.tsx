@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { ScratchBoardState } from "renderer/store";
 import { orgCache } from "renderer/api/core/OrgCache";
-import { TextArea, Button } from "@blueprintjs/core";
+import { Button } from "@blueprintjs/core";
+import { DynamicTextArea } from "renderer/view/scripts/DynamicTextArea";
 
 interface OwnProps extends ConnectedProps<typeof connector> {
     Name: string,
@@ -23,18 +24,6 @@ async function runScript(username: string, body: string) {
 
 function mapStateToProps(state: ScratchBoardState) {
     return {username: state.route.detailUsername!!}
-}
-
-function DynamicTextArea(props: {body: string, onchange: (value: string) => void}) {
-    const columns = 100;
-    let rows = (props.body.match(/\n/g) || []).length;
-    return(
-        <TextArea fill 
-                onChange={(event) => props.onchange(event.target.value)} 
-                cols={columns} 
-                rows={rows}
-                value={props.body}>
-        </TextArea>)
 }
 
 const connector = connect(mapStateToProps);
