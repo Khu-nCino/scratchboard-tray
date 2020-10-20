@@ -1,8 +1,10 @@
+import scripts from "renderer/view/scripts/apexScripts/script2.json";
 import React, { useState }  from "react";
 import { get, set } from 'local-storage';
 import {
     InputGroup,
     FormGroup,
+    ButtonGroup,
     Button,
   } from "@blueprintjs/core";
 
@@ -58,6 +60,26 @@ export const ScriptAdmin = () => {
     set('apexScripts', null);
   };
 
+  const handleInitialScripts = async () => {
+    let newScript = {
+      "name": "",
+      "package": "",
+      "object": "",
+      "description": "",
+      "body": "" 
+    }
+    scripts.forEach(script => {
+      newScript.name = script.name;
+      newScript.package = script.package;
+      newScript.object = script.object;
+      newScript.description = script.description;
+      newScript.body = script.body;
+      let existingScripts = get<object[]>('apexScripts') || [];
+      set('apexScripts', [...existingScripts, newScript]);
+      console.log("Saved " + script.name)
+    });
+  }
+
   return(
     <div className="sbt-m_medium">
       <FormGroup label="New Script">
@@ -97,18 +119,26 @@ export const ScriptAdmin = () => {
           onChange={onBodyChange}
         />
       </FormGroup>
-      <Button
-        intent="primary"
-        onClick={handleSave}
-      >
-        Save
-      </Button>
-      <Button
-        intent="warning"
-        onClick={handleDeleteAll}
-      >
-        Delete All
-      </Button>
+      <ButtonGroup>
+        <Button
+          intent="primary"
+          onClick={handleSave}
+        >
+          Save
+        </Button>
+        <Button
+          intent="danger"
+          onClick={handleDeleteAll}
+        >
+          Delete All
+        </Button>
+        <Button
+          intent="warning"
+          onClick={handleInitialScripts}
+        >
+          Inititate Scripts
+        </Button>
+      </ButtonGroup>
     </div>
   );
 };
