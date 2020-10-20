@@ -9,13 +9,23 @@ function mapStateToProps(state: ScratchBoardState) {
 }
 
 const connector = connect(mapStateToProps);
-type Props = ConnectedProps<typeof connector>;
+interface Props extends ConnectedProps<typeof connector>{
+  filterApplied: string;
+};
+
+interface Script {
+  name: string;
+  package: string;
+  object: string;
+  description: string;
+  body: string;
+}
 
 export const ScriptsBody = connector((props: Props) => {
-  const [ scripts ] = useState(get<object[]>('apexScripts'));
+  const [ scripts ] = useState(get<Script[]>('apexScripts'));
   return(
     <div className="sbt-m_medium">
-      {scripts.map((script, key) => {
+      {scripts.filter((script) => props.filterApplied === 'All' || script.object===props.filterApplied).map((script, key) => {
           return (
             <ScriptsItem
               key = {key}
