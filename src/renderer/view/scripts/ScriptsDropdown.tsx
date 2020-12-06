@@ -39,7 +39,7 @@ export const ObjectMenuItems:MenuItemOption[] = [
         icon: "person",
     },
     {
-        text: "Contact",
+        text: "Debt",
         icon: "phone",
     },
     {

@@ -1,8 +1,15 @@
-
-  {
-    "name": "Script 2",
+[
+  { 
+    "name": "Multiple Loan Creator",
     "package": "LLC_BI",
     "object": "Loan",
-    "description": "Script for adding Loans",
-    "body": "System.debug();"
+    "description": "Use this script to create a bunch of Loans on a relationship (as a borrower) record.",
+    "body":"String acctId = ''; // put your account Id here!\nInteger nbrLoans = ; // put the number of loans you want to create here!\n\nAccount account = [SELECT Id FROM Account WHERE Id = :acctId];\n\nList<LLC_BI__Loan__c> loans = new List<LLC_BI__Loan__c>();\n\nfor(Integer i = 0; i < nbrLoans; i++){\n  loans.add(createLoan('Test Product Line 1', 'Test Product Type 1', 'Test Product 1', false, false, false, account));\n}\n\nnFORCE.DmlUtility.insertObj(loans);\n\npublic LLC_BI__Loan__c createLoan(\n  String productLine,\n  String productType,\n  String product,\n  Boolean createProductLine,\n  Boolean createProductType,\n  Boolean createProduct,\n  Account account) {\n    LLC_BI__Loan__c o = new LLC_BI__Loan__c();\n    o.llc_bi__Account__c = account.Id;\n    o.Name = 'TestLoan001';\n    o.llc_bi__Product_Line__c = productLine;\n    o.llc_bi__Product_Type__c = productType;\n    o.llc_bi__Product__c = product;\n    o.llc_bi__Amount__c = 10001;\n    o.llc_bi__CloseDate__c = system.Today();\n    o.llc_bi__Construction_CO_Date__c = system.Today();\n      return o;\n  }\n"
+  },
+  { "name": "Debt Generator",
+    "package": "LLC_BI",
+    "object": "Debt",
+    "description": "Use this script to generate multiple debts records on a loan.",
+    "body": "Integer howManyYouWant = 8; // change this to the number you want\nId loanId = 'loanId'; // replace with the loan id you want to associate the debts to\n\nList <LLC_BI__Debt__c> debtList = new List <LLC_BI__Debt__c>();\nfor(Integer i = 0; i < howManyYouWant; i++){\n  LLC_BI__Debt__c debt = new LLC_BI__Debt__c();\n  debt.LLC_BI__Available_Amount__c = (10000.99 * (i+1));\n  debt.LLC_BI__Maturity_Date__c = Date.today();\n  debt.LLC_BI__Original_Amount__c = (1299999.03 * (i+1));\n  debt.LLC_BI__Principal_Balance__c = (300000.85 * (i+1));\n  debt.LLC_BI__Exclude__c = false;\n  debt.LLC_BI__New_Debt__c = false;\n  debt.LLC_BI__New_Loan__c = false;\n  debt.LLC_BI__Loan__c = loanId;\n  debtList.add(debt);\n}\nnFORCE.DmlUtility.insertObj(debtList);"
   }
+]

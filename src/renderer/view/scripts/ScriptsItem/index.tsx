@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { ScratchBoardState } from "renderer/store";
 import { orgCache } from "renderer/api/core/OrgCache";
+import { Button } from "@blueprintjs/core";
+import { DynamicTextArea } from "renderer/view/scripts/DynamicTextArea";
 
 interface OwnProps extends ConnectedProps<typeof connector> {
     Name: string,
@@ -23,10 +25,11 @@ async function runScript(username: string, body: string) {
 function mapStateToProps(state: ScratchBoardState) {
     return {username: state.route.detailUsername!!}
 }
-  
+
 const connector = connect(mapStateToProps);
 
 export const ScriptsItem = connector((props: OwnProps) => {
+    const [body, setBody] = useState(props.Body);
     return(
     <div className="sbt-org-list--item sbt-flex-container sbt-hover-highlight">
         <div className="sbt-ml_medium">
@@ -34,10 +37,10 @@ export const ScriptsItem = connector((props: OwnProps) => {
             { props.Package } <br/>
             { props.Object } <br/>
             { props.Description } <br/>
-            { props.Body } <br/>
-            <button onClick={() => runScript(props.username, props.Body)}>
-                Run in org
-            </button>
+            <DynamicTextArea body={body} onchange={setBody} />  <br/>
+            <Button intent="primary" onClick={() => runScript(props.username, body)}>
+                Run in org 
+            </Button>
             <hr/>
         </div>
     </div>
