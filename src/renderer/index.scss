@@ -155,3 +155,30 @@ $background-color-dark: #30404d;
   color: bp.$pt-intent-warning;
   font-style: italic;
 }
+
+// Script Admin Item
+.script-info {
+  float:left;
+  display:inline;
+  width: 49%;
+}
+
+.script-actions {
+  float:right;
+  display:inline;
+  width: 49%;
+}
+
+.script-action {
+  float: right;
+  display:inline;
+  padding: 10px;
+}
+
+.add-script {
+  float:right;
+}
+
+.script-modal {
+  margin: auto;
+}
